@@ -15,6 +15,7 @@ import { OracleService, DeployStatus } from "./services/oracle.service";
 import { ApifyService } from "./services/apify.service";
 import { MonitorService } from "./services/monitor.service";
 import { v4 as uuidv4 } from "uuid";
+import agentsRoutes from './routes/agents.routes';
 
 // Set up multer for file uploads
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -842,6 +843,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ error: "Erro ao buscar logs LLM" });
     }
   });
+  
+  // ===================================================
+  // Rotas para Agentes Autônomos
+  // ===================================================
+  
+  // Registra as rotas de agentes
+  app.use('/api/agents', agentsRoutes);
   
   // Cria um servidor HTTP
   const httpServer = createServer(app);
