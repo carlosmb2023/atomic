@@ -107,12 +107,12 @@ export default function Chat() {
       return response.json();
     },
     onSuccess: (data) => {
-      playSuccessSound();
+      playSuccess();
       setActiveSession(data.id);
       refetchSessions();
     },
     onError: (error) => {
-      playErrorSound();
+      playError();
       toast({
         title: "Error",
         description: `Failed to create session: ${error.message}`,
@@ -137,7 +137,7 @@ export default function Chat() {
       refetchSession();
     },
     onError: (error) => {
-      playErrorSound();
+      playError();
       toast({
         title: "Error",
         description: `Failed to send message: ${error.message}`,
@@ -153,7 +153,7 @@ export default function Chat() {
   
   // Create a new chat session
   const createSession = () => {
-    playClickSound();
+    playClick();
     createSessionMutation.mutate();
   };
   
@@ -162,7 +162,7 @@ export default function Chat() {
     e.preventDefault();
     if (!newMessage.trim() || !activeSession) return;
     
-    playClickSound();
+    playClick();
     
     // Check if it's a search command
     if (newMessage.startsWith('#buscar') || newMessage.startsWith('#scrape')) {
