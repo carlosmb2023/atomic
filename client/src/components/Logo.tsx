@@ -17,7 +17,7 @@ export default function Logo({ size = 'medium', animate = true, className = '' }
   
   return (
     <Link href="/">
-      <a className="inline-block">
+      <div className="inline-block cursor-pointer">
         <svg 
           className={`${sizeClasses[size]} ${animationClass} ${className}`}
           viewBox="0 0 200 200" 
@@ -47,7 +47,7 @@ export default function Logo({ size = 'medium', animate = true, className = '' }
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </svg>
-      </a>
+      </div>
     </Link>
   );
 }

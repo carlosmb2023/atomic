@@ -26,24 +26,24 @@ export default function Header() {
         
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/">
-            <a className={`font-jetbrains text-sm transition-colors ${location === '/' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <div className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               Home
-            </a>
+            </div>
           </Link>
           <Link href="/dashboard">
-            <a className={`font-jetbrains text-sm transition-colors ${location === '/dashboard' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <div className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/dashboard' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               Dashboard
-            </a>
+            </div>
           </Link>
           <Link href="/landing#features">
-            <a className={`font-jetbrains text-sm transition-colors ${location.includes('#features') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <div className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#features') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               Features
-            </a>
+            </div>
           </Link>
           <Link href="/landing#about">
-            <a className={`font-jetbrains text-sm transition-colors ${location.includes('#about') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <div className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#about') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
               About
-            </a>
+            </div>
           </Link>
         </nav>
         
@@ -57,9 +57,9 @@ export default function Header() {
           </button>
           
           <Link href="/login">
-            <a className="hidden md:block px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-md font-medium hover:shadow-lg hover:shadow-primary/30 transition-all transform hover:-translate-y-1">
+            <div className="hidden md:block px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-md font-medium hover:shadow-lg hover:shadow-primary/30 transition-all transform hover:-translate-y-1 cursor-pointer">
               Login
-            </a>
+            </div>
           </Link>
           
           <button 
@@ -77,19 +77,19 @@ export default function Header() {
           <div className="container mx-auto px-4 py-3">
             <nav className="flex flex-col gap-4">
               <Link href="/">
-                <a className="font-jetbrains py-2 border-b border-white/10">Home</a>
+                <div className="font-jetbrains py-2 border-b border-white/10 cursor-pointer">Home</div>
               </Link>
               <Link href="/dashboard">
-                <a className="font-jetbrains py-2 border-b border-white/10">Dashboard</a>
+                <div className="font-jetbrains py-2 border-b border-white/10 cursor-pointer">Dashboard</div>
               </Link>
               <Link href="/landing#features">
-                <a className="font-jetbrains py-2 border-b border-white/10">Features</a>
+                <div className="font-jetbrains py-2 border-b border-white/10 cursor-pointer">Features</div>
               </Link>
               <Link href="/landing#about">
-                <a className="font-jetbrains py-2 border-b border-white/10">About</a>
+                <div className="font-jetbrains py-2 border-b border-white/10 cursor-pointer">About</div>
               </Link>
               <Link href="/login">
-                <a className="font-jetbrains py-2">Login</a>
+                <div className="font-jetbrains py-2 cursor-pointer">Login</div>
               </Link>
             </nav>
           </div>

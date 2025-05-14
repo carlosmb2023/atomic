@@ -92,19 +92,19 @@ export default function Home() {
         
         <div className="flex flex-wrap justify-center gap-4">
           <Link href="/login">
-            <a className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl">
+            <div className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl cursor-pointer">
               Entrar
-            </a>
+            </div>
           </Link>
           <Link href="/dashboard">
-            <a className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl">
+            <div className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl cursor-pointer">
               Painel
-            </a>
+            </div>
           </Link>
           <Link href="/landing">
-            <a className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl">
+            <div className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl cursor-pointer">
               Ver Mais
-            </a>
+            </div>
           </Link>
         </div>
       </div>
