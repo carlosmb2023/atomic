@@ -1,7 +1,20 @@
-import { users, files, projects, logs } from "@shared/schema";
-import type { User, InsertUser, File, InsertFile, Project, InsertProject, Log, InsertLog } from "@shared/schema";
+import { 
+  users, files, projects, logs, 
+  systemConfig, llmLogs, chatHistory, dailyMetrics, deployLogs 
+} from "@shared/schema";
+import type { 
+  User, InsertUser, 
+  File, InsertFile, 
+  Project, InsertProject, 
+  Log, InsertLog,
+  SystemConfig, InsertSystemConfig,
+  LlmLog, InsertLlmLog,
+  ChatHistory, InsertChatHistory,
+  DailyMetrics, InsertDailyMetrics,
+  DeployLog, InsertDeployLog
+} from "@shared/schema";
 import { db } from './db';
-import { eq } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 
 // modify the interface with any CRUD methods
 // you might need
@@ -31,6 +44,29 @@ export interface IStorage {
   // Logs
   createLog(log: InsertLog): Promise<Log>;
   getLogsByUser(userId: number): Promise<Log[]>;
+  
+  // Configurações do Sistema
+  getSystemConfig(): Promise<SystemConfig | undefined>;
+  updateSystemConfig(config: Partial<SystemConfig>): Promise<SystemConfig | undefined>;
+  
+  // LLM Logs
+  createLlmLog(log: InsertLlmLog): Promise<LlmLog>;
+  getLlmLogsByUser(userId: number, limit?: number): Promise<LlmLog[]>;
+  
+  // Chat History
+  getChatSession(sessionId: string): Promise<ChatHistory | undefined>;
+  getChatSessionsByUser(userId: number): Promise<ChatHistory[]>;
+  createChatSession(session: InsertChatHistory): Promise<ChatHistory>;
+  updateChatSession(sessionId: string, sessionData: Partial<ChatHistory>): Promise<ChatHistory | undefined>;
+  deleteChatSession(sessionId: string): Promise<boolean>;
+  
+  // Métricas Diárias
+  getDailyMetrics(date: Date): Promise<DailyMetrics | undefined>;
+  updateDailyMetrics(date: Date, metrics: Partial<DailyMetrics>): Promise<DailyMetrics | undefined>;
+  
+  // Deploy Logs
+  createDeployLog(log: InsertDeployLog): Promise<DeployLog>;
+  getRecentDeployLogs(limit?: number): Promise<DeployLog[]>;
 }
 
 export class DbStorage implements IStorage {
@@ -82,7 +118,8 @@ export class DbStorage implements IStorage {
   
   async deleteFile(id: number): Promise<boolean> {
     const result = await db.delete(files).where(eq(files.id, id)).returning({ id: files.id });
-    return result.length > 0;
+    return result.length >
+0;
   }
   
   // Projetos
@@ -119,6 +156,154 @@ export class DbStorage implements IStorage {
   async getLogsByUser(userId: number): Promise<Log[]> {
     return db.select().from(logs).where(eq(logs.user_id, userId));
   }
+
+  // Configurações do Sistema
+  async getSystemConfig(): Promise<SystemConfig | undefined> {
+    const result = await db.select().from(systemConfig).limit(1);
+    return result[0];
+  }
+  
+  async updateSystemConfig(configData: Partial<SystemConfig>): Promise<SystemConfig | undefined> {
+    // Busca a configuração existente
+    const current = await this.getSystemConfig();
+    
+    if (!current) {
+      // Se não existir, cria uma nova
+      const config = {
+        ...configData,
+        updated_at: new Date()
+      };
+      const result = await db.insert(systemConfig).values(config).returning();
+      return result[0];
+    }
+    
+    // Se existir, atualiza
+    const result = await db.update(systemConfig)
+      .set({
+        ...configData,
+        updated_at: new Date()
+      })
+      .where(eq(systemConfig.id, current.id))
+      .returning();
+    
+    return result[0];
+  }
+  
+  // LLM Logs
+  async createLlmLog(log: InsertLlmLog): Promise<LlmLog> {
+    const result = await db.insert(llmLogs).values(log).returning();
+    return result[0];
+  }
+  
+  async getLlmLogsByUser(userId: number, limit: number = 50): Promise<LlmLog[]> {
+    return db.select()
+      .from(llmLogs)
+      .where(eq(llmLogs.user_id, userId))
+      .orderBy(desc(llmLogs.created_at))
+      .limit(limit);
+  }
+  
+  // Chat History
+  async getChatSession(sessionId: string): Promise<ChatHistory | undefined> {
+    const result = await db.select()
+      .from(chatHistory)
+      .where(eq(chatHistory.session_id, sessionId))
+      .limit(1);
+    
+    return result[0];
+  }
+  
+  async getChatSessionsByUser(userId: number): Promise<ChatHistory[]> {
+    return db.select()
+      .from(chatHistory)
+      .where(eq(chatHistory.user_id, userId))
+      .orderBy(desc(chatHistory.updated_at));
+  }
+  
+  async createChatSession(session: InsertChatHistory): Promise<ChatHistory> {
+    const result = await db.insert(chatHistory).values(session).returning();
+    return result[0];
+  }
+  
+  async updateChatSession(sessionId: string, sessionData: Partial<ChatHistory>): Promise<ChatHistory | undefined> {
+    const result = await db.update(chatHistory)
+      .set({
+        ...sessionData,
+        updated_at: new Date()
+      })
+      .where(eq(chatHistory.session_id, sessionId))
+      .returning();
+    
+    return result[0];
+  }
+  
+  async deleteChatSession(sessionId: string): Promise<boolean> {
+    const result = await db.delete(chatHistory)
+      .where(eq(chatHistory.session_id, sessionId))
+      .returning({ id: chatHistory.id });
+    
+    return result.length > 0;
+  }
+  
+  // Métricas Diárias
+  async getDailyMetrics(date: Date): Promise<DailyMetrics | undefined> {
+    // Zero out the time part for consistent comparison
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const result = await db.select()
+      .from(dailyMetrics)
+      .where(sql`DATE(${dailyMetrics.date}) = DATE(${startOfDay})`)
+      .limit(1);
+    
+    return result[0];
+  }
+  
+  async updateDailyMetrics(date: Date, metricsData: Partial<DailyMetrics>): Promise<DailyMetrics | undefined> {
+    // Zero out the time part for consistent comparison
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    // Check if metrics for this date exist
+    const existingMetrics = await this.getDailyMetrics(startOfDay);
+    
+    if (!existingMetrics) {
+      // Create new metrics
+      const newMetrics = {
+        date: startOfDay,
+        ...metricsData,
+        created_at: new Date(),
+        updated_at: new Date()
+      };
+      
+      const result = await db.insert(dailyMetrics).values(newMetrics).returning();
+      return result[0];
+    }
+    
+    // Update existing metrics
+    const result = await db.update(dailyMetrics)
+      .set({
+        ...metricsData,
+        updated_at: new Date()
+      })
+      .where(eq(dailyMetrics.id, existingMetrics.id))
+      .returning();
+    
+    return result[0];
+  }
+  
+  // Deploy Logs
+  async createDeployLog(log: InsertDeployLog): Promise<DeployLog> {
+    const result = await db.insert(deployLogs).values(log).returning();
+    return result[0];
+  }
+  
+  async getRecentDeployLogs(limit: number = 10): Promise<DeployLog[]> {
+    return db.select()
+      .from(deployLogs)
+      .orderBy(desc(deployLogs.created_at))
+      .limit(limit);
+  }
 }
 
 // Implementação com memória como fallback
@@ -127,11 +312,21 @@ export class MemStorage implements IStorage {
   private fileMap: Map<number, File>;
   private projectMap: Map<number, Project>;
   private logMap: Map<number, Log>;
+  private systemConfigMap: Map<number, SystemConfig>;
+  private llmLogMap: Map<number, LlmLog>;
+  private chatHistoryMap: Map<string, ChatHistory>;
+  private dailyMetricsMap: Map<string, DailyMetrics>;
+  private deployLogMap: Map<number, DeployLog>;
+  
   private currentIds = {
     users: 1,
     files: 1,
     projects: 1,
-    logs: 1
+    logs: 1,
+    llmLogs: 1,
+    chatHistory: 1,
+    dailyMetrics: 1,
+    deployLogs: 1
   };
 
   constructor() {
@@ -139,6 +334,27 @@ export class MemStorage implements IStorage {
     this.fileMap = new Map();
     this.projectMap = new Map();
     this.logMap = new Map();
+    this.systemConfigMap = new Map();
+    this.llmLogMap = new Map();
+    this.chatHistoryMap = new Map();
+    this.dailyMetricsMap = new Map();
+    this.deployLogMap = new Map();
+    
+    // Configuração padrão
+    this.systemConfigMap.set(1, {
+      id: 1,
+      execution_mode: 'local',
+      local_llm_url: 'http://127.0.0.1:11434',
+      cloud_llm_url: 'https://oracle-api.carlosdev.app.br',
+      active_llm_url: 'http://127.0.0.1:11434',
+      apify_actor_url: null,
+      apify_api_key: null,
+      base_prompt: 'Você é um assistente útil e profissional.',
+      logs_enabled: true,
+      updated_at: new Date(),
+      updated_by: null,
+      oracle_instance_ip: null
+    });
   }
 
   // Usuários
@@ -159,6 +375,8 @@ export class MemStorage implements IStorage {
       ...insertUser, 
       id, 
       created_at: now,
+      last_login: null,
+      profile_img: null,
       is_active: true 
     };
     this.userMap.set(user.id, user);
@@ -194,7 +412,10 @@ export class MemStorage implements IStorage {
       ...file,
       id,
       uploaded_at: now,
-      is_public: file.is_public || false
+      is_public: file.is_public || false,
+      type: file.type || null,
+      user_id: file.user_id || null,
+      description: file.description || null
     };
     this.fileMap.set(id, newFile);
     return newFile;
@@ -230,7 +451,8 @@ export class MemStorage implements IStorage {
       id,
       created_at: now,
       updated_at: now,
-      status: project.status || 'active'
+      status: project.status || 'active',
+      description: project.description || null
     };
     this.projectMap.set(id, newProject);
     return newProject;
@@ -260,7 +482,10 @@ export class MemStorage implements IStorage {
     const newLog: Log = {
       ...log,
       id,
-      created_at: now
+      created_at: now,
+      user_id: log.user_id || null,
+      details: log.details || null,
+      ip_address: log.ip_address || null
     };
     this.logMap.set(id, newLog);
     return newLog;
@@ -268,6 +493,206 @@ export class MemStorage implements IStorage {
   
   async getLogsByUser(userId: number): Promise<Log[]> {
     return Array.from(this.logMap.values()).filter(log => log.user_id === userId);
+  }
+  
+  // Configurações do Sistema
+  async getSystemConfig(): Promise<SystemConfig | undefined> {
+    return this.systemConfigMap.get(1);
+  }
+  
+  async updateSystemConfig(configData: Partial<SystemConfig>): Promise<SystemConfig | undefined> {
+    const current = await this.getSystemConfig();
+    if (!current) return undefined;
+    
+    const updatedConfig: SystemConfig = { 
+      ...current, 
+      ...configData, 
+      updated_at: new Date() 
+    };
+    
+    this.systemConfigMap.set(1, updatedConfig);
+    return updatedConfig;
+  }
+  
+  // LLM Logs
+  async createLlmLog(log: InsertLlmLog): Promise<LlmLog> {
+    const id = this.currentIds.llmLogs++;
+    const now = new Date();
+    
+    const newLog: LlmLog = {
+      id,
+      prompt: log.prompt,
+      response: log.response || null,
+      source: log.source,
+      tokens_used: log.tokens_used || null,
+      response_time_ms: log.response_time_ms || null,
+      status: log.status || 'success',
+      error_message: log.error_message || null,
+      user_id: log.user_id || null,
+      created_at: now,
+      metadata: log.metadata || null
+    };
+    
+    this.llmLogMap.set(id, newLog);
+    return newLog;
+  }
+  
+  async getLlmLogsByUser(userId: number, limit: number = 50): Promise<LlmLog[]> {
+    const logs: LlmLog[] = [];
+    for (const log of this.llmLogMap.values()) {
+      if (log.user_id === userId) {
+        logs.push(log);
+      }
+    }
+    
+    return logs
+      .sort((a, b) => (b.created_at?.getTime() || 0) - (a.created_at?.getTime() || 0))
+      .slice(0, limit);
+  }
+  
+  // Chat History
+  async getChatSession(sessionId: string): Promise<ChatHistory | undefined> {
+    return this.chatHistoryMap.get(sessionId);
+  }
+  
+  async getChatSessionsByUser(userId: number): Promise<ChatHistory[]> {
+    const sessions: ChatHistory[] = [];
+    for (const session of this.chatHistoryMap.values()) {
+      if (session.user_id === userId) {
+        sessions.push(session);
+      }
+    }
+    
+    return sessions.sort((a, b) => (b.updated_at?.getTime() || 0) - (a.updated_at?.getTime() || 0));
+  }
+  
+  async createChatSession(session: InsertChatHistory): Promise<ChatHistory> {
+    const id = this.currentIds.chatHistory++;
+    const now = new Date();
+    
+    const newSession: ChatHistory = {
+      id,
+      user_id: session.user_id,
+      session_id: session.session_id,
+      messages: session.messages,
+      title: session.title || null,
+      created_at: now,
+      updated_at: now
+    };
+    
+    this.chatHistoryMap.set(session.session_id, newSession);
+    return newSession;
+  }
+  
+  async updateChatSession(sessionId: string, sessionData: Partial<ChatHistory>): Promise<ChatHistory | undefined> {
+    const session = this.chatHistoryMap.get(sessionId);
+    if (!session) return undefined;
+    
+    const updatedSession = { 
+      ...session, 
+      ...sessionData, 
+      updated_at: new Date() 
+    };
+    
+    this.chatHistoryMap.set(sessionId, updatedSession);
+    return updatedSession;
+  }
+  
+  async deleteChatSession(sessionId: string): Promise<boolean> {
+    return this.chatHistoryMap.delete(sessionId);
+  }
+  
+  // Métricas Diárias
+  async getDailyMetrics(date: Date): Promise<DailyMetrics | undefined> {
+    const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    for (const metrics of this.dailyMetricsMap.values()) {
+      const metricsDate = metrics.date?.toISOString().split('T')[0];
+      if (metricsDate === dateKey) {
+        return metrics;
+      }
+    }
+    
+    return undefined;
+  }
+  
+  async updateDailyMetrics(date: Date, metricsData: Partial<DailyMetrics>): Promise<DailyMetrics | undefined> {
+    const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    // Check if metrics for this date exist
+    let existingMetrics: DailyMetrics | undefined;
+    let existingKey: string = '';
+    
+    for (const [key, metrics] of this.dailyMetricsMap.entries()) {
+      const metricsDate = metrics.date?.toISOString().split('T')[0];
+      if (metricsDate === dateKey) {
+        existingMetrics = metrics;
+        existingKey = key;
+        break;
+      }
+    }
+    
+    if (!existingMetrics) {
+      // Create new metrics
+      const id = this.currentIds.dailyMetrics++;
+      const now = new Date();
+      
+      const newMetrics: DailyMetrics = {
+        id,
+        date,
+        total_requests: metricsData.total_requests || 0,
+        total_tokens: metricsData.total_tokens || 0,
+        local_requests: metricsData.local_requests || 0,
+        cloud_requests: metricsData.cloud_requests || 0,
+        apify_requests: metricsData.apify_requests || 0,
+        successful_requests: metricsData.successful_requests || 0,
+        failed_requests: metricsData.failed_requests || 0,
+        avg_response_time: metricsData.avg_response_time || "0",
+        created_at: now,
+        updated_at: now
+      };
+      
+      this.dailyMetricsMap.set(dateKey, newMetrics);
+      return newMetrics;
+    }
+    
+    // Update existing metrics
+    const updatedMetrics = { 
+      ...existingMetrics, 
+      ...metricsData, 
+      updated_at: new Date() 
+    };
+    
+    this.dailyMetricsMap.set(existingKey, updatedMetrics);
+    return updatedMetrics;
+  }
+  
+  // Deploy Logs
+  async createDeployLog(log: InsertDeployLog): Promise<DeployLog> {
+    const id = this.currentIds.deployLogs++;
+    const now = new Date();
+    
+    const newLog: DeployLog = {
+      id,
+      user_id: log.user_id || null,
+      action: log.action,
+      status: log.status,
+      instance_id: log.instance_id || null,
+      instance_ip: log.instance_ip || null,
+      details: log.details || null,
+      created_at: now
+    };
+    
+    this.deployLogMap.set(id, newLog);
+    return newLog;
+  }
+  
+  async getRecentDeployLogs(limit: number = 10): Promise<DeployLog[]> {
+    const logs = Array.from(this.deployLogMap.values());
+    
+    return logs
+      .sort((a, b) => (b.created_at?.getTime() || 0) - (a.created_at?.getTime() || 0))
+      .slice(0, limit);
   }
 }
 

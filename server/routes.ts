@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
@@ -8,6 +8,12 @@ import { log } from "./vite";
 import { db } from "./db";
 import { users, files } from "../shared/schema";
 import { eq } from "drizzle-orm";
+import { ChatService } from "./services/chat.service";
+import { LlmService } from "./services/llm.service";
+import { ConfigService } from "./services/config.service";
+import { OracleService, DeployStatus } from "./services/oracle.service";
+import { ApifyService } from "./services/apify.service";
+import { v4 as uuidv4 } from "uuid";
 
 // Set up multer for file uploads
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -380,6 +386,393 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===================================================
+  // Rotas para Sistema de Chat e LLM
+  // ===================================================
+  
+  // Instâncias dos serviços
+  const chatService = ChatService.getInstance();
+  const llmService = LlmService.getInstance();
+  const configService = ConfigService.getInstance();
+  const oracleService = OracleService.getInstance();
+  const apifyService = ApifyService.getInstance();
+  
+  // Rota para enviar mensagem ao LLM diretamente
+  app.post("/api/llm/prompt", async (req, res) => {
+    try {
+      const { prompt, userId, model, temperature, maxTokens, systemPrompt } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({ error: "O prompt é obrigatório" });
+      }
+      
+      const response = await llmService.sendPrompt(prompt, {
+        userId: userId ? parseInt(userId) : undefined,
+        model,
+        temperature: temperature ? parseFloat(temperature) : undefined,
+        maxTokens: maxTokens ? parseInt(maxTokens) : undefined,
+        systemPrompt
+      });
+      
+      if (!response.success) {
+        return res.status(500).json({ error: response.error, source: response.source });
+      }
+      
+      return res.json({
+        text: response.text,
+        source: response.source,
+        tokens: response.tokens,
+        responseTimeMs: response.responseTimeMs
+      });
+    } catch (error) {
+      log(`Erro ao processar prompt LLM: ${error}`);
+      return res.status(500).json({ error: "Erro ao processar prompt" });
+    }
+  });
+  
+  // Rotas para chat
+  app.post("/api/chat/sessions", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "ID do usuário é obrigatório" });
+      }
+      
+      const session = await chatService.createSession(parseInt(userId));
+      
+      return res.status(201).json(session);
+    } catch (error) {
+      log(`Erro ao criar sessão de chat: ${error}`);
+      return res.status(500).json({ error: "Erro ao criar sessão de chat" });
+    }
+  });
+  
+  app.get("/api/chat/sessions", async (req, res) => {
+    try {
+      const userId = req.query.userId ? parseInt(req.query.userId as string) : null;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "ID do usuário é obrigatório" });
+      }
+      
+      const sessions = await chatService.listSessions(userId);
+      
+      return res.json(sessions);
+    } catch (error) {
+      log(`Erro ao listar sessões de chat: ${error}`);
+      return res.status(500).json({ error: "Erro ao listar sessões de chat" });
+    }
+  });
+  
+  app.get("/api/chat/sessions/:sessionId", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const userId = req.query.userId ? parseInt(req.query.userId as string) : undefined;
+      
+      if (!sessionId) {
+        return res.status(400).json({ error: "ID da sessão é obrigatório" });
+      }
+      
+      const session = await chatService.getSession(sessionId, userId);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Sessão não encontrada" });
+      }
+      
+      return res.json(session);
+    } catch (error) {
+      log(`Erro ao buscar sessão de chat: ${error}`);
+      return res.status(500).json({ error: "Erro ao buscar sessão de chat" });
+    }
+  });
+  
+  app.post("/api/chat/sessions/:sessionId/messages", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const { message, userId } = req.body;
+      
+      if (!sessionId || !message || !userId) {
+        return res.status(400).json({ error: "Parâmetros incompletos" });
+      }
+      
+      const response = await chatService.sendMessage(
+        sessionId,
+        message,
+        parseInt(userId)
+      );
+      
+      return res.json(response);
+    } catch (error) {
+      log(`Erro ao enviar mensagem: ${error}`);
+      return res.status(500).json({ error: "Erro ao enviar mensagem" });
+    }
+  });
+  
+  // ===================================================
+  // Rotas para Configuração do Sistema
+  // ===================================================
+  
+  app.get("/api/system/config", async (_req, res) => {
+    try {
+      const config = await configService.getConfig();
+      
+      if (!config) {
+        return res.status(404).json({ error: "Configuração não encontrada" });
+      }
+      
+      // Não enviar informações sensíveis como API keys
+      const safeConfig = {
+        ...config,
+        apify_api_key: config.apify_api_key ? "***************" : null
+      };
+      
+      return res.json(safeConfig);
+    } catch (error) {
+      log(`Erro ao buscar configuração: ${error}`);
+      return res.status(500).json({ error: "Erro ao buscar configuração" });
+    }
+  });
+  
+  app.patch("/api/system/config", async (req, res) => {
+    try {
+      const { 
+        execution_mode, local_llm_url, cloud_llm_url, apify_actor_url,
+        apify_api_key, base_prompt, logs_enabled, updated_by
+      } = req.body;
+      
+      const updatedConfig = await configService.updateConfig({
+        ...(execution_mode && { execution_mode }),
+        ...(local_llm_url && { local_llm_url }),
+        ...(cloud_llm_url && { cloud_llm_url }),
+        ...(apify_actor_url && { apify_actor_url }),
+        ...(apify_api_key && { apify_api_key }),
+        ...(base_prompt && { base_prompt }),
+        ...(logs_enabled !== undefined && { logs_enabled }),
+        ...(updated_by && { updated_by: parseInt(updated_by) })
+      });
+      
+      if (!updatedConfig) {
+        return res.status(500).json({ error: "Erro ao atualizar configuração" });
+      }
+      
+      // Não enviar informações sensíveis
+      const safeConfig = {
+        ...updatedConfig,
+        apify_api_key: updatedConfig.apify_api_key ? "***************" : null
+      };
+      
+      return res.json(safeConfig);
+    } catch (error) {
+      log(`Erro ao atualizar configuração: ${error}`);
+      return res.status(500).json({ error: "Erro ao atualizar configuração" });
+    }
+  });
+  
+  app.post("/api/system/mode/switch", async (req, res) => {
+    try {
+      const { mode, userId } = req.body;
+      
+      if (!mode || (mode !== 'local' && mode !== 'cloud')) {
+        return res.status(400).json({ error: "Modo inválido. Use 'local' ou 'cloud'" });
+      }
+      
+      const result = await configService.switchExecutionMode(
+        mode, 
+        userId ? parseInt(userId) : undefined
+      );
+      
+      if (!result) {
+        return res.status(500).json({ error: "Erro ao trocar modo de execução" });
+      }
+      
+      return res.json({ 
+        success: true, 
+        mode: result.execution_mode,
+        active_url: result.active_llm_url
+      });
+    } catch (error) {
+      log(`Erro ao trocar modo de execução: ${error}`);
+      return res.status(500).json({ error: "Erro ao trocar modo de execução" });
+    }
+  });
+  
+  // ===================================================
+  // Rotas para Deploy na Oracle Cloud
+  // ===================================================
+  
+  app.post("/api/oracle/deploy", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "ID do usuário é obrigatório" });
+      }
+      
+      // Verificar se já existe um deploy em andamento
+      if (oracleService.isDeployInProgress()) {
+        return res.status(409).json({ 
+          error: "Já existe um deploy em andamento",
+          status: DeployStatus.IN_PROGRESS
+        });
+      }
+      
+      // Iniciar deploy de forma assíncrona
+      const deployPromise = oracleService.startDeploy(parseInt(userId));
+      
+      // Retornar imediatamente que o deploy foi iniciado
+      res.status(202).json({ 
+        message: "Deploy iniciado com sucesso", 
+        status: DeployStatus.STARTING
+      });
+      
+      // Processar o deploy em background
+      deployPromise.then(result => {
+        log(`Deploy concluído: ${JSON.stringify(result)}`);
+      }).catch(error => {
+        log(`Erro no deploy: ${error}`);
+      });
+    } catch (error) {
+      log(`Erro ao iniciar deploy: ${error}`);
+      return res.status(500).json({ error: "Erro ao iniciar deploy" });
+    }
+  });
+  
+  app.get("/api/oracle/status", async (req, res) => {
+    try {
+      const inProgress = oracleService.isDeployInProgress();
+      
+      // Buscar logs recentes de deploy
+      const recentLogs = await storage.getRecentDeployLogs(1);
+      
+      if (recentLogs.length === 0) {
+        return res.json({
+          status: "unknown",
+          inProgress
+        });
+      }
+      
+      const latestLog = recentLogs[0];
+      
+      return res.json({
+        status: latestLog.status,
+        action: latestLog.action,
+        inProgress,
+        instanceIp: latestLog.instance_ip,
+        lastUpdate: latestLog.created_at
+      });
+    } catch (error) {
+      log(`Erro ao buscar status do deploy: ${error}`);
+      return res.status(500).json({ error: "Erro ao buscar status do deploy" });
+    }
+  });
+  
+  app.post("/api/oracle/instance/stop", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "ID do usuário é obrigatório" });
+      }
+      
+      // Verificar se já existe um deploy em andamento
+      if (oracleService.isDeployInProgress()) {
+        return res.status(409).json({ 
+          error: "Já existe um deploy em andamento",
+          status: DeployStatus.IN_PROGRESS
+        });
+      }
+      
+      // Iniciar a parada da instância de forma assíncrona
+      const stopPromise = oracleService.stopInstance(parseInt(userId));
+      
+      // Retornar imediatamente que a parada foi iniciada
+      res.status(202).json({ 
+        message: "Parada da instância iniciada com sucesso", 
+        status: DeployStatus.STARTING
+      });
+      
+      // Processar a parada em background
+      stopPromise.then(result => {
+        log(`Parada concluída: ${JSON.stringify(result)}`);
+      }).catch(error => {
+        log(`Erro na parada: ${error}`);
+      });
+    } catch (error) {
+      log(`Erro ao parar instância: ${error}`);
+      return res.status(500).json({ error: "Erro ao parar instância" });
+    }
+  });
+  
+  // ===================================================
+  // Rota para Busca com Apify
+  // ===================================================
+  
+  app.post("/api/apify/search", async (req, res) => {
+    try {
+      const { query, userId, maxResults } = req.body;
+      
+      if (!query) {
+        return res.status(400).json({ error: "Consulta de busca é obrigatória" });
+      }
+      
+      const results = await apifyService.search(query, {
+        userId: userId ? parseInt(userId) : undefined,
+        maxResults: maxResults ? parseInt(maxResults) : undefined
+      });
+      
+      return res.json(results);
+    } catch (error) {
+      log(`Erro na busca Apify: ${error}`);
+      return res.status(500).json({ error: "Erro ao realizar busca" });
+    }
+  });
+  
+  // ===================================================
+  // Rotas para Métricas e Estatísticas
+  // ===================================================
+  
+  app.get("/api/metrics/daily", async (req, res) => {
+    try {
+      const startDate = req.query.start ? new Date(req.query.start as string) : new Date();
+      startDate.setHours(0, 0, 0, 0);
+      
+      const endDate = req.query.end ? new Date(req.query.end as string) : new Date();
+      endDate.setHours(23, 59, 59, 999);
+      
+      // Buscar métricas diárias para o período
+      const metricsQuery = await db.select()
+        .from(dailyMetrics)
+        .where(
+          sql`${dailyMetrics.date} >= ${startDate} AND ${dailyMetrics.date} <= ${endDate}`
+        )
+        .orderBy(dailyMetrics.date);
+      
+      return res.json(metricsQuery);
+    } catch (error) {
+      log(`Erro ao buscar métricas: ${error}`);
+      return res.status(500).json({ error: "Erro ao buscar métricas" });
+    }
+  });
+  
+  app.get("/api/logs/llm", async (req, res) => {
+    try {
+      const userId = req.query.userId ? parseInt(req.query.userId as string) : null;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "ID do usuário é obrigatório" });
+      }
+      
+      const logs = await storage.getLlmLogsByUser(userId, limit);
+      
+      return res.json(logs);
+    } catch (error) {
+      log(`Erro ao buscar logs LLM: ${error}`);
+      return res.status(500).json({ error: "Erro ao buscar logs LLM" });
+    }
+  });
+  
   // Cria um servidor HTTP
   const httpServer = createServer(app);
 
