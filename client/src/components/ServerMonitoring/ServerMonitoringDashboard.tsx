@@ -74,8 +74,8 @@ const ServerMonitoringDashboard: React.FC = () => {
   const metricsQuery = useQuery({
     queryKey: ['/api/monitor/metrics'],
     queryFn: async () => {
-      const response = await apiRequest<SystemMetrics>('/api/monitor/metrics?refresh=true', { method: 'GET' });
-      return response.data;
+      const { data } = await apiRequest<SystemMetrics>('/api/monitor/metrics?refresh=true', { method: 'GET' });
+      return data;
     },
     refetchInterval: autoRefresh ? refreshInterval * 1000 : false,
   });
@@ -84,8 +84,8 @@ const ServerMonitoringDashboard: React.FC = () => {
   const healthQuery = useQuery({
     queryKey: ['/api/monitor/health'],
     queryFn: async () => {
-      const response = await apiRequest<HealthStatus>('/api/monitor/health', { method: 'GET' });
-      return response.data;
+      const { data } = await apiRequest<HealthStatus>('/api/monitor/health', { method: 'GET' });
+      return data;
     },
     refetchInterval: autoRefresh ? refreshInterval * 1000 : false,
   });
@@ -94,8 +94,8 @@ const ServerMonitoringDashboard: React.FC = () => {
   const historyQuery = useQuery({
     queryKey: ['/api/monitor/history'],
     queryFn: async () => {
-      const response = await apiRequest<SystemMetrics[]>('/api/monitor/history?hours=6', { method: 'GET' });
-      return response.data;
+      const { data } = await apiRequest<SystemMetrics[]>('/api/monitor/history?hours=6', { method: 'GET' });
+      return data;
     },
     refetchInterval: autoRefresh ? refreshInterval * 60 * 1000 : false, // Atualiza menos frequentemente
   });
