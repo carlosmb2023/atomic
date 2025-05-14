@@ -1,0 +1,53 @@
+Quero que você atualize meu projeto do site https://www.carlosdev.app.br com as seguintes funcionalidades novas, mantendo o mesmo estilo visual futurista, com tema escuro, efeitos de glassmorfismo, fontes orbitron e suporte total ao backend em Node/Express + PostgreSQL + WebSocket:
+
+1. 🔄 **Modo de Execução (Local/Nuvem Oracle Cloud)**  
+Adicione no painel administrativo um seletor visual (radio ou dropdown) chamado "Modo de Execução", com as opções:
+- Rodar localmente (http://127.0.0.1:11434)
+- Rodar na nuvem (https://oracle-api.carlosdev.app.br)
+
+Essa opção deve definir dinamicamente a URL-base utilizada para chamadas ao modelo LLM (Ollama/Mistral).  
+Se a instância atual estiver offline, o sistema deve tentar fallback automático para a outra e exibir status com badge colorido (🟢 Local, 🔵 Nuvem, 🔴 Offline).
+
+2. 💬 **Chat com Mistral + Actor Apify**  
+Implemente um chat estilo ChatGPT no painel.  
+Esse chat deve:
+- Enviar mensagens para o modelo Mistral via API HTTP (Ollama local ou Oracle)
+- Detectar comandos especiais iniciados por `#scrape` ou `#buscar`, e redirecionar para a API do Actor Apify
+- Exibir as respostas formatadas em cards, com título, imagem (se houver), e botão de download
+- Suporte a WebSocket ou polling para resposta em tempo real
+- Permitir definir prompt base do agente via painel de configurações
+
+3. 🛠️ **Painel de Configuração Avançada (/config)**  
+Crie uma página protegida chamada `/config`, acessível somente para admins, com os seguintes campos editáveis:
+- URL do modelo (LLM)
+- URL do Apify Actor
+- Chave API do Apify
+- Prompt base do chat
+- Alternância entre Modo Local/Nuvem
+- Ativar/desativar logs
+- Botão "Salvar" e "Testar Conexões"
+
+As configurações devem ser persistentes via banco de dados ou `.env`.
+
+4. 🔄 **Fallback Inteligente de Execução**  
+O sistema deve testar automaticamente a conectividade com o servidor principal.  
+Se estiver offline (erro de rede ou status != 200), usar o modo alternativo (ex: se Oracle estiver off, usar localhost).  
+Exibir no topo do painel um status colorido com a origem atual da execução.
+
+5. 📊 **Logs e Métricas de Atividades (dashboard)**  
+Crie uma seção no dashboard chamada "Logs & Métricas", exibindo:
+- Lista com prompts enviados, origem (local ou nuvem), tempo de resposta, status (✔️ sucesso, ❌ erro)
+- Gráfico com contagem de tokens usados por dia
+- Status do container LLM (ativo, inativo, latência média)
+- Logs de scraping quando o actor do Apify for usado
+
+6. ☁️ **Botão de Deploy na Oracle Cloud**  
+No painel admin, adicione um botão "Deploy na Oracle Cloud".  
+Esse botão deve:
+- Executar um script backend que inicia ou cria uma instância A1 ARM via OCI CLI ou API remota
+- Exibir o progresso do deploy (🔄 Iniciando, ✅ Rodando, ❌ Erro)
+- Salvar automaticamente o IP público da instância na configuração ativa
+- Atualizar a URL-base de chamadas do modelo para apontar para a nova instância
+
+Importante: mantenha todas as animações, efeitos visuais, responsividade e consistência estética com o tema do projeto. Utilize React + Tailwind no frontend e mantenha integração com o backend Express atual e banco PostgreSQL.
+
