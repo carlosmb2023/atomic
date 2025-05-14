@@ -178,6 +178,13 @@ export default function Header() {
                   onClick={playClick}
                 >Monitor</div>
               </Link>
+              <Link href="/agents">
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >Agentes</div>
+              </Link>
               <Link href="/landing#features">
                 <div 
                   className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
