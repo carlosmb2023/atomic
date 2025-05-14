@@ -1,6 +1,7 @@
 import { 
   users, files, projects, logs, 
-  systemConfig, llmLogs, chatHistory, dailyMetrics, deployLogs 
+  systemConfig, llmLogs, chatHistory, dailyMetrics, deployLogs,
+  agents, agentExecutions, agentSteps, agentTools, agentToolMappings
 } from "@shared/schema";
 import type { 
   User, InsertUser, 
@@ -11,7 +12,12 @@ import type {
   LlmLog, InsertLlmLog,
   ChatHistory, InsertChatHistory,
   DailyMetrics, InsertDailyMetrics,
-  DeployLog, InsertDeployLog
+  DeployLog, InsertDeployLog,
+  Agent, InsertAgent,
+  AgentExecution, InsertAgentExecution,
+  AgentStep, InsertAgentStep,
+  AgentTool, InsertAgentTool,
+  AgentToolMapping, InsertAgentToolMapping
 } from "@shared/schema";
 import { db } from './db';
 import { eq, desc, sql } from 'drizzle-orm';
@@ -365,7 +371,12 @@ export class MemStorage implements IStorage {
     llmLogs: 1,
     chatHistory: 1,
     dailyMetrics: 1,
-    deployLogs: 1
+    deployLogs: 1,
+    agents: 1,
+    agentExecutions: 1,
+    agentSteps: 1,
+    agentTools: 1,
+    agentToolMappings: 1
   };
 
   constructor() {
@@ -378,6 +389,13 @@ export class MemStorage implements IStorage {
     this.chatHistoryMap = new Map();
     this.dailyMetricsMap = new Map();
     this.deployLogMap = new Map();
+    
+    // Inicialização dos mapas para agentes
+    this.agentMap = new Map();
+    this.agentExecutionMap = new Map();
+    this.agentStepMap = new Map();
+    this.agentToolMap = new Map();
+    this.agentToolMappingMap = new Map();
     
     // Configuração padrão
     this.systemConfigMap.set(1, {
