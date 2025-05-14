@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import Logo from "@/components/Logo";
+import AnimatedContent from "@/components/AnimatedContent";
+import { useSoundEffect } from "@/hooks/use-sound-effect";
 
 export default function Home() {
   const [typedText, setTypedText] = useState("");
@@ -71,43 +73,69 @@ export default function Home() {
     fetchStatus();
   }, []);
 
+  const { playHover, playClick } = useSoundEffect();
+
   return (
     <section className="min-h-screen pt-20 flex flex-col items-center justify-center text-center px-4">
-      <div className="glass-panel p-8 md:p-12 max-w-3xl mx-auto animate-slide-up">
+      <AnimatedContent 
+        animation="scale" 
+        duration={0.8} 
+        className="glass-panel p-8 md:p-12 max-w-3xl mx-auto"
+      >
         <Logo size="medium" animate={true} className="mx-auto mb-6" />
         
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-orbitron mb-6 animate-glow-pulse bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-          Atomic AI
-        </h1>
+        <AnimatedContent animation="fadeIn" delay={0.3} duration={0.8}>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-orbitron mb-6 animate-glow-pulse bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+            Atomic AI
+          </h1>
+        </AnimatedContent>
         
-        <div className="h-16 flex items-center justify-center">
-          <p className="font-jetbrains text-lg md:text-xl text-muted-foreground">
-            {typedText}
-          </p>
-        </div>
+        <AnimatedContent animation="fadeIn" delay={0.6} duration={0.7}>
+          <div className="h-16 flex items-center justify-center">
+            <p className="font-jetbrains text-lg md:text-xl text-muted-foreground">
+              {typedText}
+            </p>
+          </div>
+        </AnimatedContent>
         
-        <div className="font-jetbrains mb-8 h-8" style={{ color: 'var(--cyber-green)' }}>
-          {statusMessage}
-        </div>
+        <AnimatedContent animation="fadeIn" delay={0.9} duration={0.7}>
+          <div className="font-jetbrains mb-8 h-8" style={{ color: 'var(--cyber-green)' }}>
+            {statusMessage}
+          </div>
+        </AnimatedContent>
         
-        <div className="flex flex-wrap justify-center gap-4">
-          <Link href="/login">
-            <div className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl cursor-pointer">
-              Entrar
-            </div>
-          </Link>
-          <Link href="/dashboard">
-            <div className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl cursor-pointer">
-              Painel
-            </div>
-          </Link>
-          <Link href="/landing">
-            <div className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl cursor-pointer">
-              Ver Mais
-            </div>
-          </Link>
-        </div>
-      </div>
+        <AnimatedContent animation="slideUp" delay={1.2} duration={0.7}>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/login">
+              <div 
+                className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-[0_0_15px_rgba(22,119,255,0.5)] hover:-translate-y-1"
+                onMouseEnter={playHover}
+                onClick={playClick}
+              >
+                Entrar
+              </div>
+            </Link>
+            <Link href="/dashboard">
+              <div 
+                className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-[0_0_15px_rgba(22,119,255,0.5)] hover:-translate-y-1"
+                onMouseEnter={playHover}
+                onClick={playClick}
+              >
+                Painel
+              </div>
+            </Link>
+            <Link href="/landing">
+              <div 
+                className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-[0_0_15px_rgba(22,119,255,0.5)] hover:-translate-y-1"
+                onMouseEnter={playHover}
+                onClick={playClick}
+              >
+                Ver Mais
+              </div>
+            </Link>
+          </div>
+        </AnimatedContent>
+      </AnimatedContent>
     </section>
   );
 }

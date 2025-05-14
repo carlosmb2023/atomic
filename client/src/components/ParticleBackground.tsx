@@ -1,11 +1,11 @@
 import { useCallback } from "react";
-import Particles from "react-tsparticles";
-import { loadFull } from "tsparticles";
-import type { Engine } from "tsparticles-engine";
+import Particles from "@tsparticles/react";
+import { loadSlim } from "@tsparticles/slim";
+import type { Engine } from "@tsparticles/engine";
 
 export default function ParticleBackground() {
   const particlesInit = useCallback(async (engine: Engine) => {
-    await loadFull(engine);
+    await loadSlim(engine);
   }, []);
 
   return (
@@ -48,17 +48,17 @@ export default function ParticleBackground() {
           number: {
             density: {
               enable: true,
-              area: 800,
+              value_area: 800,
             },
-            value: 50,
+            value: 40,
           },
           opacity: {
             value: 0.5,
             random: true,
-            anim: {
+            animation: {
               enable: true,
               speed: 0.5,
-              opacity_min: 0.1,
+              min_value: 0.1,
               sync: false,
             },
           },
@@ -68,10 +68,10 @@ export default function ParticleBackground() {
           size: {
             value: { min: 1, max: 4 },
             random: true,
-            anim: {
+            animation: {
               enable: true,
               speed: 2,
-              size_min: 0.1,
+              min_value: 0.1,
               sync: false,
             },
           },
