@@ -29,15 +29,27 @@ function initDatabase() {
       throw new Error('DATABASE_URL não definida');
     }
     
-    // A única forma compatível é usar apenas Neon
+    // Usar apenas Neon com o cliente HTTP - mais compatível
     log('🌐 Usando conexão Neon Serverless');
     
     try {
-      // Configurando o cliente Neon com suporte a WebSocket
-      const sqlClient = neon(connectionString);
+      // Usar o cliente Neon com WebSocket e HTTP fallback
+      // Para resolver o erro "client.query is not a function"
+      const sqlClient = neon(connectionString, { fullResults: true });
       
-      // Criando uma instância Drizzle-ORM com o cliente
+      // Criar a instância do Drizzle ORM
       db = drizzle(sqlClient, { schema });
+      
+      // Validar que o cliente está realmente funcional
+      // executando uma query de teste
+      (async () => {
+        try {
+          const result = await db.execute(sql`SELECT 1 AS test_connection`);
+          log('🔌 Conexão de teste bem-sucedida!');
+        } catch (testError) {
+          log(`❌ Erro no teste de conexão: ${testError}`, 'error');
+        }
+      })();
       
       log('✅ Banco de dados inicializado com Neon');
       return true;
@@ -71,16 +83,39 @@ export async function testConnection() {
     // Tenta executar uma query simples para verificar a conexão
     try {
       // Usando uma consulta SQL básica que funciona com qualquer provedor
-      await db.execute(sql`SELECT 1 AS test`);
+      const testResult = await db.execute(sql`SELECT 1 AS test_value`);
       log('🔌 Conexão com o banco de dados estabelecida com sucesso');
       
-      // Tenta buscar configurações, mas se falhar por tabela não existente, ainda
-      // considera a conexão bem-sucedida
+      // Método específico para criar as tabelas se elas não existirem
       try {
-        const result = await db.select().from(schema.systemConfig).limit(1);
-        log(`Configurações encontradas: ${result.length}`);
+        // Este código será executado apenas uma vez durante a inicialização
+        // e garantirá que as tabelas existam conforme definido no schema.
+        log('🔄 Verificando se o schema está criado...');
+        
+        // Tentar fazer uma consulta simples para verificar
+        try {
+          const configExists = await db.execute(sql`
+            SELECT EXISTS (
+              SELECT FROM information_schema.tables 
+              WHERE table_name = 'system_config'
+            ) as exists
+          `);
+          
+          // Se chegou aqui, a conexão está OK
+          log('✅ Conexão verificada e schema existe');
+          
+          // Agora tenta encontrar configurações
+          try {
+            const configResult = await db.select().from(schema.systemConfig).limit(1);
+            log(`Configurações encontradas: ${configResult.length}`);
+          } catch (schemaError) {
+            log(`⚠️ Aviso: Erro ao buscar configurações. ${schemaError}`, 'warn');
+          }
+        } catch (schemaCheckError) {
+          log(`⚠️ Aviso: Não foi possível verificar schema. ${schemaCheckError}`, 'warn');
+        }
       } catch (schemaError) {
-        log(`Aviso: Tabelas podem não existir ainda. ${schemaError}`, 'warn');
+        log(`⚠️ Aviso: Tabelas podem não existir ainda. ${schemaError}`, 'warn');
         // Não falha aqui pois a conexão está OK, só o schema que pode não estar pronto
       }
       

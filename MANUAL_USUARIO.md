@@ -1,360 +1,270 @@
-# Manual de Usuário - Web AI Dashboard
+# Manual do Usuário - CarlosDev
 
-## Sumário
-- [Introdução](#introdução)
-- [Requisitos do Sistema](#requisitos-do-sistema)
-- [Instalação](#instalação)
-  - [Ambiente de Desenvolvimento Local](#ambiente-de-desenvolvimento-local)
-  - [Banco de Dados](#banco-de-dados)
-  - [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Funcionalidades](#funcionalidades)
-  - [Dashboard](#dashboard)
-  - [Chat com IA](#chat-com-ia)
-  - [Gerenciamento de Arquivos](#gerenciamento-de-arquivos)
-  - [Gerenciamento de Projetos](#gerenciamento-de-projetos)
-  - [Configurações do Sistema](#configurações-do-sistema)
-- [Configuração de Servidores](#configuração-de-servidores)
-  - [Servidor Local (Ollama/Mistral)](#servidor-local-ollamamistralllamacpp)
-  - [Servidor Oracle Cloud](#servidor-oracle-cloud)
-  - [Alternando entre Servidores](#alternando-entre-servidores)
-- [Integração com Apify](#integração-com-apify)
-- [Monitoramento e Métricas](#monitoramento-e-métricas)
-- [Solução de Problemas](#solução-de-problemas)
-- [Perguntas Frequentes](#perguntas-frequentes)
+Bem-vindo ao Sistema CarlosDev, uma plataforma moderna para gerenciamento inteligente de servidores e infraestrutura, potencializada por IA.
 
-## Introdução
+## Índice
 
-O Web AI Dashboard é uma plataforma moderna com interface futurista para gerenciamento de IA. Ele permite o acesso a modelos de linguagem (LLMs) locais ou na nuvem, gerenciamento de arquivos e projetos, integração com Oracle Cloud e uso de serviços Apify para pesquisas avançadas.
+1. [Visão Geral](#visão-geral)
+2. [Requisitos do Sistema](#requisitos-do-sistema)
+3. [Primeiros Passos](#primeiros-passos)
+4. [Painel de Controle](#painel-de-controle)
+5. [Monitoramento de Servidores](#monitoramento-de-servidores)
+6. [Configurações do Sistema](#configurações-do-sistema)
+7. [Integração com Mistral AI](#integração-com-mistral-ai)
+8. [Configuração do Cloudflare Tunnel](#configuração-do-cloudflare-tunnel)
+9. [Deployment na Oracle Cloud](#deployment-na-oracle-cloud)
+10. [Agentes de IA](#agentes-de-ia)
+11. [Solução de Problemas](#solução-de-problemas)
+12. [Suporte Técnico](#suporte-técnico)
 
-A plataforma foi projetada com uma estética sci-fi com tema escuro, efeitos de glass-morphism, animações inspiradas em IA e efeitos sonoros interativos.
+## Visão Geral
+
+O CarlosDev é uma plataforma completa de gerenciamento de servidores e infraestrutura que combina:
+
+- **Dashboard Intuitivo**: Monitoramento em tempo real de métricas de servidor
+- **Inteligência Artificial**: Integração com modelos de linguagem para automação
+- **Agentes Autônomos**: Agentes baseados em IA para tarefas específicas
+- **Deployment Flexível**: Opções para hospedagem local, na nuvem ou híbrida
+- **Segurança Avançada**: Proteção de acesso via Cloudflare Tunnel
 
 ## Requisitos do Sistema
 
-### Para uso no ambiente de desenvolvimento:
-- NodeJS 18+ (recomendado: NodeJS 20)
-- NPM 9+
-- PostgreSQL 14+ (opcional, pode usar o armazenamento em memória)
-- Git
+### Para Acesso Web
+- Navegador moderno (Chrome, Firefox, Edge, Safari)
+- Conexão estável com a internet
 
-### Para implantação no Oracle Cloud:
-- Conta Oracle Cloud (nível gratuito é suficiente para início)
-- Acesso SSH ao servidor
-- Conhecimentos básicos de Linux
+### Para Hospedagem
+- **Opção 1 - Replit**: Sem requisitos adicionais
+- **Opção 2 - Oracle Cloud**: 
+  - Instância VM.Standard.E4.Flex (4 OCPUs, 24GB RAM mínimo)
+  - 100GB de armazenamento
+- **Opção 3 - Servidor Local**:
+  - CPU: 4 núcleos
+  - RAM: 16GB
+  - Armazenamento: 50GB
+  - Sistema Operacional: Ubuntu 20.04+ ou similar
 
-## Instalação
+## Primeiros Passos
 
-### Ambiente de Desenvolvimento Local
+### Login no Sistema
 
-1. Clone o repositório:
-```bash
-git clone https://seu-repositorio/webaidashboard.git
-cd webaidashboard
-```
+1. Acesse o sistema pela URL fornecida (exemplo: https://carlosdev.app.br)
+2. Na tela de login, insira suas credenciais
+3. Para primeiro acesso, use as credenciais padrão:
+   - Usuário: `admin`
+   - Senha: `admin123`
+   - **IMPORTANTE**: Altere a senha padrão imediatamente após o primeiro login
 
-2. Instale as dependências:
-```bash
-npm install
-```
+### Navegação Básica
 
-3. Crie o arquivo de variáveis de ambiente (`.env`):
-```
-DATABASE_URL=postgres://usuario:senha@localhost:5432/webaidashboard
-PGUSER=usuario
-PGPASSWORD=senha
-PGDATABASE=webaidashboard
-PGHOST=localhost
-PGPORT=5432
-```
+Após o login, você verá o Dashboard principal com os seguintes elementos:
 
-4. Inicialize o banco de dados (opcional):
-```bash
-npm run db:push
-```
+- **Barra Lateral**: Acesso às principais funcionalidades
+- **Painel Superior**: Notificações e menu do usuário
+- **Área Central**: Visualização da página atual
+- **Rodapé**: Versão do sistema e links úteis
 
-5. Inicie a aplicação:
-```bash
-npm run dev
-```
+## Painel de Controle
 
-6. Acesse a aplicação em:
-```
-http://localhost:5000
-```
+O Dashboard principal fornece uma visão geral de todos os servidores monitorados e sistemas ativos:
 
-### Banco de Dados
+- **Métricas em Tempo Real**: CPU, memória, armazenamento e tráfego de rede
+- **Status dos Serviços**: Verde (ativo), amarelo (atenção), vermelho (crítico)
+- **Gráficos de Desempenho**: Histórico de desempenho nas últimas 24 horas
+- **Alertas Recentes**: Últimos alertas e notificações do sistema
 
-O sistema suporta três opções de armazenamento:
+### Personalizando o Dashboard
 
-1. **Armazenamento em Memória**: Usado automaticamente quando não há banco de dados configurado. Os dados são perdidos ao reiniciar a aplicação.
+1. Clique no botão "Personalizar" no canto superior direito
+2. Arraste e solte os widgets para reorganizar
+3. Use o menu de cada widget para configurar as métricas exibidas
+4. Clique em "Salvar Layout" para manter suas configurações
 
-2. **PostgreSQL Local**: Configure no arquivo `.env` com as credenciais do seu banco PostgreSQL local.
+## Monitoramento de Servidores
 
-3. **PostgreSQL Neon (Cloud)**: Use uma string de conexão do Neon (https://neon.tech) no arquivo `.env`.
+### Adicionando um Novo Servidor
 
-### Variáveis de Ambiente
+1. Navegue até "Monitoramento" > "Servidores"
+2. Clique em "Adicionar Servidor"
+3. Forneça as informações necessárias:
+   - Nome amigável
+   - Endereço IP ou hostname
+   - Credenciais de acesso (opcional)
+   - Tipo de servidor
+4. Selecione as métricas a serem monitoradas
+5. Clique em "Salvar"
 
-| Variável       | Descrição                                  | Obrigatória |
-|----------------|-------------------------------------------|------------|
-| DATABASE_URL   | String de conexão com o banco PostgreSQL   | Não        |
-| PGUSER         | Usuário do PostgreSQL                      | Não        |
-| PGPASSWORD     | Senha do PostgreSQL                        | Não        |
-| PGDATABASE     | Nome do banco de dados                     | Não        |
-| PGHOST         | Host do PostgreSQL                         | Não        |
-| PGPORT         | Porta do PostgreSQL (padrão: 5432)         | Não        |
+### Configurando Alertas
 
-## Funcionalidades
+1. Acesse o servidor desejado na lista
+2. Vá para a aba "Alertas"
+3. Clique em "Novo Alerta"
+4. Defina as condições:
+   - Métrica a ser monitorada
+   - Limite (threshold)
+   - Duração do evento
+   - Ações a serem tomadas
+5. Escolha os canais de notificação (email, SMS, webhook)
+6. Salve a configuração
 
-### Dashboard
+## Configurações do Sistema
 
-A página inicial do sistema apresenta:
+Acesse as configurações através do menu "Configurações" na barra lateral:
 
-- **Resumo de Atividades**: Visualização dos últimos acessos e ações
-- **Estatísticas de Uso**: Contadores de uso dos modelos LLM, chamadas de API e interações
-- **Projetos Recentes**: Lista dos últimos projetos acessados
-- **Status do Sistema**: Indicadores de conexão com servidores locais e na nuvem
-- **Atividade de IA**: Gráfico de uso dos recursos de IA ao longo do tempo
+### Configurações Gerais
 
-### Chat com IA
+- **Aparência**: Tema claro/escuro, densidade de informações
+- **Idioma**: Português, Inglês, Espanhol
+- **Fuso Horário**: Ajuste conforme sua localização
+- **Notificações**: Configure os canais de notificação
 
-Interface de conversação avançada com modelos de linguagem:
+### Configurações de Usuários
 
-- **Conversa com IA**: Interface de chat estilo ChatGPT
-- **Histórico de Conversas**: Armazenamento e acesso a conversas anteriores
-- **Customização de Prompts**: Possibilidade de definir o estilo e comportamento da IA
-- **Suporte a Ferramentas**: Integração com pesquisa web via Apify
-- **Compartilhamento**: Opção para exportar conversas em diversos formatos
-- **Efeitos Sonoros**: Feedback sonoro para ações (pode ser desativado nas configurações)
+- **Gerenciamento de Usuários**: Adicionar, editar, remover usuários
+- **Perfis de Acesso**: Definir permissões por grupo
+- **Autenticação**: Configurar MFA, integração com LDAP/AD
 
-### Gerenciamento de Arquivos
+### Configurações de Rede
 
-Sistema para upload e organização de arquivos:
+- **Proxy**: Configurar proxy para acesso externo
+- **Firewall**: Regras básicas de acesso
+- **API Keys**: Gerar e gerenciar chaves de API
 
-- **Upload de Arquivos**: Suporte a diversos formatos (documentos, imagens, etc.)
-- **Visualização**: Prévia integrada para arquivos comuns
-- **Organização**: Categorização e busca de arquivos
-- **Compartilhamento**: Links para compartilhamento externo (opcional)
-- **Controle de Acesso**: Definição de arquivos públicos ou privados
+## Integração com Mistral AI
 
-### Gerenciamento de Projetos
+O sistema oferece integração com o Mistral AI, um modelo de linguagem avançado que pode ser executado localmente ou na nuvem.
 
-Organização de projetos relacionados à IA:
+### Configurando o Mistral
 
-- **Criação de Projetos**: Interface para definir novos projetos
-- **Acompanhamento**: Status e progresso de cada projeto
-- **Associação de Recursos**: Vinculação de arquivos e conversas a projetos
-- **Notas e Documentação**: Editor de texto integrado para documentação
+1. Acesse "Configurações" > "Mistral AI"
+2. Escolha o modo de execução:
+   - **Local**: Para instância local (requer recursos significativos)
+   - **Cloud**: Para utilizar serviço hospedado na Oracle Cloud
+   - **Híbrido**: Combina recursos locais e na nuvem
 
-### Configurações do Sistema
+### Opções do Mistral
 
-Painel de controle para ajustes do sistema:
+- **URL do Mistral Local**: Geralmente http://localhost:8000
+- **URL do Mistral Cloud**: O endereço da sua instância Oracle Cloud ou serviço Mistral
+- **Tipo de Instância**: Local, Oracle Cloud, ou outro provedor
+- **Modelo**: Mistral-7B-Instruct-v0.2 (padrão), ou outros disponíveis
+- **Parâmetros**: Configurações avançadas como temperatura, tokens máximos, etc.
 
-- **Configurações Gerais**: Ajustes de interface e comportamento
-- **Configuração de Modelos**: Definição de URLs e parâmetros dos modelos LLM
-- **Integração Oracle Cloud**: Configuração da instância na nuvem
-- **Integração Apify**: Configuração da API do Apify para buscas na web
-- **Sons e Animações**: Controle dos efeitos visuais e sonoros
-- **Logs do Sistema**: Visualização de eventos e erros
+### Mistral Local
 
-## Configuração de Servidores
+Para configurar o Mistral localmente:
 
-### Servidor Local (Ollama/Mistral/LlamaCpp)
+1. Execute o script de instalação: `scripts/setup-local-mistral.sh`
+2. Siga as instruções na tela
+3. Configure a URL do Mistral Local como http://localhost:8000
 
-Para configurar um servidor LLM local:
+## Configuração do Cloudflare Tunnel
 
-1. **Instale o Ollama**:
-   - Windows/Mac: Baixe do site oficial [Ollama](https://ollama.ai/)
-   - Linux: Siga as instruções em [Ollama Linux](https://github.com/ollama/ollama#linux)
+O Cloudflare Tunnel permite acesso seguro ao seu sistema sem expor portas diretamente à internet.
 
-2. **Baixe um modelo**:
-   ```bash
-   ollama pull mistral
-   # ou outro modelo de sua preferência
-   ```
+### Ativando o Cloudflare Tunnel
 
-3. **Inicie o servidor**:
-   ```bash
-   ollama serve
-   ```
+1. Acesse "Configurações" > "Cloudflare Tunnel"
+2. Ative a opção "Usar Cloudflare Tunnel"
+3. Insira o ID do Túnel (obtido após a configuração no servidor)
+4. Configure o domínio base (exemplo: carlosdev.app.br)
+5. Salve as configurações
 
-4. **Configure no Web AI Dashboard**:
-   - Acesse: Configurações > Configurações Gerais
-   - Defina `Modo de Execução` como `Local`
-   - Configure `URL do LLM Local` como `http://127.0.0.1:11434`
-   - Clique em `Salvar`
+### Verificando o Status
 
-### Servidor Oracle Cloud
+- **Status do Túnel**: Exibe se o túnel está ativo ou inativo
+- **Estatísticas**: Mostra o tráfego e conexões ativas
+- **Logs**: Registro de eventos do túnel
 
-Para configurar um servidor na Oracle Cloud:
+Para instruções detalhadas sobre a configuração do servidor Cloudflare Tunnel, consulte o arquivo [CLOUDFLARE_TUNNEL.md](CLOUDFLARE_TUNNEL.md).
 
-1. **Crie uma instância na Oracle Cloud**:
-   - Acesse o [Console Oracle Cloud](https://cloud.oracle.com/)
-   - Vá para Computação > Instâncias > Criar Instância
-   - Selecione Oracle Linux 8+
-   - Configure com pelo menos 4 OCPUs e 24GB RAM (recomendado)
-   - Configure portas: 22 (SSH), 80 (HTTP), 443 (HTTPS) e 11434 (LLM API)
-   - Crie e baixe a chave SSH
+## Deployment na Oracle Cloud
 
-2. **Configuração da instância**:
-   ```bash
-   # Acesse via SSH
-   ssh -i sua_chave.pem opc@IP_DA_INSTANCIA
-   
-   # Atualize o sistema
-   sudo yum update -y
-   
-   # Instale Docker
-   sudo yum install -y docker-ce docker-ce-cli
-   sudo systemctl start docker
-   sudo systemctl enable docker
-   sudo usermod -aG docker opc
-   
-   # Instale Ollama via Docker
-   docker run -d --name ollama -p 11434:11434 ollama/ollama
-   
-   # Baixe o modelo desejado
-   docker exec -it ollama ollama pull mistral
-   ```
+O sistema pode ser hospedado na Oracle Cloud para maior desempenho e disponibilidade.
 
-3. **Configure no Web AI Dashboard**:
-   - Acesse: Configurações > Configurações Gerais
-   - Configure `URL do LLM na Nuvem` como `http://IP_DA_INSTANCIA:11434`
-   - Acesse: Configurações > Oracle Cloud
-   - Configure `IP da Instância Oracle` com o IP da sua instância
-   - Clique em `Salvar`
+### Configurando a VM Oracle Cloud
 
-### Alternando entre Servidores
+1. Acesse "Configurações" > "Deployment"
+2. Na seção "Oracle Cloud", clique em "Configurar"
+3. Insira os detalhes da instância:
+   - IP da instância
+   - Usuário SSH
+   - Caminho da chave SSH (ou senha)
+4. Teste a conexão
+5. Salve as configurações
 
-Para alternar entre os modos de execução:
+### Opções de Deployment
 
-1. Acesse: Configurações > Configurações Gerais
-2. Em `Modo de Execução`, escolha:
-   - `Local`: Para usar o servidor em seu computador local
-   - `Cloud`: Para usar o servidor na Oracle Cloud
-3. Clique em `Salvar`
+- **Deploy Automatizado**: O sistema pode ser implantado automaticamente
+- **Implantação do Mistral**: Opção para implantar o modelo Mistral na VM
+- **Sincronização**: Manter os sistemas sincronizados
 
-O sistema automaticamente atualizará o `URL Ativo do LLM` com base na sua escolha.
+Para instruções detalhadas sobre a configuração da VM Oracle Cloud, consulte o arquivo [INSTALACAO_ORACLE_CLOUD.md](INSTALACAO_ORACLE_CLOUD.md).
 
-## Integração com Apify
+## Agentes de IA
 
-O sistema pode enriquecer as respostas da IA com informações da web usando o Apify:
+O sistema possui agentes de IA que podem realizar tarefas automatizadas.
 
-1. **Crie uma conta no Apify**:
-   - Acesse [Apify](https://apify.com/) e crie uma conta
-   - Obtenha sua API Key no painel de controle
+### Tipos de Agentes
 
-2. **Configure no Web AI Dashboard**:
-   - Acesse: Configurações > Configurações Gerais
-   - Defina `URL do Actor Apify` como `https://api.apify.com/v2/acts/apify~google-search-scraper/runs`
-   - Adicione sua `Chave API do Apify`
-   - Clique em `Salvar`
+- **Monitor**: Monitoramento automatizado com detecção de anomalias
+- **Assistente**: Respostas a perguntas sobre servidores e status
+- **Automação**: Execução de tarefas programadas ou por condição
+- **Diagnóstico**: Análise de problemas e sugestão de soluções
 
-3. **Usando o Apify no Chat**:
-   - Durante uma conversa com a IA, ela automaticamente usará o Apify para enriquecer respostas quando necessário
-   - Perguntas sobre eventos recentes, notícias ou informações atuais se beneficiarão da integração
+### Gerenciando Agentes
 
-## Monitoramento e Métricas
+1. Acesse "Agentes" no menu lateral
+2. Veja a lista de agentes disponíveis
+3. Para criar um novo agente:
+   - Clique em "Novo Agente"
+   - Selecione o tipo
+   - Configure o nome e descrição
+   - Selecione o modelo (OpenAI ou Mistral)
+   - Configure as ferramentas disponíveis
+   - Defina o prompt do sistema
+   - Ative memória persistente se necessário
+   - Insira a chave de API (se usando OpenAI)
+   - Salve o agente
 
-O sistema coleta automaticamente métricas sobre o uso:
+### Interagindo com Agentes
 
-- **Estatísticas Diárias**: Contagem de requisições, tokens, tempos de resposta
-- **Métricas por Tipo**: Divisão entre requisições locais e na nuvem
-- **Logs Detalhados**: Histórico de chamadas com tempos e status
-- **Visualização de Tendências**: Gráficos de uso ao longo do tempo
-
-As métricas são acessíveis através do Dashboard principal.
+1. Clique no agente desejado na lista
+2. Use a janela de chat para interação direta
+3. Veja o histórico de interações
+4. Para execuções automáticas, configure gatilhos:
+   - Por tempo (cron)
+   - Por evento
+   - Por condição de alerta
 
 ## Solução de Problemas
 
-### Problemas de Conexão com o Banco de Dados
+### Problemas de Conexão
 
-**Sintoma**: Erro "Falha ao conectar com o banco de dados, usando armazenamento em memória"
+- **Erro "Não foi possível conectar ao servidor"**: Verifique se o servidor está online e acessível na rede
+- **Erro de autenticação**: Confirme suas credenciais e verifique se sua conta não está bloqueada
+- **Timeout de conexão**: Verifique sua conexão com a internet ou a rede local
 
-**Soluções**:
-1. Verifique se o PostgreSQL está em execução:
-   ```bash
-   sudo systemctl status postgresql
-   ```
+### Problemas com o Mistral
 
-2. Verifique as credenciais no arquivo `.env`
+- **Erro "Modelo não disponível"**: Verifique se o serviço Mistral está rodando
+- **Lentidão nas respostas**: O modelo pode estar em execução com recursos limitados
+- **Erro de conexão**: Verifique as configurações de URL e conectividade
 
-3. Teste a conexão manualmente:
-   ```bash
-   psql -U seu_usuario -d seu_banco -h localhost
-   ```
+### Problemas com Cloudflare Tunnel
 
-4. Verifique o arquivo `pg_hba.conf` para autenticação:
-   ```bash
-   sudo nano /var/lib/pgsql/data/pg_hba.conf
-   ```
-   Certifique-se de que o método de autenticação é `md5` ou `password`
+- **Túnel inativo**: Verifique se o serviço cloudflared está rodando
+- **Erro de DNS**: Confirme as configurações de DNS no Cloudflare
+- **Erro de conexão**: Veja os logs do cloudflared para mais detalhes
 
-### Problemas com Servidor Local LLM
+## Suporte Técnico
 
-**Sintoma**: Erro "Falha ao conectar ao servidor LLM"
+Em caso de problemas ou dúvidas, entre em contato com o suporte:
 
-**Soluções**:
-1. Verifique se o Ollama está em execução:
-   ```bash
-   # Se instalado localmente
-   ps aux | grep ollama
-   
-   # Se usando Docker
-   docker ps | grep ollama
-   ```
+- **Email**: suporte@carlosdev.app.br
+- **Chat**: Disponível em horário comercial através do sistema
+- **Documentação**: Acesse a documentação completa em docs.carlosdev.app.br
 
-2. Verifique se a URL está correta nas configurações (geralmente `http://127.0.0.1:11434`)
+---
 
-3. Teste a API diretamente:
-   ```bash
-   curl http://127.0.0.1:11434/api/generate -d '{
-     "model": "mistral",
-     "prompt": "Hello"
-   }'
-   ```
-
-### Problemas com Servidor Oracle Cloud
-
-**Sintoma**: Não consegue conectar à instância Oracle Cloud
-
-**Soluções**:
-1. Verifique o status da instância no Console Oracle Cloud
-
-2. Confirme se as regras de firewall permitem conexões:
-   - Porta 11434 para a API LLM
-   - Porta 22 para SSH
-
-3. Teste a conectividade SSH:
-   ```bash
-   ssh -i sua_chave.pem opc@IP_DA_INSTANCIA
-   ```
-
-4. Verifique os logs do Docker na instância:
-   ```bash
-   docker logs ollama
-   ```
-
-## Perguntas Frequentes
-
-**P: Posso usar o sistema sem banco de dados?**  
-R: Sim, o sistema automaticamente usa armazenamento em memória quando não consegue conectar a um banco de dados. No entanto, os dados serão perdidos ao reiniciar a aplicação.
-
-**P: Quais modelos de IA são compatíveis?**  
-R: O sistema é compatível com qualquer modelo disponível via API Ollama (Mistral, Llama, etc.) ou serviços compatíveis com a mesma interface.
-
-**P: Posso usar o sistema com vários usuários simultaneamente?**  
-R: Sim, o sistema suporta múltiplos usuários com controle de acesso.
-
-**P: É possível desativar os efeitos sonoros?**  
-R: Sim, acesse Configurações > Configurações Gerais > Sons e Animações para desativar.
-
-**P: Quais são os requisitos mínimos para a instância Oracle Cloud?**  
-R: Recomendamos pelo menos 4 OCPUs e 24GB de RAM para uma experiência fluida, especialmente ao usar modelos maiores.
-
-**P: Como faço backup dos meus dados?**  
-R: Se estiver usando PostgreSQL, você pode usar as ferramentas padrão como `pg_dump`:
-```bash
-pg_dump -U seu_usuario webaidashboard > backup.sql
-```
-
-**P: O sistema é compatível com modelos comerciais como GPT-4?**  
-R: Não diretamente. O sistema foi projetado para modelos de execução local ou em sua própria infraestrutura. Integrações com APIs comerciais podem ser desenvolvidas como extensões.
+© 2025 CarlosDev. Todos os direitos reservados.
