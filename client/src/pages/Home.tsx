@@ -3,6 +3,8 @@ import { Link } from "wouter";
 import Logo from "@/components/Logo";
 import AnimatedContent from "@/components/AnimatedContent";
 import { useSoundEffect } from "@/hooks/use-sound-effect";
+import GlassMorphism from "@/components/GlassMorphism";
+import ParticleBackground from "@/components/ParticleBackground";
 
 export default function Home() {
   const [typedText, setTypedText] = useState("");
@@ -76,11 +78,14 @@ export default function Home() {
   const { playHover, playClick } = useSoundEffect();
 
   return (
-    <section className="min-h-screen pt-20 flex flex-col items-center justify-center text-center px-4">
-      <AnimatedContent 
-        animation="scale" 
-        duration={0.8} 
-        className="glass-panel p-8 md:p-12 max-w-3xl mx-auto"
+    <section className="min-h-screen pt-20 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
+      <ParticleBackground />
+      <GlassMorphism 
+        className="p-8 md:p-12 max-w-3xl mx-auto relative z-10"
+        glowAccent={true}
+        borderGradient={true}
+        neonEffect={true}
+        elevation="floating"
       >
         <Logo size="medium" animate={true} className="mx-auto mb-6" />
         
@@ -135,7 +140,7 @@ export default function Home() {
             </Link>
           </div>
         </AnimatedContent>
-      </AnimatedContent>
+      </GlassMorphism>
     </section>
   );
 }

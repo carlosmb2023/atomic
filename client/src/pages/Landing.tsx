@@ -2,6 +2,10 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "wouter";
 import Logo from "@/components/Logo";
 import { Terminal, FileText, Upload, BarChart } from "lucide-react";
+import GlassMorphism from "@/components/GlassMorphism";
+import AnimatedContent from "@/components/AnimatedContent";
+import ParticleBackground from "@/components/ParticleBackground";
+import { useSoundEffect } from "@/hooks/use-sound-effect";
 
 export default function Landing() {
   const [filesList, setFilesList] = useState<string[]>([]);
@@ -10,6 +14,7 @@ export default function Landing() {
   const [uploadStatus, setUploadStatus] = useState('');
   const featuresRef = useRef<HTMLElement>(null);
   const aboutRef = useRef<HTMLElement>(null);
+  const { playHover, playClick, playSuccess, playError } = useSoundEffect();
   
   // Check for hash in URL to scroll to section
   useEffect(() => {
@@ -40,6 +45,7 @@ export default function Landing() {
   // Handle landing page upload
   const handleLandingUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    playClick();
     const form = e.currentTarget;
     const formData = new FormData(form);
     setIsUploading(true);
@@ -59,6 +65,7 @@ export default function Landing() {
       
       xhr.onload = () => {
         if (xhr.status === 200) {
+          playSuccess();
           setUploadStatus('Upload complete!');
           form.reset();
           // Refresh file list
@@ -67,12 +74,14 @@ export default function Landing() {
             .then(files => setFilesList(files.slice(-5).reverse()))
             .catch(err => console.error('Error fetching updated files:', err));
         } else {
+          playError();
           setUploadStatus('Upload failed: ' + xhr.statusText);
         }
         setIsUploading(false);
       };
       
       xhr.onerror = () => {
+        playError();
         setUploadStatus('Upload failed: Network error');
         setIsUploading(false);
       };
