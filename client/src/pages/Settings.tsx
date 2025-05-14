@@ -558,6 +558,116 @@ export default function Settings() {
               </AnimatedContent>
             </TabsContent>
             
+            <TabsContent value="mistral" className="space-y-6">
+              <AnimatedContent animation="fadeIn" duration={800}>
+                <h2 className="text-2xl font-semibold mb-4">Mistral AI Configuration</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-medium mb-2 flex items-center">
+                      <Server className="mr-2 h-5 w-5" />
+                      Local Mistral Setup
+                    </h3>
+                    
+                    <div className="flex flex-col space-y-2">
+                      <Label htmlFor="mistral_local_url">Local Mistral URL</Label>
+                      <Input
+                        id="mistral_local_url"
+                        name="mistral_local_url"
+                        value={config.mistral_local_url}
+                        onChange={handleInputChange}
+                        placeholder="http://localhost:8000"
+                      />
+                      <p className="text-xs text-gray-400">Example: http://localhost:8000 for local Mistral server</p>
+                    </div>
+                    
+                    <div className="bg-black/20 p-3 rounded-md mt-2">
+                      <p className="text-sm">
+                        Para configurar o Mistral localmente, instale o aplicativo oficial da Mistral
+                        ou execute seu próprio servidor local com o modelo baixado.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-medium mb-2 flex items-center">
+                      <CloudCog className="mr-2 h-5 w-5" />
+                      Cloud Mistral Configuration
+                    </h3>
+                    
+                    <div className="flex flex-col space-y-2">
+                      <Label htmlFor="mistral_cloud_url">Mistral Cloud URL</Label>
+                      <Input
+                        id="mistral_cloud_url"
+                        name="mistral_cloud_url"
+                        value={config.mistral_cloud_url}
+                        onChange={handleInputChange}
+                        placeholder="https://api.mistral.ai/v1"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col space-y-2 mt-2">
+                      <Label htmlFor="mistral_instance_type">Mistral Instance Type</Label>
+                      <select
+                        id="mistral_instance_type"
+                        name="mistral_instance_type"
+                        value={config.mistral_instance_type}
+                        onChange={handleInputChange}
+                        className="bg-background rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                      >
+                        <option value="oracle_arm">Oracle ARM (Melhor custo-benefício)</option>
+                        <option value="oracle_x86">Oracle x86 (Mais poderoso)</option>
+                        <option value="custom">Customizado</option>
+                      </select>
+                    </div>
+                    
+                    <div className="bg-black/20 p-3 rounded-md mt-2">
+                      <p className="text-sm">
+                        O modelo Mistral na Oracle Cloud será configurado de acordo com o tipo de instância 
+                        selecionado. Certifique-se de ter implementado um servidor Oracle com capacidade suficiente.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6 pt-4 border-t border-gray-700">
+                  <h3 className="text-xl font-medium mb-4">Configuração do Oracle Cloud para Mistral</h3>
+                  
+                  <div className="bg-black/20 p-4 rounded-md mb-4">
+                    <p className="text-sm">
+                      Para hospedar o modelo Mistral na Oracle Cloud, sua instância Oracle precisa estar 
+                      configurada e em execução. Você pode gerenciar a instância Oracle na guia Oracle Cloud.
+                    </p>
+                    <p className="text-sm mt-2">
+                      Status da instância Oracle: {deployStatus?.instanceIp ? 
+                        <span className="text-green-400">Ativa em {deployStatus.instanceIp}</span> : 
+                        <span className="text-yellow-400">Desativada</span>}
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-4 mt-4">
+                    <Button 
+                      onClick={saveConfig} 
+                      disabled={updateConfigMutation.isPending}
+                      className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                    >
+                      {updateConfigMutation.isPending ? (
+                        <>
+                          <Loader className="mr-2 h-4 w-4 animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="mr-2 h-4 w-4" />
+                          <span>Save Mistral Configuration</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </AnimatedContent>
+            </TabsContent>
+            
             <TabsContent value="oracle" className="space-y-6">
               <AnimatedContent animation="fadeIn" duration={800}>
                 <h2 className="text-2xl font-semibold mb-4">Oracle Cloud Integration</h2>
