@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import GlassMorphism from "@/components/GlassMorphism";
 import AnimatedContent from "@/components/AnimatedContent";
 import { useSoundEffect } from "@/hooks/use-sound-effect";
+import ParticleBackground from "@/components/ParticleBackground";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -40,6 +41,7 @@ export default function Login() {
       });
 
       if (res.redirected) {
+        playSuccess();
         setLoginStatus("Login realizado! Redirecionando...");
         toast({
           title: "Login bem-sucedido",
@@ -50,6 +52,7 @@ export default function Login() {
           navigate("/dashboard");
         }, 800);
       } else if (res.status === 200) {
+        playSuccess();
         setLoginStatus("Login realizado!");
         toast({
           title: "Login bem-sucedido",
@@ -60,6 +63,7 @@ export default function Login() {
           navigate("/dashboard");
         }, 800);
       } else {
+        playError();
         const txt = await res.text();
         setLoginStatus(txt || "Usuário ou senha inválidos.");
         toast({
@@ -69,6 +73,7 @@ export default function Login() {
         });
       }
     } catch (err) {
+      playError();
       setLoginStatus("Falha de conexão.");
       toast({
         title: "Erro de conexão",
@@ -81,79 +86,120 @@ export default function Login() {
   };
 
   return (
-    <main className="flex items-center justify-center min-h-screen px-4 pt-16 pb-10">
-      <div className="glass-panel p-8 max-w-md w-full animate-slide-up">
-        <Logo size="medium" className="mx-auto mb-6" />
-        <h2 className="text-xl font-orbitron mb-8 text-center text-primary">Bem-vindo ao Atomic AI</h2>
+    <main className="flex items-center justify-center min-h-screen px-4 pt-16 pb-10 relative overflow-hidden">
+      <ParticleBackground />
+      <GlassMorphism 
+        className="p-8 max-w-md w-full" 
+        glowAccent={true}
+        borderGradient={true}
+        neonEffect={true}
+        elevation="floating"
+      >
+        <AnimatedContent animation="slideUp" duration={0.7}>
+          <Logo size="medium" animate={true} className="mx-auto mb-6" />
+        </AnimatedContent>
+        
+        <AnimatedContent animation="fadeIn" delay={0.3} duration={0.6}>
+          <h2 className="text-xl font-orbitron mb-8 text-center cyber-text">Bem-vindo ao Atomic AI</h2>
+        </AnimatedContent>
         
         {loginStatus && (
-          <div className={`text-center mb-4 font-jetbrains text-sm`} style={{ 
-              color: loginStatus.includes('Redirecionando') || loginStatus.includes('realizado') 
-                ? 'var(--cyber-green)' 
-                : 'hsl(var(--destructive))'
-            }}>
-            {loginStatus}
-          </div>
+          <AnimatedContent animation="fadeIn" duration={0.5}>
+            <div className={`text-center mb-4 font-jetbrains text-sm`} style={{ 
+                color: loginStatus.includes('Redirecionando') || loginStatus.includes('realizado') 
+                  ? 'var(--cyber-green)' 
+                  : 'hsl(var(--destructive))'
+              }}>
+              {loginStatus}
+            </div>
+          </AnimatedContent>
         )}
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary opacity-70">
-                📧
+        <AnimatedContent animation="fadeIn" delay={0.5} duration={0.7}>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary opacity-70 group-hover:animate-pulse">
+                  📧
+                </div>
+                <Input
+                  type="email"
+                  placeholder="Seu e‑mail"
+                  required
+                  className="form-input pl-10 font-jetbrains bg-black/30 border-white/20 focus:border-primary/50 focus:ring-primary/30 transition-all duration-300"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onFocus={playHover}
+                />
               </div>
-              <Input
-                type="email"
-                placeholder="Seu e‑mail"
-                required
-                className="form-input pl-10 font-jetbrains"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
             </div>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary opacity-70">
-                🔒
+            
+            <div className="space-y-2">
+              <div className="relative group">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary opacity-70 group-hover:animate-pulse">
+                  🔒
+                </div>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Senha"
+                  required
+                  className="form-input pl-10 font-jetbrains bg-black/30 border-white/20 focus:border-primary/50 focus:ring-primary/30 transition-all duration-300"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={playHover}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                  onClick={togglePassword}
+                  onMouseEnter={playHover}
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </button>
               </div>
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Senha"
-                required
-                className="form-input pl-10 font-jetbrains"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-                onClick={togglePassword}
+            </div>
+            
+            <div className="flex justify-between text-sm">
+              <a 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  playClick();
+                  toast({ title: "Em breve", description: "Recuperação de senha em desenvolvimento." });
+                }} 
+                className="text-secondary hover:text-primary transition-colors"
+                onMouseEnter={playHover}
               >
-                {showPassword ? "🙈" : "👁️"}
-              </button>
+                Esqueceu a senha?
+              </a>
+              <a 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  playClick();
+                  toast({ title: "Em breve", description: "Criação de conta em desenvolvimento." });
+                }} 
+                className="text-secondary hover:text-primary transition-colors"
+                onMouseEnter={playHover}
+              >
+                Criar conta
+              </a>
             </div>
-          </div>
-          
-          <div className="flex justify-between text-sm">
-            <a href="#" onClick={() => toast({ title: "Em breve", description: "Recuperação de senha em desenvolvimento." })} className="text-secondary hover:text-primary transition-colors">
-              Esqueceu a senha?
-            </a>
-            <a href="#" onClick={() => toast({ title: "Em breve", description: "Criação de conta em desenvolvimento." })} className="text-secondary hover:text-primary transition-colors">
-              Criar conta
-            </a>
-          </div>
-          
-          <Button 
-            type="submit" 
-            disabled={isSubmitting} 
-            className="w-full py-6 btn-primary"
-          >
-            {isSubmitting ? "Entrando..." : "Entrar"}
-          </Button>
-        </form>
-      </div>
+            
+            <Button 
+              type="submit" 
+              disabled={isSubmitting} 
+              className="w-full py-6 bg-gradient-to-r from-primary to-secondary text-white font-medium hover:shadow-lg hover:shadow-primary/30 transition-all transform hover:-translate-y-1"
+              onMouseEnter={playHover}
+            >
+              <span className="relative z-10 flex items-center justify-center">
+                {isSubmitting ? "Entrando..." : "Entrar"}
+                {!isSubmitting && <span className="ml-2">→</span>}
+              </span>
+            </Button>
+          </form>
+        </AnimatedContent>
+      </GlassMorphism>
     </main>
   );
 }
