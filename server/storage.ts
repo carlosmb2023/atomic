@@ -67,6 +67,38 @@ export interface IStorage {
   // Deploy Logs
   createDeployLog(log: InsertDeployLog): Promise<DeployLog>;
   getRecentDeployLogs(limit?: number): Promise<DeployLog[]>;
+  
+  // Agentes
+  getAgent(id: number): Promise<Agent | undefined>;
+  getAgentByName(name: string): Promise<Agent | undefined>;
+  getAgentsByType(type: string): Promise<Agent[]>;
+  getAllAgents(): Promise<Agent[]>;
+  createAgent(agent: InsertAgent): Promise<Agent>;
+  updateAgent(id: number, agentData: Partial<Agent>): Promise<Agent | undefined>;
+  deleteAgent(id: number): Promise<boolean>;
+  
+  // Execuções de Agentes
+  getAgentExecution(id: number): Promise<AgentExecution | undefined>;
+  getAgentExecutionsByAgent(agentId: number, limit?: number): Promise<AgentExecution[]>;
+  getAgentExecutionsByUser(userId: number, limit?: number): Promise<AgentExecution[]>;
+  createAgentExecution(execution: InsertAgentExecution): Promise<AgentExecution>;
+  updateAgentExecution(id: number, executionData: Partial<AgentExecution>): Promise<AgentExecution | undefined>;
+  
+  // Passos de Execução de Agentes
+  getAgentStepsByExecution(executionId: number): Promise<AgentStep[]>;
+  createAgentStep(step: InsertAgentStep): Promise<AgentStep>;
+  
+  // Ferramentas de Agentes
+  getAgentTool(id: number): Promise<AgentTool | undefined>;
+  getAllAgentTools(): Promise<AgentTool[]>;
+  getActiveAgentTools(): Promise<AgentTool[]>;
+  createAgentTool(tool: InsertAgentTool): Promise<AgentTool>;
+  updateAgentTool(id: number, toolData: Partial<AgentTool>): Promise<AgentTool | undefined>;
+  
+  // Mapeamento de Ferramentas de Agentes
+  getAgentToolsByAgent(agentId: number): Promise<AgentTool[]>;
+  createAgentToolMapping(mapping: InsertAgentToolMapping): Promise<AgentToolMapping>;
+  updateAgentToolMapping(agentId: number, toolId: number, isActive: boolean): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -317,6 +349,13 @@ export class MemStorage implements IStorage {
   private chatHistoryMap: Map<string, ChatHistory>;
   private dailyMetricsMap: Map<string, DailyMetrics>;
   private deployLogMap: Map<number, DeployLog>;
+  
+  // Novos mapas para agentes
+  private agentMap: Map<number, Agent>;
+  private agentExecutionMap: Map<number, AgentExecution>;
+  private agentStepMap: Map<number, AgentStep[]>;
+  private agentToolMap: Map<number, AgentTool>;
+  private agentToolMappingMap: Map<string, AgentToolMapping>;
   
   private currentIds = {
     users: 1,

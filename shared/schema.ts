@@ -235,3 +235,119 @@ export type DailyMetrics = typeof dailyMetrics.$inferSelect;
 
 export type InsertDeployLog = z.infer<typeof insertDeployLogSchema>;
 export type DeployLog = typeof deployLogs.$inferSelect;
+
+// Agentes
+export const agents = pgTable("agents", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'openai' ou 'mistral'
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+  last_execution: timestamp("last_execution"),
+  status: text("status").default("inactive"), // 'active', 'inactive', 'error'
+  description: text("description"),
+  configuration: json("configuration"), // Configurações específicas do agente
+});
+
+// Execuções dos agentes
+export const agentExecutions = pgTable("agent_executions", {
+  id: serial("id").primaryKey(),
+  agent_id: integer("agent_id").references(() => agents.id),
+  user_id: integer("user_id").references(() => users.id),
+  created_at: timestamp("created_at").defaultNow(),
+  objective: text("objective").notNull(),
+  status: text("status").notNull(), // 'running', 'completed', 'failed'
+  started_at: timestamp("started_at").notNull(),
+  completed_at: timestamp("completed_at"),
+  summary: text("summary"),
+  error_message: text("error_message"),
+});
+
+// Passos de execução dos agentes
+export const agentSteps = pgTable("agent_steps", {
+  id: serial("id").primaryKey(),
+  execution_id: integer("execution_id").references(() => agentExecutions.id),
+  created_at: timestamp("created_at").defaultNow(),
+  step_type: text("step_type").notNull(), // 'thought', 'action', 'observation', 'conclusion'
+  content: text("content").notNull(),
+  order: integer("order").notNull(),
+  tool_used: text("tool_used"),
+  metadata: json("metadata"),
+});
+
+// Ferramentas dos agentes
+export const agentTools = pgTable("agent_tools", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+  type: text("type").notNull(), // 'api', 'function', 'script', etc.
+  configuration: json("configuration"), // Configuração da ferramenta
+  is_active: boolean("is_active").default(true),
+});
+
+// Relação entre agentes e ferramentas
+export const agentToolMappings = pgTable("agent_tool_mappings", {
+  id: serial("id").primaryKey(),
+  agent_id: integer("agent_id").references(() => agents.id),
+  tool_id: integer("tool_id").references(() => agentTools.id),
+  created_at: timestamp("created_at").defaultNow(),
+  is_active: boolean("is_active").default(true),
+});
+
+// Schemas de inserção
+export const insertAgentSchema = createInsertSchema(agents).pick({
+  name: true,
+  type: true,
+  description: true,
+  configuration: true,
+  status: true
+});
+
+export const insertAgentExecutionSchema = createInsertSchema(agentExecutions).pick({
+  agent_id: true,
+  user_id: true,
+  objective: true,
+  status: true,
+  started_at: true,
+  completed_at: true,
+  summary: true,
+  error_message: true
+});
+
+export const insertAgentStepSchema = createInsertSchema(agentSteps).pick({
+  execution_id: true,
+  step_type: true,
+  content: true,
+  order: true,
+  tool_used: true,
+  metadata: true
+});
+
+export const insertAgentToolSchema = createInsertSchema(agentTools).omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+});
+
+export const insertAgentToolMappingSchema = createInsertSchema(agentToolMappings).omit({
+  id: true,
+  created_at: true
+});
+
+// Tipos
+export type InsertAgent = z.infer<typeof insertAgentSchema>;
+export type Agent = typeof agents.$inferSelect;
+
+export type InsertAgentExecution = z.infer<typeof insertAgentExecutionSchema>;
+export type AgentExecution = typeof agentExecutions.$inferSelect;
+
+export type InsertAgentStep = z.infer<typeof insertAgentStepSchema>;
+export type AgentStep = typeof agentSteps.$inferSelect;
+
+export type InsertAgentTool = z.infer<typeof insertAgentToolSchema>;
+export type AgentTool = typeof agentTools.$inferSelect;
+
+export type InsertAgentToolMapping = z.infer<typeof insertAgentToolMappingSchema>;
+export type AgentToolMapping = typeof agentToolMappings.$inferSelect;

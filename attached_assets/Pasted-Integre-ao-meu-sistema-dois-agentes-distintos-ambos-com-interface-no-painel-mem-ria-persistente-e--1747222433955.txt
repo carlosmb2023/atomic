@@ -1,0 +1,46 @@
+Integre ao meu sistema dois agentes distintos, ambos com interface no painel, memória persistente e controle total via frontend. Mantenha a estética futurista já implementada (tema escuro, glassmorfismo, animações) e conecte tudo ao backend atual (Express.js + PostgreSQL).
+
+### 1. AGENTE SDK OFICIAL OPENAI
+- Clone e integre o repositório: https://github.com/openai/openai-agents-python.git
+- Implemente botão "Ativar Agente OpenAI" no painel de admin
+- Campo para definir o objetivo do agente
+- Execução contínua com base no objetivo fornecido
+- Interface de exibição com:
+  - 🧠 Pensamento
+  - 🛠️ Ação
+  - 📄 Observação
+  - ✅ Conclusão
+- Armazenar histórico das execuções e objetivos no banco PostgreSQL
+- Rodar com a API OpenAI oficial (`gpt-4o` ou `gpt-3.5`, configurável via painel)
+- Tornar plugável (adicionar mais ferramentas depois)
+
+### 2. AGENTE MISTRAL LOCAL (via Ollama)
+- Criar módulo separado com botão "Ativar Agente Mistral"
+- Executa com modelo local via Ollama (`http://localhost:11434/api/generate`)
+- Deve simular o comportamento do agente SDK (pensar > agir > observar)
+- Também pode usar ferramentas definidas (como scraping, PDF, comandos)
+- Memória persistente salva no PostgreSQL
+- Fallback automático: se o Ollama local estiver offline, usar o servidor na Oracle Cloud
+- Permitir definir objetivo e contexto inicial no painel
+
+### 3. INTERFACE DE CONTROLE UNIFICADA
+- Painel "Agentes Autônomos" com:
+  - Seletor: `Agente OpenAI` | `Agente Mistral`
+  - Campo de objetivo
+  - Botão Executar
+  - Log visual em tempo real das ações e respostas
+  - Histórico de execuções por agente
+
+### 4. CONFIGURAÇÃO E CONECTORES
+- Permitir editar no painel as seguintes variáveis:
+  - API Key OpenAI
+  - URL do modelo Oll
+- URL do modelo Ollama (local e nuvem)
+- URL do servidor Oracle Cloud (para fallback)
+- Prompt base dos agentes
+- Contexto inicial customizado
+- Chave do Apify (para ferramentas de scraping)
+- Ativação/desativação de logs detalhados
+- Ativação de ferramentas customizadas por agente (via toggle)
+
+Essas configurações devem ser salvas no banco PostgreSQL e editáveis via painel visual, com validação de campos e botão de teste de conectividade (ping API).
