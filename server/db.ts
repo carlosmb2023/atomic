@@ -1,10 +1,14 @@
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { neon } from '@neondatabase/serverless';
+import { neon, neonConfig } from '@neondatabase/serverless';
 import * as schema from '../shared/schema';
 
+// Permitir self-signed em ambiente de desenvolvimento
+neonConfig.fetchConnectionCache = true;
+
 // Configuração da conexão ao banco de dados
-const sql = neon(process.env.DATABASE_URL!);
-export const db = drizzle(sql, { schema });
+const connectionString = process.env.DATABASE_URL!;
+const sql = neon(connectionString);
+export const db = drizzle(sql);
 
 // Função para testar a conexão com o banco de dados
 export async function testConnection() {
