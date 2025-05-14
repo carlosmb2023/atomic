@@ -13,6 +13,7 @@ import { LlmService } from "./services/llm.service";
 import { ConfigService } from "./services/config.service";
 import { OracleService, DeployStatus } from "./services/oracle.service";
 import { ApifyService } from "./services/apify.service";
+import { MonitorService } from "./services/monitor.service";
 import { v4 as uuidv4 } from "uuid";
 
 // Set up multer for file uploads
@@ -396,6 +397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const configService = ConfigService.getInstance();
   const oracleService = OracleService.getInstance();
   const apifyService = ApifyService.getInstance();
+  const monitorService = MonitorService.getInstance();
   
   // Rota para enviar mensagem ao LLM diretamente
   app.post("/api/llm/prompt", async (req, res) => {
