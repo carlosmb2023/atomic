@@ -2,14 +2,18 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "next-themes";
 import Logo from "./Logo";
+import SoundToggle from "./SoundToggle";
+import { useSoundEffect } from "@/hooks/use-sound-effect";
 
 export default function Header() {
   const [location] = useLocation();
   const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { playHover, playClick } = useSoundEffect();
   
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
+    playClick();
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
   };
@@ -26,30 +30,49 @@ export default function Header() {
         
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/">
-            <div className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
               Home
             </div>
           </Link>
           <Link href="/dashboard">
-            <div className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/dashboard' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/dashboard' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
               Dashboard
             </div>
           </Link>
           <Link href="/landing#features">
-            <div className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#features') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#features') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
               Features
             </div>
           </Link>
           <Link href="/landing#about">
-            <div className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#about') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#about') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
               About
             </div>
           </Link>
         </nav>
         
         <div className="flex items-center gap-4">
+          <SoundToggle className="mr-1" />
+          
           <button 
             onClick={toggleTheme}
+            onMouseEnter={playHover}
             className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
             aria-label="Toggle dark/light theme"
           >
@@ -57,14 +80,22 @@ export default function Header() {
           </button>
           
           <Link href="/login">
-            <div className="hidden md:block px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-md font-medium hover:shadow-lg hover:shadow-primary/30 transition-all transform hover:-translate-y-1 cursor-pointer">
+            <div 
+              className="hidden md:block px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-md font-medium hover:shadow-lg hover:shadow-primary/30 transition-all transform hover:-translate-y-1 cursor-pointer"
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
               Login
             </div>
           </Link>
           
           <button 
             className="block md:hidden text-white"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={() => {
+              playClick();
+              setMobileMenuOpen(!mobileMenuOpen);
+            }}
+            onMouseEnter={playHover}
           >
             ☰
           </button>
@@ -77,19 +108,39 @@ export default function Header() {
           <div className="container mx-auto px-4 py-3">
             <nav className="flex flex-col gap-4">
               <Link href="/">
-                <div className="font-jetbrains py-2 border-b border-white/10 cursor-pointer">Home</div>
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >Home</div>
               </Link>
               <Link href="/dashboard">
-                <div className="font-jetbrains py-2 border-b border-white/10 cursor-pointer">Dashboard</div>
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >Dashboard</div>
               </Link>
               <Link href="/landing#features">
-                <div className="font-jetbrains py-2 border-b border-white/10 cursor-pointer">Features</div>
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >Features</div>
               </Link>
               <Link href="/landing#about">
-                <div className="font-jetbrains py-2 border-b border-white/10 cursor-pointer">About</div>
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >About</div>
               </Link>
               <Link href="/login">
-                <div className="font-jetbrains py-2 cursor-pointer">Login</div>
+                <div 
+                  className="font-jetbrains py-2 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >Login</div>
               </Link>
             </nav>
           </div>
