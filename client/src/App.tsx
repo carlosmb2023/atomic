@@ -12,6 +12,7 @@ import Dashboard from "@/pages/Dashboard";
 import Landing from "@/pages/Landing";
 import Settings from "@/pages/Settings";
 import Chat from "@/pages/Chat";
+import ServerMonitor from "@/pages/ServerMonitor";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiBackgroundImage from "@/components/AiBackgroundImage";
@@ -33,6 +34,7 @@ function Router() {
           <Route path="/landing" component={Landing} />
           <Route path="/settings" component={Settings} />
           <Route path="/chat" component={Chat} />
+          <Route path="/monitor" component={ServerMonitor} />
           <Route component={NotFound} />
         </Switch>
       </main>
