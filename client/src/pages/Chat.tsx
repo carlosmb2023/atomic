@@ -269,7 +269,7 @@ export default function Chat() {
                           : 'hover:bg-indigo-600/20 border border-transparent'
                       }`}
                       onClick={() => {
-                        playClickSound();
+                        playClick();
                         setActiveSession(session.id);
                       }}
                     >
