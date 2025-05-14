@@ -13,6 +13,7 @@ neonConfig.webSocketConstructor = ws;
 
 // Variável para armazenar a instância do banco de dados
 let db: any;
+let dbInitialized = false;
 
 // Função para detectar o tipo de conexão (Neon vs PostgreSQL padrão)
 function isNeonConnection(url: string): boolean {
@@ -20,38 +21,56 @@ function isNeonConnection(url: string): boolean {
 }
 
 // Função para inicializar o banco de dados
-function initDatabase() {
+async function initDatabase() {
   try {
+    // Se o banco já foi inicializado, retornar para evitar inicializações múltiplas
+    if (dbInitialized) return true;
+    
     const connectionString = process.env.DATABASE_URL;
     
     if (!connectionString) {
-      log('⚠️ Variável DATABASE_URL não definida', 'error');
-      throw new Error('DATABASE_URL não definida');
+      log('⚠️ Variável DATABASE_URL não definida, usando armazenamento em memória', 'warn');
+      return false;
     }
     
-    // Usar apenas Neon com o cliente HTTP - mais compatível
-    log('🌐 Usando conexão Neon Serverless');
-    
     try {
-      // Usar o cliente Neon com WebSocket e HTTP fallback
-      // Para resolver o erro "client.query is not a function"
-      const sqlClient = neon(connectionString, { fullResults: true });
-      
-      // Criar a instância do Drizzle ORM
-      db = drizzle(sqlClient, { schema });
-      
-      // Validar que o cliente está realmente funcional
-      // executando uma query de teste
-      (async () => {
+      // Determinar se estamos usando Neon ou Postgres padrão
+      if (isNeonConnection(connectionString)) {
+        // Usar o cliente Neon com WebSocket e HTTP fallback
+        log('🌐 Tentando conexão com Neon Serverless');
+        
+        // Criar cliente SQL com Neon
+        const sqlClient = neon(connectionString);
+        
+        // Criar a instância do Drizzle ORM com a tipagem correta
+        db = drizzle(sqlClient as any, { schema });
+      } else {
+        // Usar conexão PostgreSQL padrão
+        log('🌐 Tentando conexão com PostgreSQL padrão');
+        
+        // Criar pool de conexões
+        const pool = new Pool({
+          connectionString,
+          ssl: process.env.NODE_ENV === 'production'
+        });
+        
+        // Testar a conexão com uma query simples
+        const client = await pool.connect();
         try {
-          const result = await db.execute(sql`SELECT 1 AS test_connection`);
-          log('🔌 Conexão de teste bem-sucedida!');
-        } catch (testError) {
-          log(`❌ Erro no teste de conexão: ${testError}`, 'error');
+          const res = await client.query('SELECT NOW()');
+          log(`✅ Conexão PostgreSQL estabelecida: ${res.rows[0].now}`);
+        } finally {
+          client.release();
         }
-      })();
+        
+        // Criar a instância do Drizzle ORM
+        db = drizzle(pool as any, { schema });
+      }
       
-      log('✅ Banco de dados inicializado com Neon');
+      // Marcar banco como inicializado
+      dbInitialized = true;
+      
+      log('✅ Banco de dados inicializado com sucesso');
       return true;
     } catch (error) {
       log(`❌ Erro ao inicializar banco de dados: ${error}`, 'error');
@@ -64,11 +83,13 @@ function initDatabase() {
 }
 
 // Tentar inicializar o banco de dados na importação
-try {
-  initDatabase();
-} catch (error) {
-  log(`❌ Falha ao conectar ao banco de dados: ${error}`, 'error');
-}
+(async () => {
+  try {
+    await initDatabase();
+  } catch (error) {
+    log(`❌ Falha ao conectar ao banco de dados: ${error}`, 'error');
+  }
+})().catch(err => log(`❌ Falha na inicialização assíncrona: ${err}`, 'error'));
 
 /**
  * Testa a conexão com o banco de dados
@@ -82,46 +103,23 @@ export async function testConnection() {
     
     // Tenta executar uma query simples para verificar a conexão
     try {
-      // Usando uma consulta SQL básica que funciona com qualquer provedor
+      // Tenta com drizzle
       const testResult = await db.execute(sql`SELECT 1 AS test_value`);
       log('🔌 Conexão com o banco de dados estabelecida com sucesso');
       
-      // Método específico para criar as tabelas se elas não existirem
       try {
-        // Este código será executado apenas uma vez durante a inicialização
-        // e garantirá que as tabelas existam conforme definido no schema.
-        log('🔄 Verificando se o schema está criado...');
-        
-        // Tentar fazer uma consulta simples para verificar
-        try {
-          const configExists = await db.execute(sql`
-            SELECT EXISTS (
-              SELECT FROM information_schema.tables 
-              WHERE table_name = 'system_config'
-            ) as exists
-          `);
-          
-          // Se chegou aqui, a conexão está OK
-          log('✅ Conexão verificada e schema existe');
-          
-          // Agora tenta encontrar configurações
-          try {
-            const configResult = await db.select().from(schema.systemConfig).limit(1);
-            log(`Configurações encontradas: ${configResult.length}`);
-          } catch (schemaError) {
-            log(`⚠️ Aviso: Erro ao buscar configurações. ${schemaError}`, 'warn');
-          }
-        } catch (schemaCheckError) {
-          log(`⚠️ Aviso: Não foi possível verificar schema. ${schemaCheckError}`, 'warn');
-        }
-      } catch (schemaError) {
-        log(`⚠️ Aviso: Tabelas podem não existir ainda. ${schemaError}`, 'warn');
-        // Não falha aqui pois a conexão está OK, só o schema que pode não estar pronto
+        // Verifica se a tabela de configurações existe
+        const configResult = await db.select().from(schema.systemConfig).limit(1);
+        log(`Configurações encontradas: ${configResult.length}`);
+        return true;
+      } catch (error) {
+        // Tabela pode não existir ainda, o que é normal em um primeiro uso
+        log(`ℹ️ Tabela de configurações não encontrada: ${error}`, 'info');
+        return true; // Retorna verdadeiro pois a conexão está OK
       }
-      
-      return true;
-    } catch (error) {
-      log(`❌ Erro ao testar banco de dados: ${error}`, 'error');
+    } catch (queryError) {
+      // Falha na query básica significa problema de conexão
+      log(`❌ Erro ao testar conexão com o banco: ${queryError}`, 'error');
       return false;
     }
   } catch (error) {

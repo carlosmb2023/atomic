@@ -14,6 +14,7 @@ import Settings from "@/pages/Settings";
 import Chat from "@/pages/Chat";
 import ServerMonitor from "@/pages/ServerMonitor";
 import Agents from "@/pages/Agents";
+import MistralTest from "@/pages/MistralTest";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiBackgroundImage from "@/components/AiBackgroundImage";
@@ -37,6 +38,7 @@ function Router() {
           <Route path="/chat" component={Chat} />
           <Route path="/monitor" component={ServerMonitor} />
           <Route path="/agents" component={Agents} />
+          <Route path="/mistral" component={MistralTest} />
           <Route component={NotFound} />
         </Switch>
       </main>

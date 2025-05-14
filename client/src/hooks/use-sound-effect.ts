@@ -1,70 +1,95 @@
-import { useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
-// Define sound types
-export type SoundType = 'hover' | 'click' | 'success' | 'error' | 'notification';
+interface SoundEffectOptions {
+  enabled?: boolean;
+}
 
-// Create a cache for sound instances to avoid recreating them
-const soundCache: Record<string, HTMLAudioElement> = {};
+export function useSoundEffect(options: SoundEffectOptions = {}) {
+  const [enabled, setEnabled] = useState<boolean>(options.enabled ?? true);
+  const [clickSound, setClickSound] = useState<HTMLAudioElement | null>(null);
+  const [successSound, setSuccessSound] = useState<HTMLAudioElement | null>(null);
+  const [errorSound, setErrorSound] = useState<HTMLAudioElement | null>(null);
+  const [notificationSound, setNotificationSound] = useState<HTMLAudioElement | null>(null);
+  const [hoverSound, setHoverSound] = useState<HTMLAudioElement | null>(null);
 
-/**
- * Hook for playing UI sound effects
- * @param volume Volume between 0 and 1
- * @returns Functions to play different sound effects
- */
-export function useSoundEffect(volume = 0.2) {
-  // Create base64 encoded sound data - small simple sounds to avoid needing external files
-  const sounds = useMemo(() => ({
-    hover: 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADmAD///////////////////////////////////////////8AAAA8TEFNRTMuMTAwBK8AAAAAAAAAABUgJAJAQQAB9CAAAZgAAAAA//tQwAADB3wCUAGPeuI8L/NQckAaFMBQCgKBoGB+D8H4Pw/+D/4P1AgGAwEHQEAgEHQfB8Hwf////////////IBAIBAIOgIBAIOg+D4Pg//+ggEAgEAgIBAIBAIG',
-    click: 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADmAD///////////////////////////////////////////8AAAA8TEFNRTMuMTAwBK8AAAAAAAAAABUgJAJAQQAB9CAAAZgAAAAA//tQwAADBzQa4A1h64KAAA0wAAABo1FEFFTGAYD+iCUQDxGKx+n//RERERERAABAAB/a7n/7nd6IiIiIgCDwPnOc/L/kTPQeec5znOc49BznOc5P+c5wPOc5znOczj0HOc5znOc5znOc',
-    success: 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADmAD///////////////////////////////////////////8AAAA8TEFNRTMuMTAwBK8AAAAAAAAAABUgJAJAQQAB9CAAAZgAAAAA//tQwAADB3AHcBWPXSJiCTQgckBUEOmAxnGaHv/gwh7/jOcZxnpUq3////xnGcZxnGcZxjOAYTjOM4zn//8ZxnGcZxnGcZxnGcJxnGcZxn//+M4zjOM4zjOM4zn/wcZxnGfxnOc5z',
-    error: 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADmAD///////////////////////////////////////////8AAAA8TEFNRTMuMTAwBK8AAAAAAAAAABUgJAJAQQAB9CAAAZgAAAAA//tQwAADB3gLEAGMeuJDl+sQckBQHFt/bGu0AAJgeBUkxC8Wv/0/ZPuT2//a9v9r//v2rWvb9/v/++1+1a1/r/r/2va9v9r//9v//t//9/7f/+3///t9M6qQGUAACBIEgIEgATf/',
-    notification: 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADmAD///////////////////////////////////////////8AAAA8TEFNRTMuMTAwBK8AAAAAAAAAABUgJAJAQQAB9CAAAZgAAAAA//tQwAADB4gLMAGPeOIdl+qwckAaBnl+A6qrqBAKAUBQFAUDH8QBoDoJAAAAA9BT59R6IPQUffkQegp++o9EPuqPvyIPv/qPRD7qj78iD7/6j0Q+6o+/Ig+/+o9EP3VH35EH3/1H',
-  }), []);
+  // Inicializa os efeitos sonoros
+  useEffect(() => {
+    // Só inicializa no navegador (não durante SSR)
+    if (typeof window !== 'undefined') {
+      // Som de clique (suave)
+      const click = new Audio('/sounds/click.mp3');
+      click.volume = 0.3;
+      setClickSound(click);
 
-  // Function to get or create an audio element for a sound
-  const getAudio = useCallback((soundType: SoundType): HTMLAudioElement => {
-    if (!soundCache[soundType] && sounds[soundType]) {
-      soundCache[soundType] = new Audio(sounds[soundType]);
+      // Som de hover (mais suave)
+      const hover = new Audio('/sounds/hover.mp3');
+      hover.volume = 0.15;
+      setHoverSound(hover);
+      
+      // Som de sucesso 
+      const success = new Audio('/sounds/success.mp3');
+      success.volume = 0.4;
+      setSuccessSound(success);
+
+      // Som de erro
+      const error = new Audio('/sounds/error.mp3');
+      error.volume = 0.4;
+      setErrorSound(error);
+
+      // Som de notificação
+      const notification = new Audio('/sounds/notification.mp3');
+      notification.volume = 0.5;
+      setNotificationSound(notification);
     }
-    return soundCache[soundType];
-  }, [sounds]);
+  }, []);
 
-  // Play sound function
-  const playSound = useCallback((soundType: SoundType) => {
-    // Check if sound is enabled (could be linked to user preference)
-    const soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
-    if (!soundEnabled) return;
-    
-    const audio = getAudio(soundType);
-    if (audio) {
-      audio.volume = volume;
-      audio.currentTime = 0;
-      audio.play().catch(err => {
-        // Ignore autoplay restrictions errors - common in browsers
-        console.debug('Sound playback blocked:', err);
-      });
+  // Reproduz o som de clique
+  const playClick = useCallback(() => {
+    if (enabled && clickSound) {
+      clickSound.currentTime = 0;
+      clickSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
     }
-  }, [getAudio, volume]);
+  }, [enabled, clickSound]);
 
-  // Return functions for each sound type
+  // Reproduz o som de sucesso
+  const playSuccess = useCallback(() => {
+    if (enabled && successSound) {
+      successSound.currentTime = 0;
+      successSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
+    }
+  }, [enabled, successSound]);
+
+  // Reproduz o som de erro
+  const playError = useCallback(() => {
+    if (enabled && errorSound) {
+      errorSound.currentTime = 0;
+      errorSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
+    }
+  }, [enabled, errorSound]);
+
+  // Reproduz o som de notificação
+  const playNotification = useCallback(() => {
+    if (enabled && notificationSound) {
+      notificationSound.currentTime = 0;
+      notificationSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
+    }
+  }, [enabled, notificationSound]);
+
+  // Reproduz o som de hover
+  const playHover = useCallback(() => {
+    if (enabled && hoverSound) {
+      hoverSound.currentTime = 0;
+      hoverSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
+    }
+  }, [enabled, hoverSound]);
+
   return {
-    playHover: () => playSound('hover'),
-    playClick: () => playSound('click'),
-    playSuccess: () => playSound('success'),
-    playError: () => playSound('error'),
-    playNotification: () => playSound('notification'),
-    
-    // Generic function to play any sound type
-    play: playSound,
-    
-    // Toggle sound on/off
-    toggleSound: () => {
-      const current = localStorage.getItem('soundEnabled') !== 'false';
-      localStorage.setItem('soundEnabled', (!current).toString());
-      return !current;
-    },
-    
-    // Check if sound is enabled
-    isSoundEnabled: () => localStorage.getItem('soundEnabled') !== 'false'
+    enabled,
+    setEnabled,
+    playClick,
+    playSuccess,
+    playError,
+    playNotification,
+    playHover
   };
 }

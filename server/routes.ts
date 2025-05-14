@@ -6,14 +6,15 @@ import fs from "fs";
 import { storage } from "./storage";
 import { log } from "./vite";
 import { db } from "./db";
-import { users, files } from "../shared/schema";
-import { eq } from "drizzle-orm";
+import { users, files, dailyMetrics } from "../shared/schema";
+import { eq, sql } from "drizzle-orm";
 import { ChatService } from "./services/chat.service";
 import { LlmService } from "./services/llm.service";
 import { ConfigService } from "./services/config.service";
 import { OracleService, DeployStatus } from "./services/oracle.service";
 import { ApifyService } from "./services/apify.service";
 import { MonitorService } from "./services/monitor.service";
+import { mistralService } from "./services/mistral.service";
 import { v4 as uuidv4 } from "uuid";
 import agentsRoutes from './routes/agents.routes';
 
@@ -527,7 +528,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Não enviar informações sensíveis como API keys
       const safeConfig = {
         ...config,
-        apify_api_key: config.apify_api_key ? "***************" : null
+        apify_api_key: config.apify_api_key ? "***************" : null,
+        mistral_api_key: config.mistral_api_key ? "***************" : null
       };
       
       return res.json(safeConfig);
@@ -542,7 +544,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { 
         execution_mode, local_llm_url, cloud_llm_url, apify_actor_url,
         apify_api_key, base_prompt, logs_enabled, updated_by,
-        mistral_local_url, mistral_cloud_url, mistral_instance_type
+        mistral_local_url, mistral_cloud_url, mistral_instance_type,
+        mistral_api_key, cloudflare_tunnel_enabled, cloudflare_tunnel_id
       } = req.body;
       
       const updatedConfig = await configService.updateConfig({
@@ -556,7 +559,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(updated_by && { updated_by: parseInt(updated_by) }),
         ...(mistral_local_url && { mistral_local_url }),
         ...(mistral_cloud_url && { mistral_cloud_url }),
-        ...(mistral_instance_type && { mistral_instance_type })
+        ...(mistral_instance_type && { mistral_instance_type }),
+        ...(mistral_api_key && { mistral_api_key }),
+        ...(cloudflare_tunnel_enabled !== undefined && { cloudflare_tunnel_enabled }),
+        ...(cloudflare_tunnel_id && { cloudflare_tunnel_id })
       });
       
       if (!updatedConfig) {
@@ -566,7 +572,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Não enviar informações sensíveis
       const safeConfig = {
         ...updatedConfig,
-        apify_api_key: updatedConfig.apify_api_key ? "***************" : null
+        apify_api_key: updatedConfig.apify_api_key ? "***************" : null,
+        mistral_api_key: updatedConfig.mistral_api_key ? "***************" : null
       };
       
       return res.json(safeConfig);
@@ -848,6 +855,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // ===================================================
+  // Rotas para Mistral API
+  // ===================================================
+  
+  app.post("/api/mistral/chat/completions", async (req, res) => {
+    try {
+      // Verificar se temos configuração do Mistral
+      const config = await configService.getConfig();
+      
+      if (!config || !config.mistral_api_key) {
+        log("❌ API Key do Mistral não configurada", "error");
+        return res.status(401).json({ 
+          error: "Mistral API não configurada. Adicione sua API key nas configurações." 
+        });
+      }
+      
+      // Obter parâmetros da requisição
+      const { messages, model, temperature, max_tokens } = req.body;
+      
+      // Validar entrada
+      if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({ error: "Parâmetro 'messages' é obrigatório e deve ser um array não vazio" });
+      }
+      
+      // Processar a solicitação através do serviço Mistral
+      const options = {
+        model: model || "mistral-small",
+        temperature: temperature || 0.7,
+        max_tokens: max_tokens || 1000
+      };
+      
+      // Reforçar uso da API externa
+      mistralService.setUseLocalServer(false);
+      if (config.mistral_api_key) {
+        mistralService.setApiKey(config.mistral_api_key);
+      }
+      
+      // Enviar a solicitação
+      const result = await mistralService.chatCompletion(messages, options);
+      
+      // Retornar o resultado
+      return res.json(result);
+    } catch (error) {
+      log(`❌ Erro no endpoint Mistral: ${error}`, "error");
+      return res.status(500).json({ 
+        error: `Erro ao processar solicitação Mistral: ${error instanceof Error ? error.message : String(error)}` 
+      });
+    }
+  });
+  
+  app.get("/api/mistral/status", async (_req, res) => {
+    try {
+      // Verifica se o serviço está disponível
+      const config = await configService.getConfig();
+      
+      // Verificar modo de execução
+      let status = {
+        available: false,
+        mode: config?.mistral_instance_type || "api",
+        api_configured: Boolean(config?.mistral_api_key),
+        local_configured: Boolean(config?.mistral_local_url),
+        message: "Mistral não configurado"
+      };
+      
+      // Verificar saúde do serviço apropriado
+      if (config?.mistral_instance_type === "local") {
+        // Verificar servidor local
+        const healthy = await mistralService.checkLocalServerHealth();
+        status.available = healthy;
+        status.message = healthy 
+          ? "Servidor Mistral local disponível" 
+          : "Servidor Mistral local não responde";
+      } else if (config?.mistral_api_key) {
+        // Verificar API cloud
+        const healthy = await mistralService.checkApiHealth();
+        status.available = healthy;
+        status.message = healthy 
+          ? "API Mistral disponível" 
+          : "API Mistral não responde ou credenciais inválidas";
+      }
+      
+      return res.json(status);
+    } catch (error) {
+      log(`❌ Erro ao verificar status do Mistral: ${error}`, "error");
+      return res.status(500).json({ 
+        error: "Erro ao verificar status do Mistral",
+        available: false,
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // ===================================================
   // Rotas para Agentes Autônomos
   // ===================================================

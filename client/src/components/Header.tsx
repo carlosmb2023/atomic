@@ -83,6 +83,15 @@ export default function Header() {
               Agentes
             </div>
           </Link>
+          <Link href="/mistral">
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/mistral' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
+              Mistral AI
+            </div>
+          </Link>
           <Link href="/landing#features">
             <div 
               className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#features') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
@@ -184,6 +193,13 @@ export default function Header() {
                   onMouseEnter={playHover}
                   onClick={playClick}
                 >Agentes</div>
+              </Link>
+              <Link href="/mistral">
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >Mistral AI</div>
               </Link>
               <Link href="/landing#features">
                 <div 

@@ -1,0 +1,75 @@
+Buscando Virtual Cloud Networks (VCNs)...
+{
+  "data": [
+    {
+      "byoipv6-cidr-blocks": null,
+      "cidr-block": "10.0.0.0/16",
+      "cidr-blocks": [
+        "10.0.0.0/16"
+      ],
+      "compartment-id": "ocid1.tenancy.oc1..aaaaaaaanci425f6sc4bmw6tmsntfhazmbclldmtinroawnzttkixm54e7qq",
+      "default-dhcp-options-id": "ocid1.dhcpoptions.oc1.iad.aaaaaaaabflkveqke4l2qgkq3hn4ai3uf3x6samvprpzqag4jjyxzmm75r3q",
+      "default-route-table-id": "ocid1.routetable.oc1.iad.aaaaaaaaap56ouorxibegsdilz5havkbyfvlvg77kl46vlr2pzq2kc7gemrq",
+      "default-security-list-id": "ocid1.securitylist.oc1.iad.aaaaaaaaxqzjob745br3pvocnqvdfbpmjsmqqo6n2ec2hfkwuwzlghqqe2ga",
+      "defined-tags": {
+        "Oracle-Tags": {
+          "CreatedBy": "default/carlosvieiramb2@gmail.com",
+          "CreatedOn": "2025-05-14T16:04:09.824Z"
+        }
+      },
+      "display-name": "mistral-network",
+      "dns-label": null,
+      "freeform-tags": {},
+      "id": "ocid1.vcn.oc1.iad.amaaaaaahvfp6eia7tdwixmpbvkd2nmw5tablk2e5lchndwgzwezofcmkwya",
+      "ipv6-cidr-blocks": null,
+      "ipv6-private-cidr-blocks": null,
+      "lifecycle-state": "AVAILABLE",
+      "security-attributes": {},
+      "time-created": "2025-05-14T16:04:09.924000+00:00",
+      "vcn-domain-name": null
+    }
+  ]
+}
+Digite o OCID da VCN que deseja usar:
+ocid1.vcn.oc1.iad.amaaaaaahvfp6eia7tdwixmpbvkd2nmw5tablk2e5lchndwgzwezofcmkwya
+Buscando subnets disponíveis...
+Digite o OCID da subnet que deseja usar:
+ocid1.vcn.oc1.iad.amaaaaaahvfp6eia7tdwixmpbvkd2nmw5tablk2e5lchndwgzwezofcmkwya
+Gerando par de chaves SSH para acesso à VM...
+Generating public/private rsa key pair.
+Your identification has been saved in /home/carlosalexandrevieira/.ssh/id_rsa_oracle
+Your public key has been saved in /home/carlosalexandrevieira/.ssh/id_rsa_oracle.pub
+The key fingerprint is:
+SHA256:0eGv64kIFiqOYhgINFm6mOmEjxPYUtMgO/n/T1pjDvQ carlosalexandrevieira@fedora
+The key's randomart image is:
++---[RSA 2048]----+
+|. +.      .      |
+| B.o     o .     |
+|=.+ .   . o      |
+|=B..     . .     |
+|@oo . . S   .    |
+|== o o .   .     |
+|=oo + . E .      |
+|=+ . o O o o     |
+|+.    +.+.+      |
++----[SHA256]-----+
+Criando instância VM no Oracle Cloud...
+Essa operação pode levar alguns minutos...
+ServiceError:
+{
+    "client_version": "Oracle-PythonSDK/2.152.0, Oracle-PythonCLI/3.56.0",
+    "code": "NotAuthorizedOrNotFound",
+    "logging_tips": "Please run the OCI CLI command using --debug flag to find more debug information.",
+    "message": "Authorization failed or requested resource not found.",
+    "opc-request-id": "8FCDF83F52274F3D9FFB836B4D0121A3/65AD964C4D60059C90570B85697671C4/D380B64DC7357B0656A2F85AC5D653E6",
+    "operation_name": "launch_instance",
+    "request_endpoint": "POST https://iaas.us-ashburn-1.oraclecloud.com/20160918/instances",
+    "status": 404,
+    "target_service": "compute",
+    "timestamp": "2025-05-14T17:21:21.752154+00:00",
+    "troubleshooting_tips": "See [https://docs.oracle.com/iaas/Content/API/References/apierrors.htm] for more information about resolving this error. If you are unable to resolve this issue, run this CLI command with --debug option and contact Oracle support and provide them the full error message."
+}
+Erro ao criar VM. Estado: 
+Detalhes:
+carlosalexandrevieira@fedora:~/WebAiDashboard/scripts/oracle_cloud_deploy$ 
+

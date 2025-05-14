@@ -33,6 +33,7 @@ interface ConfigState {
   mistral_local_url: string;
   mistral_cloud_url: string;
   mistral_instance_type: string;
+  mistral_api_key: string;
   // Campos para Cloudflare Tunnel
   cloudflare_tunnel_enabled: boolean;
   cloudflare_tunnel_id: string;
@@ -61,7 +62,8 @@ export default function Settings() {
     // Valores iniciais para o Mistral
     mistral_local_url: 'http://127.0.0.1:8000',
     mistral_cloud_url: 'https://api.mistral.ai/v1',
-    mistral_instance_type: 'oracle_arm',
+    mistral_instance_type: 'api',
+    mistral_api_key: '',
     // Valores iniciais para Cloudflare Tunnel
     cloudflare_tunnel_enabled: false,
     cloudflare_tunnel_id: ''
@@ -247,13 +249,17 @@ export default function Settings() {
         // Campos do Mistral
         mistral_local_url: configData.mistral_local_url || 'http://127.0.0.1:8000',
         mistral_cloud_url: configData.mistral_cloud_url || 'https://api.mistral.ai/v1',
-        mistral_instance_type: configData.mistral_instance_type || 'oracle_arm'
+        mistral_instance_type: configData.mistral_instance_type || 'api',
+        mistral_api_key: configData.mistral_api_key ? '**********' : '', // Mask API key
+        // Campos do Cloudflare Tunnel
+        cloudflare_tunnel_enabled: configData.cloudflare_tunnel_enabled || false,
+        cloudflare_tunnel_id: configData.cloudflare_tunnel_id || ''
       });
     }
   }, [configData]);
 
   // Handle input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setConfig(prev => ({ ...prev, [name]: value }));
   };
@@ -283,9 +289,17 @@ export default function Settings() {
       if (config.mistral_cloud_url !== configData.mistral_cloud_url) updates.mistral_cloud_url = config.mistral_cloud_url;
       if (config.mistral_instance_type !== configData.mistral_instance_type) updates.mistral_instance_type = config.mistral_instance_type;
       
-      // Only include API key if it's been changed from masked value
+      // Campos do Cloudflare Tunnel
+      if (config.cloudflare_tunnel_enabled !== configData.cloudflare_tunnel_enabled) updates.cloudflare_tunnel_enabled = config.cloudflare_tunnel_enabled;
+      if (config.cloudflare_tunnel_id !== configData.cloudflare_tunnel_id) updates.cloudflare_tunnel_id = config.cloudflare_tunnel_id;
+      
+      // Only include API keys if they've been changed from masked value
       if (config.apify_api_key && config.apify_api_key !== '**********') {
         updates.apify_api_key = config.apify_api_key;
+      }
+      
+      if (config.mistral_api_key && config.mistral_api_key !== '**********') {
+        updates.mistral_api_key = config.mistral_api_key;
       }
       
       // Add user ID for logging
@@ -622,16 +636,31 @@ export default function Settings() {
                         onChange={handleInputChange}
                         className="bg-background rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                       >
-                        <option value="oracle_arm">Oracle ARM (Melhor custo-benefício)</option>
-                        <option value="oracle_x86">Oracle x86 (Mais poderoso)</option>
-                        <option value="custom">Customizado</option>
+                        <option value="local">Local (Seu computador)</option>
+                        <option value="api">API Oficial (api.mistral.ai)</option>
+                        <option value="replit">Replit (Modelo pequeno)</option>
                       </select>
+                    </div>
+                    
+                    <div className="flex flex-col space-y-2 mt-4">
+                      <Label htmlFor="mistral_api_key">Mistral API Key</Label>
+                      <Input
+                        id="mistral_api_key"
+                        name="mistral_api_key"
+                        type="password"
+                        value={config.mistral_api_key || ""}
+                        onChange={handleInputChange}
+                        placeholder="sk-..."
+                      />
+                      <p className="text-xs text-gray-400">
+                        Necessário para usar a API oficial Mistral. Obtenha em <a href="https://console.mistral.ai/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">console.mistral.ai</a>
+                      </p>
                     </div>
                     
                     <div className="bg-black/20 p-3 rounded-md mt-2">
                       <p className="text-sm">
-                        O modelo Mistral na Oracle Cloud será configurado de acordo com o tipo de instância 
-                        selecionado. Certifique-se de ter implementado um servidor Oracle com capacidade suficiente.
+                        Escolha entre rodar o Mistral localmente no seu PC, usar a API oficial do Mistral, 
+                        ou usar uma versão leve no Replit.
                       </p>
                     </div>
                   </div>
