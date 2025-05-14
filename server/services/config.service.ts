@@ -159,4 +159,46 @@ export class ConfigService {
       return null;
     }
   }
+
+  /**
+   * Configura o Mistral na instância Oracle
+   * @param instanceIp IP da instância Oracle
+   * @param instanceType Tipo de instância (oracle_arm, oracle_x86, etc.)
+   * @param userId ID do usuário que fez a alteração
+   */
+  public async configureMistralOracle(
+    instanceIp: string, 
+    instanceType: string = 'oracle_arm', 
+    userId?: number
+  ): Promise<SystemConfig | null> {
+    try {
+      // Forma a URL do Mistral Cloud baseada no IP da instância Oracle
+      const mistralCloudUrl = `http://${instanceIp}:8000`;
+      
+      return this.updateConfig({
+        oracle_instance_ip: instanceIp,
+        mistral_cloud_url: mistralCloudUrl,
+        mistral_instance_type: instanceType
+      }, userId);
+    } catch (error) {
+      log(`Erro ao configurar Mistral na Oracle Cloud: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * Configura o Mistral local
+   * @param localUrl URL do Mistral local
+   * @param userId ID do usuário que fez a alteração
+   */
+  public async configureMistralLocal(localUrl: string, userId?: number): Promise<SystemConfig | null> {
+    try {
+      return this.updateConfig({
+        mistral_local_url: localUrl
+      }, userId);
+    } catch (error) {
+      log(`Erro ao configurar Mistral local: ${error}`);
+      return null;
+    }
+  }
 }

@@ -541,7 +541,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { 
         execution_mode, local_llm_url, cloud_llm_url, apify_actor_url,
-        apify_api_key, base_prompt, logs_enabled, updated_by
+        apify_api_key, base_prompt, logs_enabled, updated_by,
+        mistral_local_url, mistral_cloud_url, mistral_instance_type
       } = req.body;
       
       const updatedConfig = await configService.updateConfig({
@@ -552,7 +553,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(apify_api_key && { apify_api_key }),
         ...(base_prompt && { base_prompt }),
         ...(logs_enabled !== undefined && { logs_enabled }),
-        ...(updated_by && { updated_by: parseInt(updated_by) })
+        ...(updated_by && { updated_by: parseInt(updated_by) }),
+        ...(mistral_local_url && { mistral_local_url }),
+        ...(mistral_cloud_url && { mistral_cloud_url }),
+        ...(mistral_instance_type && { mistral_instance_type })
       });
       
       if (!updatedConfig) {

@@ -64,6 +64,10 @@ export const systemConfig = pgTable("system_config", {
   updated_by: integer("updated_by").references(() => users.id),
   oracle_instance_ip: text("oracle_instance_ip"),
   active_llm_url: text("active_llm_url").default("http://127.0.0.1:11434").notNull(),
+  // Campos específicos para Mistral
+  mistral_local_url: text("mistral_local_url").default("http://127.0.0.1:8000"),
+  mistral_cloud_url: text("mistral_cloud_url").default("https://api.mistral.ai/v1"),
+  mistral_instance_type: varchar("mistral_instance_type", { length: 50 }).default("oracle_arm"),
 });
 
 // Logs de LLM/Chat
@@ -166,6 +170,9 @@ export const insertSystemConfigSchema = createInsertSchema(systemConfig).pick({
   updated_by: true,
   oracle_instance_ip: true,
   active_llm_url: true,
+  mistral_local_url: true,
+  mistral_cloud_url: true,
+  mistral_instance_type: true,
 });
 
 export const insertLlmLogSchema = createInsertSchema(llmLogs).pick({
