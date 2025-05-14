@@ -1,146 +1,226 @@
-# Configuração do Cloudflare Tunnel
+# Configuração do Cloudflare Tunnel - CarlosDev
 
-Este documento explica como configurar e utilizar o Cloudflare Tunnel para expor seu aplicativo CarlosDev na internet de forma segura, sem necessidade de IPs públicos ou configuração de firewall.
+Este guia detalha como configurar o Cloudflare Tunnel para permitir acesso seguro e persistente à sua instância Oracle Cloud ou servidor local.
+
+## O que é Cloudflare Tunnel?
+
+Cloudflare Tunnel é um serviço que cria uma conexão segura entre seus servidores e o Cloudflare, sem necessidade de IPs públicos estáticos ou portas abertas no firewall. Isso permite que você:
+
+- Acesse seus serviços hospedados localmente ou na nuvem pela internet
+- Mantenha seus servidores protegidos contra ataques diretos
+- Utilize subdomínios personalizados para acessar suas aplicações
+- Tenha conexões criptografadas e seguras
 
 ## Pré-requisitos
 
-1. Uma conta no Cloudflare
-2. Seu domínio configurado no Cloudflare (DNS gerenciado pelo Cloudflare)
-3. Acesso à linha de comando no servidor onde a aplicação está hospedada
+1. Uma conta no [Cloudflare](https://dash.cloudflare.com/sign-up)
+2. Um domínio registrado e configurado no Cloudflare
+3. Acesso administrativo ao servidor onde o CarlosDev está rodando
 
-## Passo 1: Configurar o Cloudflare Tunnel
+## Passo 1: Instalar o Cloudflare Tunnel
 
-Execute o script de configuração incluído no projeto:
+### No Linux (Ubuntu/Debian)
 
 ```bash
-bash scripts/setup-cloudflare-tunnel.sh
+# Baixar o pacote
+curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+
+# Instalar
+sudo dpkg -i cloudflared.deb
+
+# Verificar a instalação
+cloudflared version
 ```
 
-Este script:
-- Verifica se o cloudflared está instalado e o instala se necessário
-- Mostra a versão atual do cloudflared
-- Fornece instruções para os próximos passos
+### No Oracle Linux/RHEL/Fedora
+
+```bash
+# Baixar o pacote
+curl -L --output cloudflared.rpm https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-x86_64.rpm
+
+# Instalar
+sudo rpm -i cloudflared.rpm
+
+# Verificar a instalação
+cloudflared version
+```
+
+### No macOS
+
+```bash
+# Usando Homebrew
+brew install cloudflare/cloudflare/cloudflared
+
+# Verificar a instalação
+cloudflared version
+```
+
+### No Windows
+
+1. Baixe o instalador do [GitHub Releases](https://github.com/cloudflare/cloudflared/releases/latest)
+2. Execute o instalador `.msi`
+3. Abra o Prompt de Comando como administrador e execute `cloudflared.exe version`
 
 ## Passo 2: Autenticar com o Cloudflare
-
-Execute o comando:
 
 ```bash
 cloudflared tunnel login
 ```
 
-Este comando abrirá seu navegador e solicitará que você autorize o acesso da aplicação cloudflared à sua conta do Cloudflare. Você precisará selecionar o domínio que deseja usar com este túnel.
+Este comando abrirá seu navegador para autenticação. Selecione o domínio que você deseja usar com o túnel.
 
-## Passo 3: Criar um novo túnel
-
-Execute o comando:
+## Passo 3: Criar um Túnel
 
 ```bash
-cloudflared tunnel create carlosdev-app
+cloudflared tunnel create carlosdev-tunnel
 ```
 
-Este comando criará um novo túnel chamado "carlosdev-app" e gerará um arquivo de credenciais no diretório `~/.cloudflared/`. Guarde o ID do túnel que aparece na saída do comando, você precisará dele no próximo passo.
+Anote o ID do túnel que será exibido. Você precisará dele para configurações futuras.
 
-## Passo 4: Configurar o roteamento do túnel
+## Passo 4: Configurar o Túnel
 
-O script inicial já criou um arquivo de configuração modelo em `.cloudflared/config.yml`. Você precisa editá-lo:
+Crie um arquivo de configuração:
 
-1. Substitua `YOUR_TUNNEL_ID` pelo ID do túnel que você obteve no passo anterior
-2. Ajuste os hostnames e serviços conforme necessário
+```bash
+mkdir -p ~/.cloudflared
+touch ~/.cloudflared/config.yml
+```
 
-Exemplo de configuração:
+Edite o arquivo `config.yml` com seu editor preferido:
+
+```bash
+nano ~/.cloudflared/config.yml
+```
+
+Adicione a seguinte configuração (substituindo YOUR_TUNNEL_ID pelo ID gerado):
 
 ```yaml
-tunnel: 1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p
-credentials-file: ~/.cloudflared/1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p.json
+tunnel: YOUR_TUNNEL_ID
+credentials-file: /home/seu-usuario/.cloudflared/YOUR_TUNNEL_ID.json
 
-logfile: .cloudflared/tunnel.log
+# Configuração de log
+logfile: /var/log/cloudflared.log
 
+# Configuração de roteamento
 ingress:
-  # Rota para o frontend da aplicação
-  - hostname: carlosdev.app.br
+  # Rota para o CarlosDev API/Backend
+  - hostname: api.carlosdev.app.br
     service: http://localhost:5000
   
-  # Rota para a API
-  - hostname: api.carlosdev.app.br
-    service: http://localhost:5000/api
+  # Rota para o frontend Vite (desenvolvimento)
+  - hostname: dev.carlosdev.app.br
+    service: http://localhost:3000
   
-  # Rota padrão
+  # Rota para o Mistral (se estiver utilizando localmente)
+  - hostname: mistral.carlosdev.app.br
+    service: http://localhost:8000
+  
+  # Rota padrão - sempre deve ser a última
   - service: http_status:404
 ```
 
-## Passo 5: Configurar os registros DNS no Cloudflare
+## Passo 5: Configurar Registros DNS
 
-Você precisa adicionar registros CNAME no painel do Cloudflare para apontar para o seu túnel:
+Acesse o [Dashboard do Cloudflare](https://dash.cloudflare.com/), selecione seu domínio e vá para a seção Tunnels:
 
-1. Faça login no painel do Cloudflare
-2. Selecione seu domínio
-3. Vá para a seção DNS
-4. Adicione registros CNAME para cada hostname que você configurou:
-   - `carlosdev.app.br` -> `<seu-tunnel-id>.cfargotunnel.com`
-   - `api.carlosdev.app.br` -> `<seu-tunnel-id>.cfargotunnel.com`
+1. Vá para a aba "Zero Trust" > "Access" > "Tunnels"
+2. Selecione o túnel que você criou
+3. Clique em "Configure"
+4. Adicione os registros de Hostname para:
+   - api.carlosdev.app.br -> localhost:5000
+   - dev.carlosdev.app.br -> localhost:3000
+   - mistral.carlosdev.app.br -> localhost:8000 (se aplicável)
 
-Alternativamente, você pode configurar os registros DNS via linha de comando:
+## Passo 6: Iniciar o Túnel
+
+Para teste rápido em terminal:
 
 ```bash
-cloudflared tunnel route dns <tunnel-id> carlosdev.app.br
-cloudflared tunnel route dns <tunnel-id> api.carlosdev.app.br
+cloudflared tunnel run carlosdev-tunnel
 ```
 
-## Passo 6: Iniciar o túnel
-
-Execute o script para iniciar o túnel:
+## Passo 7: Configurar como Serviço (recomendado)
 
 ```bash
-bash scripts/start-cloudflare-tunnel.sh
+sudo cloudflared service install
 ```
 
-O túnel será iniciado e sua aplicação estará acessível pelos hostnames configurados.
+Este comando configura o cloudflared como um serviço que inicia automaticamente.
 
-## Configuração para execução como serviço (opcional)
-
-Para configurar o túnel como um serviço que inicia automaticamente:
+## Passo 8: Verificar Status e Gerenciar
 
 ```bash
-cloudflared service install
+# Verificar status
+sudo systemctl status cloudflared
+
+# Iniciar o serviço
+sudo systemctl start cloudflared
+
+# Parar o serviço
+sudo systemctl stop cloudflared
+
+# Reiniciar o serviço
+sudo systemctl restart cloudflared
+
+# Verificar logs
+sudo journalctl -u cloudflared
 ```
 
-Este comando configura o cloudflared como um serviço do sistema que será executado automaticamente na inicialização.
+## Passo 9: Configurar o CarlosDev para Usar o Túnel
 
-## Verificação e Solução de Problemas
+1. Acesse a página de Configurações do CarlosDev
+2. Navegue até a aba "Cloudflare Tunnel"
+3. Preencha:
+   - ID do Túnel: Seu ID de túnel
+   - Domínio Base: carlosdev.app.br (ou seu domínio personalizado)
+   - Ative a opção "Usar Cloudflare Tunnel"
+4. Salve as configurações
 
-Para verificar os túneis existentes:
+## Solução de Problemas
+
+### O túnel não conecta
+
 ```bash
+# Verifique os logs
+sudo journalctl -u cloudflared -f
+
+# Teste a execução em modo de depuração
+cloudflared tunnel --loglevel debug run carlosdev-tunnel
+```
+
+### Erro de autenticação
+
+```bash
+# Refaça o login
+cloudflared tunnel login
+```
+
+### Verificar status do túnel
+
+```bash
+# Liste os túneis ativos
 cloudflared tunnel list
+
+# Verifique detalhes do túnel
+cloudflared tunnel info carlosdev-tunnel
 ```
 
-Para verificar o status de um túnel específico:
+## Removendo um Túnel
+
 ```bash
-cloudflared tunnel info <nome-ou-id-do-tunnel>
+# Desinstalar o serviço (se instalado)
+sudo cloudflared service uninstall
+
+# Deletar o túnel
+cloudflared tunnel delete carlosdev-tunnel
 ```
 
-Para ver os logs em tempo real:
-```bash
-tail -f .cloudflared/tunnel.log
-```
+## Recursos Adicionais
 
-## Segurança e Boas Práticas
+- [Documentação oficial do Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps)
+- [Repositório GitHub do cloudflared](https://github.com/cloudflare/cloudflared)
+- [Tutorial em vídeo sobre Cloudflare Tunnel](https://www.youtube.com/watch?v=d0ySB0ASRFw)
 
-1. Não compartilhe o arquivo de credenciais do túnel
-2. Considere usar o Cloudflare Access para adicionar uma camada extra de autenticação
-3. Revise regularmente os logs do túnel para detectar problemas ou atividades suspeitas
-4. Mantenha o cloudflared atualizado com `cloudflared update`
+---
 
-## Integração com Oracle Cloud e Mistral
-
-Se você estiver usando a Oracle Cloud para hospedar o Mistral, você também pode configurar um túnel separado para esse servidor, permitindo comunicação segura entre seu aplicativo principal e o servidor Mistral.
-
-Neste caso, você configuraria:
-
-```yaml
-ingress:
-  - hostname: mistral.carlosdev.app.br
-    service: http://<oracle-instance-ip>:8000
-```
-
-E então adicionaria o registro DNS correspondente.
+Em caso de dúvidas ou problemas com a configuração do Cloudflare Tunnel, entre em contato pelo email suporte@carlosdev.app.br.

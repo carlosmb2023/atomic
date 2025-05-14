@@ -5,10 +5,11 @@ import { sql } from 'drizzle-orm';
 import * as schema from '../shared/schema';
 import { log } from './vite';
 import pkg from 'pg';
+import ws from 'ws';
 const { Pool } = pkg;
 
-// Habilitar cache de conexão para melhor desempenho
-neonConfig.fetchConnectionCache = true;
+// Configurar websocket para Neon
+neonConfig.webSocketConstructor = ws;
 
 // Variável para armazenar a instância do banco de dados
 let db: any;
@@ -28,13 +29,22 @@ function initDatabase() {
       throw new Error('DATABASE_URL não definida');
     }
     
-    // Vamos usar apenas Neon para simplificar e resolver o problema
+    // A única forma compatível é usar apenas Neon
     log('🌐 Usando conexão Neon Serverless');
-    const sqlClient = neon(connectionString);
-    db = drizzle(sqlClient, { schema });
     
-    log('✅ Banco de dados inicializado');
-    return true;
+    try {
+      // Configurando o cliente Neon com suporte a WebSocket
+      const sqlClient = neon(connectionString);
+      
+      // Criando uma instância Drizzle-ORM com o cliente
+      db = drizzle(sqlClient, { schema });
+      
+      log('✅ Banco de dados inicializado com Neon');
+      return true;
+    } catch (error) {
+      log(`❌ Erro ao inicializar banco de dados: ${error}`, 'error');
+      return false;
+    }
   } catch (error) {
     log(`❌ Erro ao inicializar banco de dados: ${error}`, 'error');
     return false;
@@ -58,11 +68,22 @@ export async function testConnection() {
       return false;
     }
     
-    // Abordagem simplificada para testar conexão
+    // Tenta executar uma query simples para verificar a conexão
     try {
-      const result = await db.select().from(schema.systemConfig).limit(1);
+      // Usando uma consulta SQL básica que funciona com qualquer provedor
+      await db.execute(sql`SELECT 1 AS test`);
       log('🔌 Conexão com o banco de dados estabelecida com sucesso');
-      log(`Configurações encontradas: ${result.length}`);
+      
+      // Tenta buscar configurações, mas se falhar por tabela não existente, ainda
+      // considera a conexão bem-sucedida
+      try {
+        const result = await db.select().from(schema.systemConfig).limit(1);
+        log(`Configurações encontradas: ${result.length}`);
+      } catch (schemaError) {
+        log(`Aviso: Tabelas podem não existir ainda. ${schemaError}`, 'warn');
+        // Não falha aqui pois a conexão está OK, só o schema que pode não estar pronto
+      }
+      
       return true;
     } catch (error) {
       log(`❌ Erro ao testar banco de dados: ${error}`, 'error');
