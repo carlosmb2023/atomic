@@ -12,9 +12,16 @@ export class MistralAgentService {
 
   /**
    * Inicializa o cliente Mistral
+   * @param agentConfig Configuração específica do agente (opcional)
    */
-  private async init(): Promise<void> {
-    if (this.apiKey) return;
+  private async init(agentConfig?: any): Promise<string> {
+    // Se temos uma configuração específica do agente com API key, usamos ela
+    if (agentConfig && agentConfig.api_key) {
+      return agentConfig.api_key;
+    }
+    
+    // Se já existe uma API key global, retorna-a
+    if (this.apiKey) return this.apiKey;
 
     // Busca configuração do sistema
     const config = await storage.getSystemConfig();
@@ -24,7 +31,9 @@ export class MistralAgentService {
       throw new Error('Chave de API do Mistral não configurada');
     }
 
+    // Salva e retorna a API key global
     this.apiKey = process.env.MISTRAL_API_KEY || config?.mistral_api_key || '';
+    return this.apiKey;
   }
 
   /**
@@ -71,8 +80,8 @@ export class MistralAgentService {
         throw new Error('Este método só pode ser usado com agentes Mistral');
       }
 
-      // Inicializa a conexão com Mistral
-      await this.init();
+      // Inicializa a conexão com Mistral usando a configuração do agente
+      const apiKey = await this.init(agent.configuration);
 
       // Inicializa a execução
       const execution = await agentService.startExecution(agentId, userId, objective);
@@ -138,7 +147,7 @@ export class MistralAgentService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           }
         }

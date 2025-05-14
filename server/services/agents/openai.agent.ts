@@ -11,8 +11,17 @@ export class OpenAIAgentService {
 
   /**
    * Inicializa o cliente OpenAI
+   * @param agentConfig Configuração específica do agente (opcional)
    */
-  private async initClient(): Promise<OpenAI> {
+  private async initClient(agentConfig?: any): Promise<OpenAI> {
+    // Se temos uma configuração específica do agente com API key, criamos um cliente especial para esta execução
+    if (agentConfig && agentConfig.api_key) {
+      return new OpenAI({
+        apiKey: agentConfig.api_key,
+      });
+    }
+    
+    // Se já existe um cliente global, retorna-o
     if (this.client) return this.client;
 
     // Busca configuração do sistema
@@ -23,7 +32,7 @@ export class OpenAIAgentService {
       throw new Error('Chave de API da OpenAI não configurada');
     }
 
-    // Cria cliente OpenAI
+    // Cria cliente OpenAI global
     this.client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || config?.openai_api_key || '',
     });
@@ -75,8 +84,8 @@ export class OpenAIAgentService {
         throw new Error('Este método só pode ser usado com agentes OpenAI');
       }
 
-      // Inicializa o cliente OpenAI
-      await this.initClient();
+      // Inicializa o cliente OpenAI com a configuração do agente
+      const client = await this.initClient(agent.configuration);
 
       // Inicializa a execução
       const execution = await agentService.startExecution(agentId, userId, objective);
@@ -126,7 +135,7 @@ export class OpenAIAgentService {
       const fullSystemPrompt = `${systemPrompt}\n\n${memoryContext}`.trim();
 
       // Faz a chamada para a OpenAI
-      const response = await this.client!.chat.completions.create({
+      const response = await client.chat.completions.create({
         model: agent.configuration?.model || 'gpt-3.5-turbo',
         temperature: agent.configuration?.temperature || 0.7,
         max_tokens: agent.configuration?.max_tokens || 2000,
