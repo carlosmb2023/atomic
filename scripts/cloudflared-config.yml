@@ -1,0 +1,29 @@
+# Configuração do Cloudflare Tunnel para Oracle Cloud VM
+# Salve este arquivo em /etc/cloudflared/config.yml na sua VM Oracle
+
+# Substitua YOUR_TUNNEL_ID pelo ID fornecido ao criar o túnel
+# Execute: cloudflared tunnel create mistral-carlosdev
+tunnel: YOUR_TUNNEL_ID
+credentials-file: /root/.cloudflared/YOUR_TUNNEL_ID.json
+
+# Configuração de log
+logfile: /var/log/cloudflared.log
+
+# Configuração de roteamento
+ingress:
+  # Rota para o Mistral API
+  - hostname: mistral.carlosdev.app.br
+    service: http://localhost:8000
+  
+  # Rota para o API Bridge (opcional)
+  - hostname: api-mistral.carlosdev.app.br
+    service: http://localhost:3000
+  
+  # Rota para o pgAdmin (opcional, com proteção)
+  - hostname: pgadmin.carlosdev.app.br
+    service: http://localhost:5050
+    originRequest:
+      originServerName: pgadmin.carlosdev.app.br
+  
+  # Rota padrão - sempre deve ser a última
+  - service: http_status:404

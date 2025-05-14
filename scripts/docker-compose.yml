@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # Serviço Mistral API
+  mistral:
+    image: ghcr.io/mistralai/mistral-src:latest
+    container_name: mistral-api
+    restart: unless-stopped
+    ports:
+      - "${MISTRAL_PORT:-8000}:${MISTRAL_PORT:-8000}"
+    environment:
+      - MISTRAL_MODEL=${MISTRAL_MODEL:-mistralai/Mistral-7B-Instruct-v0.2}
+      - PORT=${MISTRAL_PORT:-8000}
+      - HOST=${MISTRAL_HOST:-0.0.0.0}
+    volumes:
+      - mistral_models:/app/models
+      - mistral_cache:/root/.cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+              driver: nvidia
+              count: all
+    networks:
+      - mistral-network
+
+  # Banco de dados PostgreSQL para armazenar histórico e logs
+  postgres:
+    image: postgres:15
+    container_name: mistral-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-carlosdev}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - mistral-network
+
+  # Interface de administração para o PostgreSQL (opcional)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: mistral-pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@carlosdev.app.br
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin_password
+      - PGADMIN_LISTEN_PORT=5050
+    ports:
+      - "5050:5050"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - mistral-network
+
+  # API para conectar com o CarlosDev
+  api:
+    image: node:20-alpine
+    container_name: mistral-api-bridge
+    working_dir: /app
+    restart: unless-stopped
+    volumes:
+      - ./api:/app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MISTRAL_URL=http://mistral:${MISTRAL_PORT:-8000}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres_password}@postgres:5432/${POSTGRES_DB:-carlosdev}
+    depends_on:
+      - mistral
+      - postgres
+    command: >
+      sh -c "npm install && npm start"
+    networks:
+      - mistral-network
+
+networks:
+  mistral-network:
+    driver: bridge
+
+volumes:
+  mistral_models:
+  mistral_cache:
+  postgres_data:
+  pgadmin_data:
