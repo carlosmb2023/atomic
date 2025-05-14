@@ -4,7 +4,7 @@ import Logo from "@/components/Logo";
 import { Progress } from "@/components/ui/progress";
 import GlassMorphism from "@/components/GlassMorphism";
 import AnimatedContent from "@/components/AnimatedContent";
-import ParticleBackground from "@/components/ParticleBackground";
+import AiBackgroundImage from "@/components/AiBackgroundImage";
 import { useSoundEffect } from "@/hooks/use-sound-effect";
 
 export default function Dashboard() {
@@ -87,7 +87,7 @@ export default function Dashboard() {
   
   return (
     <div className="pt-16 min-h-screen relative overflow-hidden">
-      <ParticleBackground />
+      <AiBackgroundImage />
       <div className="container mx-auto px-4 py-8 relative z-10">
         <AnimatedContent animation="fadeIn" duration={0.8}>
           <h1 className="text-3xl font-orbitron mb-8 cyber-text">Dashboard</h1>

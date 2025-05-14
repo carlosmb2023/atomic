@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import GlassMorphism from "@/components/GlassMorphism";
 import AnimatedContent from "@/components/AnimatedContent";
 import { useSoundEffect } from "@/hooks/use-sound-effect";
-import ParticleBackground from "@/components/ParticleBackground";
+import AiBackgroundImage from "@/components/AiBackgroundImage";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -87,7 +87,7 @@ export default function Login() {
 
   return (
     <main className="flex items-center justify-center min-h-screen px-4 pt-16 pb-10 relative overflow-hidden">
-      <ParticleBackground />
+      <AiBackgroundImage />
       <GlassMorphism 
         className="p-8 max-w-md w-full" 
         glowAccent={true}

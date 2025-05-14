@@ -4,7 +4,7 @@ import Logo from "@/components/Logo";
 import AnimatedContent from "@/components/AnimatedContent";
 import { useSoundEffect } from "@/hooks/use-sound-effect";
 import GlassMorphism from "@/components/GlassMorphism";
-import ParticleBackground from "@/components/ParticleBackground";
+import AiBackgroundImage from "@/components/AiBackgroundImage";
 
 export default function Home() {
   const [typedText, setTypedText] = useState("");
@@ -79,7 +79,7 @@ export default function Home() {
 
   return (
     <section className="min-h-screen pt-20 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
-      <ParticleBackground />
+      <AiBackgroundImage />
       <GlassMorphism 
         className="p-8 md:p-12 max-w-3xl mx-auto relative z-10"
         glowAccent={true}
