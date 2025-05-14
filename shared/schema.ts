@@ -68,6 +68,9 @@ export const systemConfig = pgTable("system_config", {
   mistral_local_url: text("mistral_local_url").default("http://127.0.0.1:8000"),
   mistral_cloud_url: text("mistral_cloud_url").default("https://api.mistral.ai/v1"),
   mistral_instance_type: varchar("mistral_instance_type", { length: 50 }).default("oracle_arm"),
+  // Campos para Cloudflare Tunnel
+  cloudflare_tunnel_enabled: boolean("cloudflare_tunnel_enabled").default(false),
+  cloudflare_tunnel_id: text("cloudflare_tunnel_id"),
 });
 
 // Logs de LLM/Chat
@@ -173,6 +176,8 @@ export const insertSystemConfigSchema = createInsertSchema(systemConfig).pick({
   mistral_local_url: true,
   mistral_cloud_url: true,
   mistral_instance_type: true,
+  cloudflare_tunnel_enabled: true,
+  cloudflare_tunnel_id: true,
 });
 
 export const insertLlmLogSchema = createInsertSchema(llmLogs).pick({

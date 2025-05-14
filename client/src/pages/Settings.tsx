@@ -33,6 +33,9 @@ interface ConfigState {
   mistral_local_url: string;
   mistral_cloud_url: string;
   mistral_instance_type: string;
+  // Campos para Cloudflare Tunnel
+  cloudflare_tunnel_enabled: boolean;
+  cloudflare_tunnel_id: string;
 }
 
 interface DeployStatus {
