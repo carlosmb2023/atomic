@@ -54,7 +54,7 @@ export default function Settings() {
   });
 
   // Sound effects
-  const { playClickSound, playSuccessSound, playErrorSound } = useSoundEffect();
+  const { playClick, playSuccess, playError } = useSoundEffect();
   const { toast } = useToast();
 
   // Fetch config from server
@@ -81,7 +81,7 @@ export default function Settings() {
       return response.json();
     },
     onSuccess: () => {
-      playSuccessSound();
+      playSuccess();
       toast({
         title: "Configuration updated",
         description: "Settings have been saved successfully.",
@@ -89,7 +89,7 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ['/api/system/config'] });
     },
     onError: (error) => {
-      playErrorSound();
+      playError();
       toast({
         title: "Error",
         description: `Failed to update settings: ${error.message}`,
@@ -110,7 +110,7 @@ export default function Settings() {
       return response.json();
     },
     onSuccess: (data) => {
-      playSuccessSound();
+      playSuccess();
       toast({
         title: "Mode switched",
         description: `Now using ${data.mode} LLM server at ${data.active_url}`,
@@ -118,7 +118,7 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ['/api/system/config'] });
     },
     onError: (error) => {
-      playErrorSound();
+      playError();
       toast({
         title: "Error",
         description: `Failed to switch mode: ${error.message}`,
@@ -139,7 +139,7 @@ export default function Settings() {
       return response.json();
     },
     onSuccess: () => {
-      playSuccessSound();
+      playSuccess();
       toast({
         title: "Deployment started",
         description: "Oracle Cloud instance deployment started. This may take a few minutes.",
@@ -147,7 +147,7 @@ export default function Settings() {
       refetchStatus();
     },
     onError: (error) => {
-      playErrorSound();
+      playError();
       toast({
         title: "Error",
         description: `Failed to start deployment: ${error.message}`,
@@ -168,7 +168,7 @@ export default function Settings() {
       return response.json();
     },
     onSuccess: () => {
-      playSuccessSound();
+      playSuccess();
       toast({
         title: "Instance stopping",
         description: "Oracle Cloud instance is being stopped. This may take a few minutes.",
@@ -176,7 +176,7 @@ export default function Settings() {
       refetchStatus();
     },
     onError: (error) => {
-      playErrorSound();
+      playError();
       toast({
         title: "Error",
         description: `Failed to stop instance: ${error.message}`,
@@ -201,14 +201,14 @@ export default function Settings() {
       return response.json();
     },
     onSuccess: () => {
-      playSuccessSound();
+      playSuccess();
       toast({
         title: "Apify connection successful",
         description: "Test search query was processed successfully.",
       });
     },
     onError: (error) => {
-      playErrorSound();
+      playError();
       toast({
         title: "Error",
         description: `Failed to connect to Apify: ${error.message}`,
@@ -247,7 +247,7 @@ export default function Settings() {
 
   // Save configuration
   const saveConfig = () => {
-    playClickSound();
+    playClick();
     
     // Only send changed fields to avoid overwriting sensitive data
     const updates: Partial<ConfigState> = {};
@@ -287,25 +287,25 @@ export default function Settings() {
 
   // Switch mode
   const switchMode = (mode: 'local' | 'cloud') => {
-    playClickSound();
+    playClick();
     switchModeMutation.mutate(mode);
   };
 
   // Start Oracle deployment
   const startDeploy = () => {
-    playClickSound();
+    playClick();
     deployOracleMutation.mutate();
   };
 
   // Stop Oracle instance
   const stopInstance = () => {
-    playClickSound();
+    playClick();
     stopOracleMutation.mutate();
   };
 
   // Test Apify connection
   const testApify = () => {
-    playClickSound();
+    playClick();
     testApifyMutation.mutate();
   };
 
@@ -335,9 +335,9 @@ export default function Settings() {
         <GlassMorphism borderGradient glowAccent className="p-6 rounded-lg mt-4">
           <Tabs defaultValue="general">
             <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="general" onClick={playClickSound}>General Settings</TabsTrigger>
-              <TabsTrigger value="llm" onClick={playClickSound}>LLM Configuration</TabsTrigger>
-              <TabsTrigger value="oracle" onClick={playClickSound}>Oracle Cloud</TabsTrigger>
+              <TabsTrigger value="general" onClick={playClick}>General Settings</TabsTrigger>
+              <TabsTrigger value="llm" onClick={playClick}>LLM Configuration</TabsTrigger>
+              <TabsTrigger value="oracle" onClick={playClick}>Oracle Cloud</TabsTrigger>
             </TabsList>
             
             <TabsContent value="general" className="space-y-6">

@@ -59,7 +59,7 @@ export default function Chat() {
   const [isSearchQuery, setIsSearchQuery] = useState(false);
   
   // Sound effects
-  const { playClickSound, playSuccessSound, playErrorSound } = useSoundEffect();
+  const { playClick, playSuccess, playError } = useSoundEffect();
   const { toast } = useToast();
   
   // Refs
