@@ -10,14 +10,16 @@ import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Landing from "@/pages/Landing";
+import Settings from "@/pages/Settings";
+import Chat from "@/pages/Chat";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import ParticleBackground from "@/components/ParticleBackground";
+import AiBackgroundImage from "@/components/AiBackgroundImage";
 
 function Router() {
   return (
     <div className="flex flex-col min-h-screen">
-      <ParticleBackground />
+      {/* Global background elements */}
       <div className="fixed top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none z-[-1]"></div>
       <div className="fixed top-0 left-0 w-full h-full bg-[linear-gradient(rgba(22,119,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(22,119,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px] z-[-5]"></div>
       
@@ -29,6 +31,8 @@ function Router() {
           <Route path="/login" component={Login} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/landing" component={Landing} />
+          <Route path="/settings" component={Settings} />
+          <Route path="/chat" component={Chat} />
           <Route component={NotFound} />
         </Switch>
       </main>

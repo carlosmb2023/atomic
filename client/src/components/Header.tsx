@@ -47,6 +47,24 @@ export default function Header() {
               Dashboard
             </div>
           </Link>
+          <Link href="/chat">
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/chat' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
+              AI Chat
+            </div>
+          </Link>
+          <Link href="/settings">
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/settings' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
+              Settings
+            </div>
+          </Link>
           <Link href="/landing#features">
             <div 
               className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#features') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
@@ -120,6 +138,20 @@ export default function Header() {
                   onMouseEnter={playHover}
                   onClick={playClick}
                 >Dashboard</div>
+              </Link>
+              <Link href="/chat">
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >AI Chat</div>
+              </Link>
+              <Link href="/settings">
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >Settings</div>
               </Link>
               <Link href="/landing#features">
                 <div 
