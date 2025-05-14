@@ -97,62 +97,84 @@ export default function Landing() {
   return (
     <div className="pt-16">
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-20">
-        <Logo size="large" className="mx-auto mb-6 animate-float" />
+      <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-20 relative overflow-hidden">
+        <ParticleBackground />
         
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-orbitron mb-6 animate-glow-pulse logo-text-gradient">
-          Atomic AI
-        </h1>
+        <AnimatedContent animation="scale" duration={0.8}>
+          <Logo size="large" className="mx-auto mb-6 animate-float" />
+        </AnimatedContent>
         
-        <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10">
-          A combinação perfeita entre IA, terminal remoto, edição de arquivos e automação com Apify.
-        </p>
+        <AnimatedContent animation="fadeIn" delay={0.4} duration={0.7}>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-orbitron mb-6 animate-glow-pulse cyber-text bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+            Atomic AI
+          </h1>
+        </AnimatedContent>
         
-        <Link href="/dashboard">
-          <a className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl">
-            Acessar Plataforma
-          </a>
-        </Link>
+        <AnimatedContent animation="fadeIn" delay={0.7} duration={0.6}>
+          <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10">
+            A combinação perfeita entre IA, terminal remoto, edição de arquivos e automação com Apify.
+          </p>
+        </AnimatedContent>
+        
+        <AnimatedContent animation="slideUp" delay={1.0} duration={0.7}>
+          <Link href="/dashboard">
+            <div 
+              className="btn-primary text-lg font-orbitron px-8 py-4 rounded-xl inline-block transition-all duration-300 hover:shadow-lg hover:shadow-primary/30 transform hover:-translate-y-1 cursor-pointer"
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
+              Acessar Plataforma
+            </div>
+          </Link>
+        </AnimatedContent>
       </section>
       
       {/* Preview Card Section */}
       <section className="py-12 px-4">
-        <div className="glass-panel max-w-lg mx-auto p-6">
-          <h3 className="text-xl font-orbitron mb-4 text-primary">Arquivos Recentes</h3>
-          <ul className="mb-4 font-jetbrains">
-            {filesList.length > 0 ? (
-              filesList.map((file, index) => (
-                <li key={index} className="mb-1">• {file}</li>
-              ))
-            ) : (
-              <li>Carregando...</li>
-            )}
-          </ul>
-          
-          <form onSubmit={handleLandingUpload} className="mt-4" encType="multipart/form-data">
-            <div className="flex flex-wrap gap-2 items-center">
-              <label className="text-sm font-jetbrains">Upload rápido:</label>
-              <input 
-                type="file" 
-                name="files" 
-                multiple 
-                required
-                className="text-xs text-muted-foreground
-                         file:mr-2 file:py-1 file:px-2
-                         file:rounded-md file:border-0
-                         file:text-xs file:font-medium
-                         file:bg-primary file:text-white
-                         hover:file:bg-primary/90"
-              />
-              <button 
-                type="submit" 
-                className="px-4 py-1.5 bg-primary text-white rounded-md text-sm"
-                disabled={isUploading}
-              >
-                Enviar
-              </button>
-            </div>
-          </form>
+        <AnimatedContent animation="fadeIn" duration={0.8}>
+          <GlassMorphism 
+            className="max-w-lg mx-auto p-6" 
+            glowAccent={true}
+            borderGradient={true}
+            intensity="medium"
+          >
+            <h3 className="text-xl font-orbitron mb-4 text-primary cyber-text">Arquivos Recentes</h3>
+            <ul className="mb-4 font-jetbrains">
+              {filesList.length > 0 ? (
+                filesList.map((file, index) => (
+                  <li key={index} className="mb-1 opacity-80 hover:opacity-100 transition-opacity">• {file}</li>
+                ))
+              ) : (
+                <li>Carregando...</li>
+              )}
+            </ul>
+            
+            <form onSubmit={handleLandingUpload} className="mt-4" encType="multipart/form-data">
+              <div className="flex flex-wrap gap-2 items-center">
+                <label className="text-sm font-jetbrains">Upload rápido:</label>
+                <input 
+                  type="file" 
+                  name="files" 
+                  multiple 
+                  required
+                  className="text-xs text-muted-foreground
+                          file:mr-2 file:py-1 file:px-2
+                          file:rounded-md file:border-0
+                          file:text-xs file:font-medium
+                          file:bg-primary file:text-white
+                          hover:file:bg-primary/90"
+                  onFocus={playHover}
+                />
+                <button 
+                  type="submit" 
+                  className="px-4 py-1.5 bg-primary text-white rounded-md text-sm hover:bg-primary/90 transition-colors"
+                  disabled={isUploading}
+                  onMouseEnter={playHover}
+                >
+                  Enviar
+                </button>
+              </div>
+            </form>
           
           {isUploading && (
             <div className="mt-4">
@@ -172,7 +194,8 @@ export default function Landing() {
               {uploadStatus}
             </p>
           )}
-        </div>
+          </GlassMorphism>
+        </AnimatedContent>
       </section>
       
       {/* Features Section */}

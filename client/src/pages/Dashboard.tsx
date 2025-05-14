@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { Terminal, Code, FileText, Upload, History, Home } from "lucide-react";
 import Logo from "@/components/Logo";
 import { Progress } from "@/components/ui/progress";
+import GlassMorphism from "@/components/GlassMorphism";
+import AnimatedContent from "@/components/AnimatedContent";
+import ParticleBackground from "@/components/ParticleBackground";
+import { useSoundEffect } from "@/hooks/use-sound-effect";
 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState('uploadSection');
@@ -9,6 +13,7 @@ export default function Dashboard() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+  const { playHover, playClick, playSuccess, playError } = useSoundEffect();
   
   // Fetch files list
   useEffect(() => {
