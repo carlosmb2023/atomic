@@ -1,7 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { testConnection, initializeDatabase } from "./db";
+import { testConnection, setupDatabase } from "./db";
 
 const app = express();
 app.use(express.json());
@@ -43,7 +43,7 @@ app.use((req, res, next) => {
     const connected = await testConnection();
     if (connected) {
       log('Conexão com o banco de dados estabelecida com sucesso');
-      await initializeDatabase();
+      await setupDatabase();
     } else {
       log('Falha ao conectar com o banco de dados, usando armazenamento em memória');
     }

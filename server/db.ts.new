@@ -28,10 +28,27 @@ function initDatabase() {
       throw new Error('DATABASE_URL não definida');
     }
     
-    // Vamos usar apenas Neon para simplificar e resolver o problema
-    log('🌐 Usando conexão Neon Serverless');
-    const sqlClient = neon(connectionString);
-    db = drizzle(sqlClient, { schema });
+    // Determinar o tipo de conexão e inicializar adequadamente
+    if (isNeonConnection(connectionString)) {
+      log('🌐 Usando conexão Neon Serverless');
+      const sqlClient = neon(connectionString);
+      db = drizzle(sqlClient);
+    } else {
+      log('🏠 Usando conexão PostgreSQL padrão');
+      const pool = new Pool({ connectionString });
+      
+      // Importar dinamicamente para evitar erros de importação
+      try {
+        // Tentar usar drizzle-orm/node-postgres
+        const { drizzle: drizzlePg } = require('drizzle-orm/node-postgres');
+        db = drizzlePg(pool);
+      } catch (e) {
+        // Fallback para postgres-js
+        log('⚠️ Fallback para postgres-js', 'warn');
+        const { drizzle: drizzlePgJs } = require('drizzle-orm/postgres-js');
+        db = drizzlePgJs(pool);
+      }
+    }
     
     log('✅ Banco de dados inicializado');
     return true;
@@ -58,16 +75,10 @@ export async function testConnection() {
       return false;
     }
     
-    // Abordagem simplificada para testar conexão
-    try {
-      const result = await db.select().from(schema.systemConfig).limit(1);
-      log('🔌 Conexão com o banco de dados estabelecida com sucesso');
-      log(`Configurações encontradas: ${result.length}`);
-      return true;
-    } catch (error) {
-      log(`❌ Erro ao testar banco de dados: ${error}`, 'error');
-      return false;
-    }
+    // Executar uma consulta simples para testar a conexão
+    const result = await db.execute(sql`SELECT NOW()`);
+    log('🔌 Conexão com o banco de dados estabelecida com sucesso');
+    return true;
   } catch (error) {
     log(`❌ Erro ao testar conexão com o banco de dados: ${error}`, 'error');
     return false;
