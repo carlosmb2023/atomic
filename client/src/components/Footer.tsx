@@ -20,23 +20,23 @@ export default function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link href="/landing#features">
-                    <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                    <div className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
                       Funcionalidades
-                    </a>
+                    </div>
                   </Link>
                 </li>
                 <li>
                   <Link href="#">
-                    <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                    <div className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
                       Preços
-                    </a>
+                    </div>
                   </Link>
                 </li>
                 <li>
                   <Link href="#">
-                    <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                    <div className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
                       API
-                    </a>
+                    </div>
                   </Link>
                 </li>
               </ul>
@@ -47,23 +47,23 @@ export default function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link href="#">
-                    <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                    <div className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
                       Documentação
-                    </a>
+                    </div>
                   </Link>
                 </li>
                 <li>
                   <Link href="#">
-                    <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                    <div className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
                       Tutoriais
-                    </a>
+                    </div>
                   </Link>
                 </li>
                 <li>
                   <Link href="#">
-                    <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                    <div className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
                       Exemplos
-                    </a>
+                    </div>
                   </Link>
                 </li>
               </ul>
@@ -74,23 +74,23 @@ export default function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link href="#">
-                    <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                    <div className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
                       Contato
-                    </a>
+                    </div>
                   </Link>
                 </li>
                 <li>
                   <Link href="#">
-                    <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                    <div className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
                       Status
-                    </a>
+                    </div>
                   </Link>
                 </li>
                 <li>
                   <Link href="#">
-                    <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                    <div className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer">
                       FAQ
-                    </a>
+                    </div>
                   </Link>
                 </li>
               </ul>
