@@ -29,6 +29,10 @@ interface ConfigState {
   logs_enabled: boolean;
   oracle_instance_ip: string | null;
   active_llm_url: string;
+  // Campos para o Mistral
+  mistral_local_url: string;
+  mistral_cloud_url: string;
+  mistral_instance_type: string;
 }
 
 interface DeployStatus {
@@ -50,7 +54,11 @@ export default function Settings() {
     base_prompt: 'Você é um assistente útil e profissional.',
     logs_enabled: true,
     oracle_instance_ip: null,
-    active_llm_url: 'http://127.0.0.1:11434'
+    active_llm_url: 'http://127.0.0.1:11434',
+    // Valores iniciais para o Mistral
+    mistral_local_url: 'http://127.0.0.1:8000',
+    mistral_cloud_url: 'https://api.mistral.ai/v1',
+    mistral_instance_type: 'oracle_arm'
   });
 
   // Sound effects
@@ -229,7 +237,11 @@ export default function Settings() {
         base_prompt: configData.base_prompt || 'Você é um assistente útil e profissional.',
         logs_enabled: configData.logs_enabled !== undefined ? configData.logs_enabled : true,
         oracle_instance_ip: configData.oracle_instance_ip || null,
-        active_llm_url: configData.active_llm_url || 'http://127.0.0.1:11434'
+        active_llm_url: configData.active_llm_url || 'http://127.0.0.1:11434',
+        // Campos do Mistral
+        mistral_local_url: configData.mistral_local_url || 'http://127.0.0.1:8000',
+        mistral_cloud_url: configData.mistral_cloud_url || 'https://api.mistral.ai/v1',
+        mistral_instance_type: configData.mistral_instance_type || 'oracle_arm'
       });
     }
   }, [configData]);
@@ -259,6 +271,11 @@ export default function Settings() {
       if (config.apify_actor_url !== configData.apify_actor_url) updates.apify_actor_url = config.apify_actor_url;
       if (config.base_prompt !== configData.base_prompt) updates.base_prompt = config.base_prompt;
       if (config.logs_enabled !== configData.logs_enabled) updates.logs_enabled = config.logs_enabled;
+      
+      // Campos do Mistral
+      if (config.mistral_local_url !== configData.mistral_local_url) updates.mistral_local_url = config.mistral_local_url;
+      if (config.mistral_cloud_url !== configData.mistral_cloud_url) updates.mistral_cloud_url = config.mistral_cloud_url;
+      if (config.mistral_instance_type !== configData.mistral_instance_type) updates.mistral_instance_type = config.mistral_instance_type;
       
       // Only include API key if it's been changed from masked value
       if (config.apify_api_key && config.apify_api_key !== '**********') {
@@ -334,9 +351,10 @@ export default function Settings() {
         
         <GlassMorphism borderGradient glowAccent className="p-6 rounded-lg mt-4">
           <Tabs defaultValue="general">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsList className="grid w-full grid-cols-4 mb-6">
               <TabsTrigger value="general" onClick={playClick}>General Settings</TabsTrigger>
               <TabsTrigger value="llm" onClick={playClick}>LLM Configuration</TabsTrigger>
+              <TabsTrigger value="mistral" onClick={playClick}>Mistral AI</TabsTrigger>
               <TabsTrigger value="oracle" onClick={playClick}>Oracle Cloud</TabsTrigger>
             </TabsList>
             
