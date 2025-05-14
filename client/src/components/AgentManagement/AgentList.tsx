@@ -149,6 +149,7 @@ export function AgentList() {
     const description = formData.get('description') as string;
     const systemPrompt = formData.get('systemPrompt') as string;
     const model = formData.get('model') as string;
+    const apiKey = formData.get('apiKey') as string;
     
     if (!name || !type) {
       toast({
@@ -171,8 +172,14 @@ export function AgentList() {
     
     if (type === 'openai') {
       configuration.model = model || 'gpt-3.5-turbo';
+      if (apiKey) {
+        configuration.api_key = apiKey;
+      }
     } else if (type === 'mistral') {
       configuration.model = model || 'mistral-medium';
+      if (apiKey) {
+        configuration.api_key = apiKey;
+      }
     }
     
     createAgentMutation.mutate({
@@ -291,6 +298,18 @@ export function AgentList() {
                     id="model"
                     name="model"
                     placeholder="gpt-3.5-turbo"
+                    className="col-span-3 bg-slate-800 border-slate-700"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="apiKey" className="text-right">
+                    Chave API
+                  </Label>
+                  <Input
+                    id="apiKey"
+                    name="apiKey"
+                    type="password"
+                    placeholder="Insira sua chave de API"
                     className="col-span-3 bg-slate-800 border-slate-700"
                   />
                 </div>
