@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Configurações – Atomic AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0a101a" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <style>
+    :root {
+      --brand: #1677ff;
+      --brand-hover: #0c5fe0;
+      --brand-alt: #e600ff;
+      --bg-glass: rgba(18, 24, 38, 0.88);
+      --text: #f0f0f0;
+      --panel: #131926;
+      --shadow: 0 0 40px 0 #1677ff77;
+      --card-glow: 0 0 18px 0 #1677ff55;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #0a101a;
+      color: var(--text);
+      font-family: 'Poppins', 'JetBrains Mono', monospace, sans-serif;
+      letter-spacing: 0.01em;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bg-video {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      object-fit: cover;
+      z-index: -20;
+      opacity: 0.16;
+      filter: blur(1.5px) brightness(0.7) grayscale(0.2);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 18% 12%, #1677ff55 0%, transparent 70%),
+                  radial-gradient(circle at 85% 82%, #e600ff33 0%, transparent 70%),
+                  linear-gradient(120deg, #0a101a 70%, #111325 100%);
+      z-index: -10;
+      pointer-events: none;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 2.2rem 1.1rem 2.2rem;
+      background: rgba(18, 24, 38, 0.93);
+      box-shadow: 0 2px 18px #1677ff11;
+      border-bottom: 1.5px solid #22345b33;
+      z-index: 9;
+      position: relative;
+    }
+    header .logo {
+      height: 40px; border-radius: 14px; filter: drop-shadow(0 0 12px #1677ff88);
+      user-select: none; pointer-events: none;
+    }
+    header nav {
+      display: flex; gap: 1.2em; align-items: center;
+    }
+    header nav a {
+      color: var(--text);
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: 1.08rem;
+      opacity: 0.93;
+      transition: color 0.18s, opacity 0.17s;
+      letter-spacing: 0.02em;
+      padding: 0.3em 0.7em;
+      border-radius: 6px;
+    }
+    header nav a:hover, header nav a:focus-visible {
+      color: var(--brand);
+      opacity: 1;
+      background: #22345b33;
+    }
+
+    .config-main {
+      max-width: 540px;
+      margin: 2.4em auto 1.4em auto;
+      background: var(--bg-glass);
+      border-radius: 22px;
+      box-shadow: var(--shadow), var(--card-glow);
+      padding: 2.3em 2em 1.7em 2em;
+      animation: fadein 1.1s cubic-bezier(.4,2,.5,1.1);
+    }
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(40px) scale(0.98);}
+      to   { opacity: 1; transform: none;}
+    }
+    h2 {
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+      color: var(--brand);
+      letter-spacing: 0.07em;
+      margin-bottom: 1.7em;
+      font-size: 1.65em;
+      text-align: center;
+      font-weight: 700;
+    }
+    .form-group {
+      margin-bottom: 1.4em;
+    }
+    label {
+      font-family: 'Poppins', monospace, sans-serif;
+      font-weight: 600;
+      color: #a4c6ff;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.3em;
+      display: block;
+      font-size: 1.08em;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.85em 1em;
+      border-radius: 8px;
+      border: 1.2px solid #22345b55;
+      background: #151d2a;
+      color: #fff;
+      font-size: 1.07em;
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+      margin-top: 0.2em;
+      margin-bottom: 0.2em;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--brand);
+    }
+    .btn {
+      background: linear-gradient(90deg, var(--brand), var(--brand-alt));
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.9em 2.2em;
+      font-family: 'Poppins', 'JetBrains Mono', monospace, sans-serif;
+      font-weight: 600;
+      font-size: 1.09em;
+      letter-spacing: 0.06em;
+      margin-top: 0.7em;
+      box-shadow: 0 2px 14px #1677ff33;
+      transition: background 0.22s, transform 0.17s, box-shadow 0.18s;
+      cursor: pointer;
+      outline: none;
+    }
+    .btn:hover, .btn:focus-visible {
+      background: linear-gradient(90deg, var(--brand-hover), #e600ff 100%);
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 6px 22px #1677ff44;
+    }
+    .config-result {
+      text-align: center;
+      font-size: 1.04em;
+      color: #00e68a;
+      margin: 0.8em 0 -0.5em 0;
+      min-height: 1.2em;
+      font-family: 'JetBrains Mono', monospace, monospace;
+    }
+    @media (max-width: 600px) {
+      .config-main { padding: 1em 0.6em 1.4em 0.6em; }
+      h2 { font-size: 1.18em; }
+      header { padding: 0.7rem 0.7rem 0.7rem 1.1rem; }
+      .logo { height: 30px; }
+    }
+    footer {
+      text-align: center;
+      font-size: 0.89em;
+      color: #b0b4c2;
+      margin: 2em 0 0 0;
+      padding: 1em 0;
+      letter-spacing: 0.02em;
+      opacity: 0.85;
+      user-select: none;
+      background: none;
+    }
+  </style>
+</head>
+<body>
+  <video class="bg-video" autoplay loop muted playsinline>
+    <source src="/static/video_loop.mp4" type="video/mp4" />
+  </video>
+  <div class="overlay"></div>
+
+  <header>
+    <img src="/static/logo.png" alt="Atomic AI" class="logo" />
+    <nav>
+      <a href="/dashboard">Painel</a>
+      <a href="/landing">Landing</a>
+      <a href="/">Início</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="config-main">
+      <h2>Configurações do Sistema</h2>
+      <div id="configResult" class="config-result"></div>
+
+      <form id="proxyForm">
+        <div class="form-group">
+          <label for="proxySelect">Proxy de conexão:</label>
+          <select id="proxySelect"></select>
+        </div>
+        <button type="submit" class="btn">Salvar Proxy</button>
+      </form>
+
+      <form id="routeForm">
+        <div class="form-group">
+          <label for="routeInput">Personalizar rota:</label>
+          <input type="text" id="routeInput" placeholder="Nova rota customizada">
+        </div>
+        <button type="submit" class="btn">Salvar Rota</button>
+      </form>
+
+      <form id="apikeyForm">
+        <div class="form-group">
+          <label for="apiKeyInput">API Key (OpenAI, Apify...):</label>
+          <input type="text" id="apiKeyInput" placeholder="Chave secreta">
+        </div>
+        <button type="submit" class="btn">Salvar API Key</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>© 2025 Atomic AI – Todos os direitos reservados</footer>
+
+  <script>
+    // Tema
+    const toggleTheme = () => {
+      const html = document.documentElement;
+      const novo = html.dataset.theme === "light" ? "dark" : "light";
+      html.dataset.theme = novo;
+      localStorage.setItem("theme", novo);
+    };
+    window.onload = () => {
+      const saved = localStorage.getItem("theme") || "dark";
+      document.documentElement.dataset.theme = saved;
+      loadProxySelect();
+    };
+
+    // Proxy select
+    async function loadProxySelect() {
+      const r = await fetch('/config/proxies');
+      const proxies = await r.json();
+      const sel = document.getElementById('proxySelect');
+      sel.innerHTML = '';
+      proxies.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.selected = p.active;
+        opt.textContent = p.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    // Forms
+    document.getElementById('proxyForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('proxySelect').value;
+      await fetch('/config/proxy', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ id })
+      });
+      showConfigResult('Proxy salvo!');
+    };
+
+    document.getElementById('routeForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const route = document.getElementById('routeInput').value;
+      await fetch('/config/route', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ route })
+      });
+      showConfigResult('Rota personalizada salva!');
+    };
+
+    document.getElementById('apikeyForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const apikey = document.getElementById('apiKeyInput').value;
+      // Exemplo de endpoint fictício para salvar API Key: /config/apikey (ajuste no backend se necessário)
+      await fetch('/config/apikey', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ apikey })
+      });
+      showConfigResult('API Key salva (não exibida por segurança).');
+    };
+
+    function showConfigResult(msg) {
+      const result = document.getElementById('configResult');
+      result.textContent = msg;
+      setTimeout(() => { result.textContent = ""; }, 2300);
+    }
+  </script>
+</body>
+</html>

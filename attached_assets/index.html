@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atomic AI – Início</title>
+  <meta name="description" content="Plataforma com IA, terminal remoto e automação em um só lugar. Viva o futuro da produtividade.">
+  <meta name="theme-color" content="#0a101a" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+
+  <style>
+    /* Mantém seu CSS custom inline */
+    :root {
+      --brand: #1677ff;
+      --brand-hover: #0c5fe0;
+      --brand-alt: #e600ff;
+      --bg: #0a101a;
+      --bg-glass: rgba(18, 24, 38, 0.85);
+      --accent: #1f2636;
+      --panel: #131926;
+      --text: #f0f0f0;
+      --text-muted: #b0b4c2;
+      --shadow: 0 0 40px 0 #1677ff77;
+      --card-glow: 0 0 18px 0 #1677ff55;
+      --success: #00e68a;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Poppins', 'JetBrains Mono', monospace, sans-serif;
+      min-height: 100vh;
+      letter-spacing: 0.01em;
+      overflow-x: hidden;
+    }
+
+    video.bg-video {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -20;
+      opacity: 0.18;
+      filter: blur(1.5px) brightness(0.7) grayscale(0.2);
+      transition: opacity 0.5s;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: radial-gradient(circle at 20% 10%, #1677ff55 0%, transparent 70%),
+                  radial-gradient(circle at 88% 80%, #e600ff33 0%, transparent 70%),
+                  linear-gradient(120deg, #0a101a 70%, #111325 100%);
+      z-index: -10;
+      pointer-events: none;
+    }
+
+    .container {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .glass-card {
+      background: var(--bg-glass);
+      border-radius: 28px;
+      box-shadow: var(--shadow), var(--card-glow);
+      padding: 2.5rem 2.5rem 2.2rem 2.5rem;
+      backdrop-filter: blur(6px) saturate(1.3);
+      border: 1.5px solid #22345b55;
+      margin-bottom: 2.5rem;
+      display: inline-block;
+      max-width: 460px;
+      min-width: 310px;
+      animation: fadein 1.1s cubic-bezier(.4,2,.5,1.1);
+      position: relative;
+      overflow: visible;
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(40px) scale(0.98);}
+      to   { opacity: 1; transform: none;}
+    }
+
+    /* LOGO: animação só via .logo-visible */
+    .logo {
+      display: block;
+      margin: 0 auto 1.4rem auto;
+      width: clamp(160px, 17vw, 220px);
+      max-width: 240px;
+      filter: drop-shadow(0 0 0px #1677ff) drop-shadow(0 0 0px #00ffe7);
+      border-radius: 22px;
+      background: rgba(0,0,0,0.01);
+      opacity: 0;
+      transition: opacity 1.7s cubic-bezier(.44,1.4,.47,1.01), filter 1.7s cubic-bezier(.44,1.4,.47,1.01);
+      will-change: opacity, filter;
+      user-select: none;
+      pointer-events: none;
+    }
+    .logo.logo-visible {
+      opacity: 1;
+      filter:
+        drop-shadow(0 0 24px #1677ffcc)
+        drop-shadow(0 0 18px #00ffe7aa)
+        drop-shadow(0 0 2px #fff);
+      animation: logoPulse 3.8s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%, 100% { filter: drop-shadow(0 0 24px #1677ffcc) drop-shadow(0 0 18px #00ffe7aa) drop-shadow(0 0 2px #fff); }
+      50% { filter: drop-shadow(0 0 38px #1677ff) drop-shadow(0 0 27px #00ffe7) drop-shadow(0 0 14px #fff); }
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 6vw, 4.5rem);
+      margin-bottom: 0.7rem;
+      background: linear-gradient(90deg, #1677ff 10%, #e600ff 95%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+      font-weight: 700;
+      animation: pulseGlow 3s ease-in-out infinite alternate;
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+      text-shadow: 0 2px 24px #1677ff44;
+    }
+
+    @keyframes pulseGlow {
+      from { text-shadow: 0 0 12px #1677ff99, 0 0 0 #e600ff44; }
+      to { text-shadow: 0 0 0 #1677ff44, 0 0 22px #e600ff99; }
+    }
+
+    .typed-text {
+      color: var(--text-muted);
+      font-size: 1.22rem;
+      margin-bottom: 1.8rem;
+      min-height: 3.1rem;
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+      letter-spacing: 0.03em;
+      text-shadow: 0 1px 2px #0a101a88;
+      word-break: keep-all;
+    }
+
+    .actions {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 0.7rem;
+    }
+
+    .btn {
+      background: linear-gradient(100deg, var(--brand), var(--brand-alt) 95%);
+      color: #fff;
+      padding: 1.05rem 2.5rem;
+      font-size: 1.13rem;
+      font-family: 'Poppins', 'JetBrains Mono', monospace, sans-serif;
+      font-weight: 600;
+      border-radius: 14px;
+      text-decoration: none;
+      border: none;
+      box-shadow: 0 4px 18px #1677ff40;
+      transition: background 0.22s, transform 0.17s, box-shadow 0.17s;
+      letter-spacing: 0.04em;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(100deg, #fff2, #e600ff22 85%);
+      opacity: 0;
+      transition: opacity 0.22s;
+      pointer-events: none;
+      border-radius: 12px;
+    }
+
+    .btn:hover, .btn:focus-visible {
+      background: linear-gradient(90deg, var(--brand-hover), #e600ff 100%);
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 8px 32px #1677ff70;
+    }
+    .btn:hover:before, .btn:focus-visible:before {
+      opacity: 1;
+    }
+
+    .status-preview {
+      min-height: 2.2em;
+      text-align: center;
+      margin-bottom: 0.3em;
+      font-size: 1.07em;
+      letter-spacing: 0.05em;
+      color: var(--success);
+      animation: fadeStatus 0.5s;
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+    }
+    @keyframes fadeStatus {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    #toggleThemeBtn {
+      position: fixed;
+      top: 1.1rem;
+      right: 1.2rem;
+      font-size: 1.6rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      z-index: 99;
+      border-radius: 50%;
+      transition: background 0.16s, color 0.18s;
+      padding: 0.2em 0.35em;
+      box-shadow: 0 0 0 #0000;
+    }
+    #toggleThemeBtn:hover {
+      background: #1f2636cc;
+      color: #fff;
+      box-shadow: 0 3px 10px #1677ff33;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 1.1rem;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.96rem;
+      color: var(--text-muted);
+      z-index: 4;
+      letter-spacing: 0.03em;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    @media (max-width: 600px) {
+      .glass-card { padding: 1.5rem 1rem 1.3rem 1rem; max-width: 98vw; }
+      .btn { padding: 0.83rem 1.4rem; font-size: 1rem; }
+      .logo { width: 120px; }
+      h1 { font-size: 2.1rem; }
+    }
+    @media (max-width: 400px) {
+      .glass-card { padding: 0.8rem 0.2rem; }
+      .typed-text { font-size: 1.01rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 🎥 Video de fundo -->
+  <video class="bg-video" autoplay loop muted playsinline>
+    <source src="/static/video_loop.mp4" type="video/mp4" />
+  </video>
+  <div class="overlay"></div>
+
+  <!-- 🌗 Toggle de tema -->
+  <button id="toggleThemeBtn" onclick="toggleTheme()" aria-label="Alternar tema">🌓</button>
+
+  <!-- 🌐 Conteúdo principal -->
+  <div class="container">
+    <div class="glass-card">
+      <!-- LOGO: só .logo, sem .logo-visible -->
+      <img src="/static/logo.png" alt="Atomic AI Logo" class="logo" id="logoMain" draggable="false" />
+      <h1>Atomic AI</h1>
+      <div class="typed-text" id="typed"></div>
+      <div class="status-preview" id="statusPreview"></div>
+      <div class="actions">
+        <a href="/login" class="btn">Entrar</a>
+        <a href="/dashboard" class="btn">Painel</a>
+        <a href="/landing" class="btn">Ver Mais</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>© 2025 Atomic AI – Todos os direitos reservados</footer>
+
+  <!-- Scripts -->
+  <script>
+    // LOGO ANIMADA: só adiciona .logo-visible via JS após carregamento
+    window.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        const logo = document.getElementById("logoMain");
+        if (logo) logo.classList.add("logo-visible");
+      }, 120); // pequeno delay = animação suave
+    });
+
+    // Texto digitado animado
+    const frases = [
+      "Automatize com IA em segundos...",
+      "WebSocket. Terminal. Cloud. 🔥",
+      "Agentes OpenAI + Apify combinados.",
+      "Sua plataforma de automação definitiva.",
+      "Segurança, performance e inovação."
+    ];
+    let i = 0, j = 0, deletando = false, delay = 74;
+    function digitarTexto() {
+      const el = document.getElementById("typed");
+      if (!el) return;
+      el.textContent = frases[i].substring(0, j) + (j % 2 === 0 ? "▌" : "");
+      if (!deletando && j < frases[i].length) {
+        j++;
+      } else if (deletando && j > 0) {
+        j--;
+      } else {
+        if (!deletando) {
+          deletando = true;
+          delay = 23;
+          setTimeout(digitarTexto, 1050);
+          return;
+        } else {
+          deletando = false;
+          i = (i + 1) % frases.length;
+          delay = 74;
+        }
+      }
+      setTimeout(digitarTexto, delay);
+    }
+    digitarTexto();
+
+    // 🌗 Tema
+    const toggleTheme = () => {
+      const html = document.documentElement;
+      const novo = html.dataset.theme === "light" ? "dark" : "light";
+      html.dataset.theme = novo;
+      localStorage.setItem("theme", novo);
+    };
+    window.onload = () => {
+      const saved = localStorage.getItem("theme") || "dark";
+      document.documentElement.dataset.theme = saved;
+      previewStatus();
+    };
+
+    // 🔥 Preview do status da API/backend
+    async function previewStatus() {
+      const statusDiv = document.getElementById("statusPreview");
+      try {
+        const res = await fetch("/api", {cache: "no-store"});
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (data.status) {
+          statusDiv.textContent = data.status + " 🚀";
+          statusDiv.style.color = "var(--success)";
+        }
+      } catch {
+        statusDiv.textContent = "⚠️ Servidor offline ou instável";
+        statusDiv.style.color = "#e60055";
+      }
+    }
+  </script>
+</body>
+</html>

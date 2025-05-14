@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atomic AI – A nova era da automação</title>
+  <meta name="description" content="Automatize tudo com IA, terminal remoto, editor de arquivos e Apify. Plataforma visual pronta para devs e makers.">
+
+  <!-- Fonts e Estilo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <link rel="stylesheet" href="/static/css/theme.css" />
+
+  <style>
+    :root {
+      --brand: #1677ff;
+      --brand-hover: #0c5fe0;
+      --brand-alt: #e600ff;
+      --text: #f0f0f0;
+      --bg: #0a101a;
+      --glass: rgba(18, 24, 38, 0.83);
+      --panel: #11141b;
+      --card-glow: 0 0 24px 0 #1677ff44;
+    }
+
+    html, body {
+      margin: 0;
+      font-family: 'Poppins', 'JetBrains Mono', monospace, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      min-height: 100vh;
+      letter-spacing: 0.01em;
+    }
+
+    video.bg-video {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      object-fit: cover;
+      z-index: -20;
+      opacity: 0.18;
+      filter: blur(1.5px) brightness(0.7) grayscale(0.2);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 18% 12%, #1677ff55 0%, transparent 70%),
+                  radial-gradient(circle at 85% 82%, #e600ff33 0%, transparent 70%),
+                  linear-gradient(120deg, #0a101a 70%, #111325 100%);
+      z-index: -10;
+      pointer-events: none;
+    }
+
+    #toggleThemeBtn {
+      position: fixed;
+      top: 1.1rem;
+      right: 1.2rem;
+      font-size: 1.55rem;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      z-index: 99;
+      border-radius: 50%;
+      transition: background 0.16s, color 0.18s;
+      padding: 0.2em 0.35em;
+      box-shadow: 0 0 0 #0000;
+    }
+    #toggleThemeBtn:hover {
+      background: #1f2636cc;
+      color: #fff;
+      box-shadow: 0 3px 10px #1677ff33;
+    }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(10, 16, 26, 0.82);
+      z-index: 10;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 16px #1677ff13;
+    }
+
+    header img {
+      height: 44px;
+      filter: drop-shadow(0 0 12px #1677ff99);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    nav a {
+      margin-left: 1.5rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+      transition: color 0.2s;
+      font-size: 1.05rem;
+      opacity: 0.92;
+    }
+
+    nav a:hover {
+      color: var(--brand);
+      opacity: 1;
+      text-shadow: 0 0 8px #1677ff55;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 2rem 2vw 3rem 2vw;
+      background: none;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.1rem, 5vw, 4.5rem);
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, #1677ff 10%, #e600ff 95%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+      animation: glow 3s ease-in-out infinite alternate;
+      letter-spacing: 2px;
+      font-weight: 700;
+      text-shadow: 0 2px 24px #1677ff44;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #1677ff66; }
+      to { text-shadow: 0 0 22px #e600ff66; }
+    }
+
+    .hero p {
+      max-width: 650px;
+      margin-bottom: 2.1rem;
+      font-size: 1.18rem;
+      color: #c6d6f6;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .hero a {
+      padding: 1.05rem 2.5rem;
+      font-size: 1.18rem;
+      font-weight: 600;
+      border-radius: 13px;
+      background: linear-gradient(100deg, var(--brand), var(--brand-alt) 95%);
+      color: #fff;
+      text-decoration: none;
+      border: none;
+      box-shadow: 0 4px 18px #1677ff40;
+      transition: background 0.22s, transform 0.17s, box-shadow 0.17s;
+      letter-spacing: 0.04em;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero a:before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(100deg, #fff2, #e600ff22 85%);
+      opacity: 0;
+      transition: opacity 0.22s;
+      pointer-events: none;
+      border-radius: 13px;
+    }
+    .hero a:hover, .hero a:focus-visible {
+      background: linear-gradient(90deg, var(--brand-hover), #e600ff 100%);
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 8px 32px #1677ff70;
+    }
+    .hero a:hover:before, .hero a:focus-visible:before {
+      opacity: 1;
+    }
+
+    .upload-preview-card {
+      background: var(--glass);
+      border-radius: 18px;
+      box-shadow: var(--card-glow), 0 0 20px #1677ff22;
+      padding: 1.7rem 1.3rem 1.3rem 1.3rem;
+      margin: 2.2rem auto 1.2rem auto;
+      max-width: 420px;
+      min-width: 210px;
+      text-align: left;
+      color: #d6e3fa;
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+    }
+    .upload-preview-card h3 {
+      margin-bottom: 0.7rem;
+      color: var(--brand);
+      font-size: 1.18rem;
+    }
+    .upload-preview-card ul {
+      padding-left: 1.3em;
+      margin: 0.7em 0 0.9em 0;
+      font-size: 1.04rem;
+      list-style: disc;
+    }
+    .progress-container {
+      margin-top: 1.1rem;
+    }
+    .progress-bar-bg {
+      background: #111926;
+      border-radius: 8px;
+      height: 18px;
+      width: 100%;
+      margin-bottom: 0.4em;
+      box-shadow: 0 0 8px #1677ff55;
+      overflow: hidden;
+    }
+    .progress-bar-fg {
+      background: linear-gradient(90deg, #1677ff 40%, #e600ff 100%);
+      height: 100%;
+      border-radius: 8px;
+      transition: width 0.22s;
+      width: 0%;
+      color: #fff;
+      font-weight: bold;
+      text-align: center;
+      font-size: 0.97rem;
+      line-height: 18px;
+      box-shadow: 0 0 8px #1677ff88;
+    }
+
+    section.features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2.2rem;
+      padding: 4.5rem 2vw 2.4rem 2vw;
+      background: var(--panel);
+      border-radius: 38px 38px 0 0/ 22px 22px 0 0;
+      box-shadow: 0 -2px 22px #1677ff09;
+    }
+
+    .feature-box {
+      background: var(--glass);
+      padding: 2rem 1.45rem;
+      border-radius: 16px;
+      max-width: 340px;
+      min-width: 230px;
+      color: #dde7fd;
+      box-shadow: var(--card-glow);
+      transition: transform 0.22s, box-shadow 0.21s;
+      font-family: 'Poppins', sans-serif;
+      border: 1.1px solid #23345b33;
+    }
+
+    .feature-box:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 0 28px #1677ff77, var(--card-glow);
+      border-color: #1677ff77;
+    }
+
+    .feature-box h3 {
+      color: var(--brand);
+      margin-bottom: 0.7rem;
+      font-size: 1.28rem;
+      font-family: 'JetBrains Mono', monospace, 'Poppins', sans-serif;
+    }
+
+    .feature-box p {
+      font-size: 1.06rem;
+      color: #c6d6f6;
+    }
+
+    footer {
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.98rem;
+      color: #999;
+      background: #0b0d11;
+      letter-spacing: 0.03em;
+      user-select: none;
+    }
+
+    @media (max-width: 700px) {
+      header { flex-direction: column; gap: 0.7rem; padding: 0.7rem 1rem; }
+      .hero { padding: 1rem 2vw 2rem 2vw; }
+      .hero h1 { font-size: 2.3rem; }
+      section.features { padding: 2.3rem 2vw 1.2rem 2vw; }
+      .feature-box { min-width: 160px; padding: 1.1rem 0.6rem; font-size: 0.97rem; }
+    }
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 1.5rem; }
+      .hero p { font-size: 0.97rem; }
+      .hero a { font-size: 0.98rem; padding: 0.7rem 1.5rem; }
+      header img { height: 32px; }
+      nav a { margin-left: 0.9rem; font-size: 0.93rem; }
+      section.features { border-radius: 18px 18px 0 0/ 12px 12px 0 0; }
+    }
+  </style>
+</head>
+
+<body>
+  <video class="bg-video" autoplay loop muted playsinline>
+    <source src="/static/video_loop.mp4" type="video/mp4" />
+  </video>
+  <div class="overlay"></div>
+  <button id="toggleThemeBtn" onclick="toggleTheme()" aria-label="Alternar tema">🌓</button>
+
+  <header>
+    <img src="/static/logo.png" alt="Atomic AI" />
+    <nav>
+      <a href="#features">Funcionalidades</a>
+      <a href="#sobre">Sobre</a>
+      <a href="/login">Entrar</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Atomic AI</h1>
+      <p>A combinação perfeita entre IA, terminal remoto, edição de arquivos e automação com Apify.</p>
+      <a href="/dashboard">Acessar Plataforma</a>
+    </section>
+
+    <section class="upload-preview-card">
+      <h3>Arquivos Recentes</h3>
+      <ul id="recentFilesList">
+        <li>Carregando...</li>
+      </ul>
+      <form id="landingUploadForm" enctype="multipart/form-data">
+        <label style="font-size:1.01rem;">Upload rápido:</label>
+        <input type="file" name="files" multiple required>
+        <button type="submit" class="btn" style="padding:0.45em 1.2em; margin-left: 0.5em;">Enviar</button>
+      </form>
+      <div class="progress-container" style="display:none;">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fg" id="landingUploadProgress">0%</div>
+        </div>
+        <span id="landingUploadStatus"></span>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="feature-box">
+        <h3>🤖 Agente Inteligente</h3>
+        <p>Integre com Assistants da OpenAI para gerar, executar e automatizar tarefas com linguagem natural.</p>
+      </div>
+      <div class="feature-box">
+        <h3>🧠 Terminal Web</h3>
+        <p>Acesse o shell remoto em tempo real, diretamente do navegador, via WebSocket e container seguro.</p>
+      </div>
+      <div class="feature-box">
+        <h3>📁 Upload & GitHub</h3>
+        <p>Gerencie arquivos localmente ou via proxy para repositórios GitHub, com suporte a múltiplas fontes.</p>
+      </div>
+      <div class="feature-box">
+        <h3>🕷️ Automação via Apify</h3>
+        <p>Use scrapers e atores do Apify para extrair dados e interagir com sites automaticamente via interface visual.</p>
+      </div>
+    </section>
+
+    <!-- NOVA SEÇÃO SOBRE -->
+    <section id="sobre" style="padding:2.5rem 1.2rem; text-align:center;">
+      <h2>Sobre a Plataforma</h2>
+      <p>
+        Atomic AI é uma plataforma aberta e pronta para desenvolvedores, makers e empresas que buscam automação inteligente, integração com IA, execução remota de comandos, edição de arquivos, scraping e gerenciamento de dados. <br>
+        Unimos tecnologia de ponta com facilidade de uso para acelerar sua produtividade — tudo em um ambiente seguro, visual e na nuvem.
+      </p>
+    </section>
+  </main>
+
+  <footer>© 2025 Atomic AI – Todos os direitos reservados</footer>
+
+  <script>
+    // Tema
+    const toggleTheme = () => {
+      const html = document.documentElement;
+      const novo = html.dataset.theme === "light" ? "dark" : "light";
+      html.dataset.theme = novo;
+      localStorage.setItem("theme", novo);
+    };
+    window.onload = () => {
+      const saved = localStorage.getItem("theme") || "dark";
+      document.documentElement.dataset.theme = saved;
+      loadRecentFiles();
+    };
+
+    // Carregar arquivos recentes (preview)
+    async function loadRecentFiles() {
+      try {
+        const r = await fetch('/files');
+        const files = await r.json();
+        const ul = document.getElementById('recentFilesList');
+        ul.innerHTML = '';
+        if (files.length === 0) {
+          ul.innerHTML = '<li>Nenhum arquivo enviado ainda.</li>';
+        } else {
+          files.slice(-5).reverse().forEach(f => {
+            const li = document.createElement('li');
+            li.textContent = f;
+            ul.appendChild(li);
+          });
+        }
+      } catch (err) {
+        document.getElementById('recentFilesList').innerHTML = '<li>Erro ao carregar arquivos.</li>';
+      }
+    }
+
+    // Upload com barra de progresso
+    document.getElementById('landingUploadForm').onsubmit = function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fd = new FormData(form);
+      const xhr = new XMLHttpRequest();
+      const progressContainer = document.querySelector('.progress-container');
+      const progressBar = document.getElementById('landingUploadProgress');
+      const statusText = document.getElementById('landingUploadStatus');
+      progressContainer.style.display = 'block';
+      progressBar.style.width = '0%';
+      progressBar.textContent = '0%';
+      statusText.textContent = '';
+
+      xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          progressBar.style.width = percent + '%';
+          progressBar.textContent = percent + '%';
+        }
+      };
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            progressBar.style.width = '100%';
+            progressBar.textContent = '100%';
+            statusText.textContent = '✅ Upload concluído!';
+            form.reset();
+            loadRecentFiles();
+            setTimeout(() => {
+              progressContainer.style.display = 'none';
+              progressBar.style.width = '0%';
+              progressBar.textContent = '0%';
+              statusText.textContent = '';
+            }, 2100);
+          } else {
+            statusText.textContent = '❌ Falha no upload!';
+            progressBar.style.background = '#e600ff';
+            setTimeout(() => {
+              progressContainer.style.display = 'none';
+              progressBar.style.background = '';
+              progressBar.style.width = '0%';
+              progressBar.textContent = '0%';
+              statusText.textContent = '';
+            }, 2100);
+          }
+        }
+      };
+      xhr.open('POST', '/upload', true);
+      xhr.send(fd);
+    };
+  </script>
+</body>
+</html>

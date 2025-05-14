@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard – Atomic AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="/static/css/theme.css" /> 
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.5.0/css/xterm.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.17/lib/codemirror.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.17/theme/material-darker.css">
+
+  <style>
+    /* Estilos mínimos específicos para classes dinâmicas do dashboard.html */
+    .dashboard-section {
+      display: none; 
+    }
+    .dashboard-section.active {
+      display: block;
+      animation: fadeInUp 0.5s var(--transition-easing) forwards;
+    }
+    .nav-btn.active-nav {
+      color: var(--text-primary);
+      background: linear-gradient(100deg, var(--brand-primary), var(--accent-cyan));
+      border-color: var(--accent-cyan) !important; 
+      box-shadow: 0 5px 15px rgba(var(--brand-primary-rgb),0.3);
+      transform: translateY(-1px) scale(1.01);
+    }
+    [data-theme="light"] .nav-btn.active-nav {
+      color: #fff; 
+      background: linear-gradient(100deg, var(--brand-primary), var(--accent-pink));
+      border-color: var(--brand-primary) !important;
+    }
+    .feedback-message {
+        padding: var(--spacing-sm);
+        margin-bottom: var(--spacing-md);
+        border-radius: var(--radius-small);
+        text-align: center;
+    }
+    .feedback-message.success {
+        background-color: rgba(var(--accent-green-rgb), 0.1);
+        color: var(--accent-green);
+        border: 1px solid rgba(var(--accent-green-rgb), 0.3);
+    }
+    .feedback-message.error {
+        background-color: rgba(var(--accent-pink-rgb), 0.1);
+        color: var(--accent-pink);
+        border: 1px solid rgba(var(--accent-pink-rgb), 0.3);
+    }
+    .CodeMirror {
+        height: 400px !important;
+    }
+  </style>
+</head>
+<body>
+  <video class="bg-video" autoplay loop muted playsinline>
+    <source src="/static/video_loop.mp4" type="video/mp4" /> 
+  </video>
+  <div class="overlay"></div>
+
+  <button id="toggleThemeBtn" onclick="toggleTheme()" aria-label="Alternar tema">🌓</button>
+
+  <div class="dashboard-wrapper">
+    <aside class="dashboard-aside">
+      <img src="/static/logo.png" alt="Atomic AI Logo" class="dashboard-logo" /> 
+      <button class="nav-btn active-nav" data-target="uploadSection" title="Uploads">📤</button>
+      <button class="nav-btn" data-target="fileManagerSection" title="Gerenciador">🗂️</button>
+      <button class="nav-btn" data-target="terminalSection" title="Terminal">>_</button>
+      <button class="nav-btn" data-target="editorSection" title="Editor">📝</button>
+      <button class="nav-btn" data-target="historySection" title="Histórico">📜</button>
+      <button class="nav-btn" data-target="apifySection" title="Apify">🕷️</button>
+      <button class="nav-btn" data-target="settingsSection" title="Configurações">⚙️</button>
+      <button class="nav-btn" data-target="chatSection" title="Chat">💬</button>
+    </aside>
+
+    <main class="dashboard-main">
+      <section id="uploadSection" class="dashboard-section active">
+        <h2>📤 Uploads</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+          <input type="file" id="filesToUpload" name="files" multiple required> <button type="submit" class="btn">Enviar</button>
+        </form>
+        <div id="uploadResult" style="margin-top: var(--spacing-md);"></div>
+        <h3 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm);">Arquivos no Servidor:</h3>
+        <ul id="filesList"></ul>
+        <div class="dashboard-charts-area">
+          <div class="dashboard-chart-card">
+            <h3>Tipos de Arquivos</h3>
+            <div class="chart-container">
+              <canvas id="fileTypeChart"></canvas>
+            </div>
+          </div>
+          <div class="dashboard-chart-card">
+            <h3>Uploads Recentes</h3>
+            <div class="chart-container">
+              <canvas id="fileUploadChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="fileManagerSection" class="dashboard-section">
+        <h2>🗂️ Gerenciador de Arquivos</h2>
+        <div id="fileManagerFeedback"></div>
+        <ul id="fileManagerList"></ul>
+        <h3 style="margin-top: var(--spacing-lg);">Renomear Arquivo:</h3>
+        <form id="renameForm" style="margin-bottom: var(--spacing-lg);">
+          <select id="renameOldFileSelect" required style="margin-bottom:var(--spacing-sm);"></select>
+          <input type="text" id="renameNewName" placeholder="Novo nome para o arquivo" required>
+          <button type="submit" class="btn">Renomear</button>
+        </form>
+      </section>
+
+      <section id="terminalSection" class="dashboard-section">
+        <h2>🧠 Terminal</h2>
+        <div id="terminalContainer" style="height: 400px; width: 100%;"></div> <button id="connectTerminalBtn" class="btn" style="margin-top: var(--spacing-sm);">Conectar Terminal</button>
+        <button id="disconnectTerminalBtn" class="btn" style="margin-top: var(--spacing-sm); display:none;">Desconectar</button>
+      </section>
+
+      <section id="editorSection" class="dashboard-section">
+        <h2>✍️ Editor de Código</h2>
+        <div id="editorFeedback"></div>
+        <select id="editorFileSelect" style="margin-bottom: var(--spacing-md);"></select>
+        <textarea id="editorArea"></textarea> <button id="saveEditorBtn" class="btn" style="margin-top: var(--spacing-sm);">Salvar Alterações</button>
+      </section>
+
+      <section id="historySection" class="dashboard-section">
+        <h2>📜 Histórico de Ações</h2>
+        <div id="historyFeedback"></div>
+        <ul id="historyList"></ul>
+      </section>
+
+      <section id="apifySection" class="dashboard-section">
+        <h2>🕷️ Apify</h2>
+        <div id="apifyFeedback"></div>
+        <form id="apifyForm">
+          <input type="text" id="apifyActorId" name="actor_id" placeholder="ID do Ator Apify" required>
+          <textarea id="apifyInput" name="input" placeholder='JSON de input para o ator (opcional)'></textarea>
+          <button type="submit" class="btn">Executar Ator</button>
+        </form>
+        <h3 style="margin-top:var(--spacing-lg); margin-bottom:var(--spacing-sm);">Resultado da Execução:</h3>
+        <pre id="apifyResult" style="min-height: 100px;"></pre>
+      </section>
+
+      <section id="settingsSection" class="dashboard-section">
+        <h2>⚙️ Configurações</h2>
+        <div id="settingsFeedback"></div>
+        <p style="margin-bottom:var(--spacing-md);">Para configurações avançadas de autenticação e outras, <a href="/configuracoes" target="_blank" class="btn" style="display:inline-block;padding:var(--spacing-xs) var(--spacing-md);margin:0;">Abrir página de Configurações</a>.</p>
+        
+        <form id="proxyForm" style="margin-bottom: var(--spacing-lg);">
+          <label for="proxySelect" style="display:block; margin-bottom:var(--spacing-xs);">Selecionar Proxy Global:</label>
+          <select id="proxySelect"></select>
+          <button type="submit" class="btn" style="margin-top:var(--spacing-sm);">Salvar Proxy</button>
+        </form>
+
+        <form id="apifyTokenForm" style="margin-bottom: var(--spacing-lg);">
+            <label for="apifyTokenInput" style="display:block; margin-bottom:var(--spacing-xs);">Token da API Apify:</label>
+            <input type="password" id="apifyTokenInput" placeholder="Seu token da API Apify">
+            <button type="submit" class="btn" style="margin-top:var(--spacing-sm);">Salvar Token Apify</button>
+        </form>
+        
+      </section>
+
+      <section id="chatSection" class="dashboard-section">
+        <h2>🤖 Chat com Agente</h2>
+        <div id="chatFeedback"></div>
+        <div id="chatLog" style="height: 300px; overflow-y: auto; border: 1px solid var(--border-glass); padding: var(--spacing-sm); margin-bottom: var(--spacing-md); border-radius: var(--radius-medium);">
+            </div>
+        <form id="chatForm">
+            <textarea id="chatMessageInput" placeholder="Digite sua mensagem..." required style="width: calc(100% - 120px); min-height: 40px; vertical-align: middle; margin-right: var(--spacing-sm);"></textarea>
+            <button type="submit" class="btn" style="width: 110px; vertical-align: middle;">Enviar</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <footer class="dashboard-footer">
+    © 2025 Atomic AI – Todos os direitos reservados
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.5.0/lib/xterm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.5.0/lib/addons/fit/fit.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.17/lib/codemirror.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.17/mode/python/python.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.17/mode/javascript/javascript.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.17/mode/xml/xml.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.17/mode/css/css.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.17/mode/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.min.js"></script>
+  <script>
+    // Helper para pegar valor de variável CSS no JS
+    function varComputedStyle(varName) {
+        return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    }
+
+    // Função para exibir feedback
+    function showFeedback(elementId, message, type = 'success') {
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.innerHTML = `<div class="feedback-message ${type}">${message}</div>`;
+            setTimeout(() => { el.innerHTML = ''; }, 5000);
+        }
+    }
+
+    let editorInstance = null; 
+    let xtermInstance = null;  
+    let termSocket = null;   
+    
+    // ***** INÍCIO DA CORREÇÃO PRINCIPAL *****
+    let fitAddon; // Declarar aqui, fora do DOMContentLoaded
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Instanciar fitAddon AQUI, depois que os scripts foram carregados
+      if (typeof FitAddon !== 'undefined' && typeof FitAddon.FitAddon === 'function') {
+          fitAddon = new FitAddon.FitAddon();
+      } else {
+          console.error("FitAddon não pôde ser inicializado. O script fit.js pode não ter carregado corretamente ou o objeto FitAddon não está no escopo global como esperado.");
+          // Sem o fitAddon, a funcionalidade de ajuste do terminal pode não funcionar.
+          // Considere mostrar um aviso ao usuário ou ter um fallback.
+      }
+      // ***** FIM DA CORREÇÃO PRINCIPAL *****
+
+      const navButtons = document.querySelectorAll('.nav-btn');
+      const sections = document.querySelectorAll('.dashboard-section');
+      const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+
+      // --- Lógica do Tema ---
+      // (Seu código de tema permanece o mesmo)
+      let currentTheme = localStorage.getItem('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      updateThemeButtonIcon(currentTheme);
+
+      function updateThemeButtonIcon(theme) {
+        if (toggleThemeBtn) toggleThemeBtn.innerHTML = theme === 'dark' ? '☀️' : '🌓';
+        if (editorInstance) editorInstance.setOption("theme", theme === 'dark' ? "material-darker" : "default");
+        // Atualizar tema do XTerm se já instanciado
+        if (xtermInstance) {
+            xtermInstance.options.theme = theme === 'dark' ? 
+                { background: '#080c13', foreground: '#e0e6f0', cursor: '#00ffe7'} :
+                { background: '#e9ecef', foreground: '#131926', cursor: '#1677ff'};
+        }
+      }
+
+      window.toggleTheme = function() {
+        currentTheme = (currentTheme === 'dark') ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        localStorage.setItem('theme', currentTheme);
+        updateThemeButtonIcon(currentTheme);
+        destroyCharts(); 
+        if (document.getElementById('uploadSection')?.classList.contains('active')) initChartsIfVisible();
+      }
+      
+      // --- Lógica de Navegação das Seções ---
+      // (Seu código de navegação permanece o mesmo)
+      function showSection(targetId) {
+        let sectionFound = false;
+        sections.forEach(section => {
+          const isActive = section.id === targetId;
+          section.classList.toggle('active', isActive);
+          if (isActive) sectionFound = true;
+        });
+
+        if (!sectionFound && sections.length > 0) {
+            sections[0].classList.add('active');
+            targetId = sections[0].id;
+        }
+        
+        navButtons.forEach(button => button.classList.toggle('active-nav', button.dataset.target === targetId));
+        localStorage.setItem('activeDashboardTab', targetId);
+
+        if (targetId === 'uploadSection') { initChartsIfVisible(); loadFilesList(); }
+        if (targetId === 'fileManagerSection') loadFilesForManager();
+        if (targetId === 'editorSection') { initializeCodeMirror(); loadFilesForEditor(); } // Garante inicialização do CM
+        if (targetId === 'historySection') loadHistory();
+        if (targetId === 'settingsSection') loadProxies();
+        if (targetId === 'terminalSection' && !xtermInstance) initTerminal();
+        else if (targetId === 'terminalSection' && xtermInstance && fitAddon) {
+            // Reajusta o terminal se a seção for reaberta e o fitAddon existir
+            setTimeout(() => fitAddon.fit(), 0); 
+        }
+      }
+
+      navButtons.forEach(button => button.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection(button.dataset.target);
+      }));
+
+      const savedTab = localStorage.getItem('activeDashboardTab');
+      const initiallyActiveSectionHTML = document.querySelector('.dashboard-section.active');
+      let defaultSectionId = (sections.length > 0) ? sections[0].id : null;
+      if (savedTab && document.getElementById(savedTab)) defaultSectionId = savedTab;
+      else if (initiallyActiveSectionHTML) defaultSectionId = initiallyActiveSectionHTML.id;
+      
+      sections.forEach(s => s.classList.remove('active'));
+      navButtons.forEach(b => b.classList.remove('active-nav'));
+      if (defaultSectionId) showSection(defaultSectionId);
+
+      // --- Seção de Upload ---
+      // (Seu código de upload permanece o mesmo)
+      const uploadForm = document.getElementById('uploadForm');
+      const filesToUploadInput = document.getElementById('filesToUpload');
+      const uploadResultEl = document.getElementById('uploadResult');
+      const filesListULEl = document.getElementById('filesList');
+
+      async function loadFilesList() {
+          try {
+              const response = await fetch('/files'); 
+              if (!response.ok) throw new Error(`Erro ao buscar arquivos: ${response.status}`);
+              const files = await response.json();
+              filesListULEl.innerHTML = '';
+              if (files.length === 0) {
+                  filesListULEl.innerHTML = '<li>Nenhum arquivo enviado ainda.</li>';
+                  return;
+              }
+              files.forEach(file => {
+                  const li = document.createElement('li');
+                  li.textContent = file;
+                  filesListULEl.appendChild(li);
+              });
+          } catch (error) {
+              console.error('Erro ao carregar lista de arquivos:', error);
+              filesListULEl.innerHTML = '<li>Erro ao carregar arquivos.</li>';
+          }
+      }
+
+      if (uploadForm) {
+          uploadForm.addEventListener('submit', async function(event) {
+              event.preventDefault();
+              if (!filesToUploadInput.files.length) {
+                  showFeedback('uploadResult', 'Por favor, selecione um arquivo.', 'error');
+                  return;
+              }
+              const formData = new FormData();
+              for (const file of filesToUploadInput.files) {
+                formData.append('files', file);
+              }
+              uploadResultEl.innerHTML = '<p style="color: var(--accent-cyan);">Enviando...</p>';
+              try {
+                  const response = await fetch('/upload/api', { method: 'POST', body: formData });
+                  const result = await response.json();
+                  if (response.ok) {
+                      showFeedback('uploadResult', `Upload de ${result.files.join(', ')} bem-sucedido!`, 'success');
+                      loadFilesList(); 
+                      uploadForm.reset();
+                  } else {
+                      showFeedback('uploadResult', `Falha no upload: ${result.detail || response.statusText}`, 'error');
+                  }
+              } catch (error) {
+                  console.error('Erro no upload:', error);
+                  showFeedback('uploadResult', 'Erro de rede ou script ao tentar enviar.', 'error');
+              }
+          });
+      }
+      
+      // --- Seção Gerenciador de Arquivos ---
+      // (Seu código do gerenciador permanece o mesmo)
+      const fileManagerListEl = document.getElementById('fileManagerList');
+      const renameFormEl = document.getElementById('renameForm');
+      const renameOldFileSelectEl = document.getElementById('renameOldFileSelect');
+      const renameNewNameInputEl = document.getElementById('renameNewName');
+
+      async function loadFilesForManager() {
+          try {
+              const response = await fetch('/files');
+              if (!response.ok) throw new Error('Erro ao buscar arquivos');
+              const files = await response.json();
+              fileManagerListEl.innerHTML = '';
+              renameOldFileSelectEl.innerHTML = '<option value="">Selecione um arquivo para renomear...</option>';
+              
+              if (files.length === 0) {
+                  fileManagerListEl.innerHTML = '<li>Nenhum arquivo no servidor.</li>';
+                  return;
+              }
+              files.forEach(filename => {
+                  const li = document.createElement('li');
+                  li.textContent = filename;
+                  
+                  const deleteBtn = document.createElement('button');
+                  deleteBtn.textContent = 'Excluir';
+                  deleteBtn.className = 'btn'; 
+                  deleteBtn.style.marginLeft = 'auto'; 
+                  deleteBtn.style.padding = 'var(--spacing-xs) var(--spacing-sm)';
+                  deleteBtn.style.fontSize = 'var(--font-size-sm)';
+                  deleteBtn.onclick = () => deleteFileHandler(filename);
+                  li.appendChild(deleteBtn);
+                  fileManagerListEl.appendChild(li);
+
+                  const option = document.createElement('option');
+                  option.value = filename;
+                  option.textContent = filename;
+                  renameOldFileSelectEl.appendChild(option);
+              });
+          } catch (error) {
+              showFeedback('fileManagerFeedback', 'Erro ao carregar arquivos.', 'error');
+              console.error(error);
+          }
+      }
+
+      async function deleteFileHandler(filename) {
+          if (!confirm(`Tem certeza que deseja excluir o arquivo "${filename}"?`)) return;
+          try {
+              const response = await fetch(`/delete/${filename}`, { method: 'DELETE' });
+              const result = await response.json();
+              if (response.ok) {
+                  showFeedback('fileManagerFeedback', `Arquivo "${filename}" excluído.`, 'success');
+                  loadFilesForManager(); 
+                  loadFilesForEditor(); 
+              } else {
+                  showFeedback('fileManagerFeedback', `Erro ao excluir: ${result.detail || response.statusText}`, 'error');
+              }
+          } catch (error) {
+              showFeedback('fileManagerFeedback', 'Erro de rede ao excluir.', 'error');
+              console.error(error);
+          }
+      }
+
+      if (renameFormEl) {
+          renameFormEl.addEventListener('submit', async function(event) {
+              event.preventDefault();
+              const oldFilename = renameOldFileSelectEl.value;
+              const newFilename = renameNewNameInputEl.value.trim();
+              if (!oldFilename || !newFilename) {
+                  showFeedback('fileManagerFeedback', 'Selecione um arquivo e digite um novo nome.', 'error');
+                  return;
+              }
+              try {
+                  const response = await fetch(`/rename/${oldFilename}`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ novo_nome: newFilename })
+                  });
+                  const result = await response.json();
+                  if (response.ok) {
+                      showFeedback('fileManagerFeedback', `Arquivo "${oldFilename}" renomeado para "${newFilename}".`, 'success');
+                      loadFilesForManager();
+                      loadFilesForEditor();
+                      renameFormEl.reset();
+                  } else {
+                      showFeedback('fileManagerFeedback', `Erro ao renomear: ${result.detail || response.statusText}`, 'error');
+                  }
+              } catch (error) {
+                  showFeedback('fileManagerFeedback', 'Erro de rede ao renomear.', 'error');
+                  console.error(error);
+              }
+          });
+      }
+
+      // --- Seção Terminal ---
+      // (Seu código do terminal com a correção do fitAddon já está acima)
+      const terminalContainer = document.getElementById('terminalContainer');
+      const connectTerminalBtn = document.getElementById('connectTerminalBtn');
+      const disconnectTerminalBtn = document.getElementById('disconnectTerminalBtn');
+
+      function initTerminal() {
+          if (xtermInstance || !terminalContainer) return;
+          xtermInstance = new Terminal({ 
+              cursorBlink: true, 
+              fontFamily: 'var(--font-code)',
+              theme: currentTheme === 'dark' ? 
+                  { background: '#080c13', foreground: '#e0e6f0', cursor: '#00ffe7'} :
+                  { background: '#e9ecef', foreground: '#131926', cursor: '#1677ff'}
+          });
+          
+          if (fitAddon) { // Verifica se fitAddon foi inicializado
+              xtermInstance.loadAddon(fitAddon);
+          } else {
+              console.warn("FitAddon não está disponível para o terminal.");
+          }
+          
+          xtermInstance.open(terminalContainer);
+          
+          if (fitAddon) {
+              try {
+                   fitAddon.fit(); 
+              } catch (e) {
+                  console.error("Erro ao executar fitAddon.fit() na inicialização:", e);
+              }
+              window.addEventListener('resize', () => {
+                  if (fitAddon && xtermInstance && xtermInstance.element) { // Checa se o terminal ainda existe
+                      try {
+                           fitAddon.fit();
+                      } catch (e) {
+                           console.error("Erro ao executar fitAddon.fit() no resize:", e);
+                      }
+                  }
+              });
+          }
+
+          xtermInstance.onData(data => {
+              if (termSocket && termSocket.readyState === WebSocket.OPEN) {
+                  termSocket.send(data);
+              }
+          });
+      }
+      if (connectTerminalBtn) {
+          connectTerminalBtn.onclick = () => {
+              if (!xtermInstance) initTerminal(); // Chama initTerminal que agora também lida com fitAddon
+              if (termSocket && termSocket.readyState === WebSocket.OPEN) {
+                  xtermInstance.writeln('\r\nJá conectado.');
+                  return;
+              }
+              const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+              const wsUrl = `${protocol}//${window.location.host}/ws/terminal`;
+              termSocket = new WebSocket(wsUrl);
+              xtermInstance.writeln('\r\nConectando ao terminal...');
+              termSocket.onopen = () => {
+                  xtermInstance.writeln('\r\nConectado!');
+                  if (fitAddon) { // Tenta o fit após conectar se o addon estiver disponível
+                    try {
+                        fitAddon.fit();
+                    } catch(e) { console.error("Erro no fitAddon.fit() onopen:", e); }
+                  }
+                  connectTerminalBtn.style.display = 'none';
+                  disconnectTerminalBtn.style.display = 'inline-block';
+              };
+              termSocket.onmessage = (event) => {
+                  if (event.data instanceof Blob) { 
+                    event.data.arrayBuffer().then(buffer => {
+                        xtermInstance.write(new Uint8Array(buffer));
+                    });
+                  } else {
+                    xtermInstance.write(event.data);
+                  }
+              };
+              termSocket.onerror = (error) => {
+                  xtermInstance.writeln(`\r\nErro no WebSocket: ${error.message || 'Desconhecido'}`);
+                  console.error("Erro no WebSocket do Terminal:", error);
+              };
+              termSocket.onclose = () => {
+                  xtermInstance.writeln('\r\nDesconectado.');
+                  connectTerminalBtn.style.display = 'inline-block';
+                  disconnectTerminalBtn.style.display = 'none';
+                  termSocket = null;
+              };
+          };
+      }
+      if(disconnectTerminalBtn) {
+          disconnectTerminalBtn.onclick = () => {
+              if (termSocket) termSocket.close();
+          };
+      }
+
+      // --- Seção Editor ---
+      // (Seu código do editor permanece o mesmo)
+      const editorFileSelectEl = document.getElementById('editorFileSelect');
+      const editorAreaEl = document.getElementById('editorArea');
+      const saveEditorBtnEl = document.getElementById('saveEditorBtn');
+
+      function initializeCodeMirror() {
+          if (!editorInstance && editorAreaEl) {
+              editorInstance = CodeMirror.fromTextArea(editorAreaEl, {
+                  lineNumbers: true, mode: "python", 
+                  theme: currentTheme === 'dark' ? "material-darker" : "default",
+                  lineWrapping: true
+              });
+          }
+      }
+      
+      async function loadFilesForEditor() {
+          if (!editorInstance) initializeCodeMirror(); 
+          try {
+              const response = await fetch('/files');
+              if (!response.ok) throw new Error('Erro ao buscar arquivos para editor');
+              const files = await response.json();
+              const currentSelectedFile = editorFileSelectEl.value;
+              editorFileSelectEl.innerHTML = '<option value="">Selecione um arquivo para editar...</option>';
+              files.forEach(filename => {
+                  const option = document.createElement('option');
+                  option.value = filename; option.textContent = filename;
+                  editorFileSelectEl.appendChild(option);
+              });
+              if (currentSelectedFile && files.includes(currentSelectedFile)) {
+                  editorFileSelectEl.value = currentSelectedFile; 
+              } else if (editorInstance){
+                  editorInstance.setValue(''); 
+              }
+          } catch (error) {
+              showFeedback('editorFeedback', 'Erro ao carregar lista de arquivos para o editor.', 'error');
+              console.error(error);
+          }
+      }
+
+      if (editorFileSelectEl) {
+          editorFileSelectEl.addEventListener('change', async function() {
+              const filename = this.value;
+              if (!filename || !editorInstance) {
+                  if(editorInstance) editorInstance.setValue('');
+                  return;
+              }
+              try {
+                  const response = await fetch(`/file/${filename}`);
+                  if (!response.ok) throw new Error(`Erro ao carregar ${filename}: ${response.statusText}`);
+                  const content = await response.text(); 
+                  editorInstance.setValue(content);
+                  let mode = "text/plain";
+                  if (filename.endsWith(".py")) mode = "python";
+                  else if (filename.endsWith(".js")) mode = "javascript";
+                  else if (filename.endsWith(".json")) mode = "application/json";
+                  else if (filename.endsWith(".html") || filename.endsWith(".xml")) mode = "xml";
+                  else if (filename.endsWith(".css")) mode = "css";
+                  else if (filename.endsWith(".md")) mode = "markdown";
+                  editorInstance.setOption("mode", mode);
+
+              } catch (error) {
+                  showFeedback('editorFeedback', `Erro ao carregar o arquivo ${filename}.`, 'error');
+                  editorInstance.setValue(`// Erro ao carregar ${filename}\n// ${error.message}`);
+                  console.error(error);
+              }
+          });
+      }
+
+      if (saveEditorBtnEl && editorFileSelectEl) {
+          saveEditorBtnEl.addEventListener('click', async function() {
+              const filename = editorFileSelectEl.value;
+              if (!filename || !editorInstance) {
+                  showFeedback('editorFeedback', 'Nenhum arquivo selecionado para salvar.', 'error');
+                  return;
+              }
+              const content = editorInstance.getValue();
+              try {
+                  const response = await fetch(`/file/${filename}`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'text/plain' }, 
+                      body: content
+                  });
+                  const result = await response.json();
+                  if (response.ok) {
+                      showFeedback('editorFeedback', `Arquivo "${filename}" salvo com sucesso!`, 'success');
+                  } else {
+                      showFeedback('editorFeedback', `Erro ao salvar "${filename}": ${result.detail || response.statusText}`, 'error');
+                  }
+              } catch (error) {
+                  showFeedback('editorFeedback', 'Erro de rede ao salvar o arquivo.', 'error');
+                  console.error(error);
+              }
+          });
+      }
+
+      // --- Seção Histórico ---
+      // (Seu código de histórico permanece o mesmo)
+      const historyListEl = document.getElementById('historyList');
+      async function loadHistory() {
+          try {
+              const response = await fetch('/history');
+              if (!response.ok) throw new Error('Erro ao buscar histórico');
+              const historyItems = await response.json();
+              historyListEl.innerHTML = '';
+              if (historyItems.length === 0) {
+                  historyListEl.innerHTML = '<li>Nenhum histórico de ações.</li>';
+                  return;
+              }
+              historyItems.reverse().forEach(item => { 
+                  const li = document.createElement('li');
+                  const date = new Date(item.timestamp).toLocaleString('pt-BR');
+                  li.innerHTML = `<span><strong>${item.action.toUpperCase()}</strong>: ${item.file}</span> <small style="margin-left:auto; color:var(--text-muted);">${date}</small>`;
+                  historyListEl.appendChild(li);
+              });
+          } catch (error) {
+              showFeedback('historyFeedback', 'Erro ao carregar histórico.', 'error');
+              console.error(error);
+          }
+      }
+
+      // --- Seção Apify ---
+      // (Seu código Apify permanece o mesmo)
+      const apifyFormEl = document.getElementById('apifyForm');
+      const apifyActorIdEl = document.getElementById('apifyActorId');
+      const apifyInputEl = document.getElementById('apifyInput');
+      const apifyResultEl = document.getElementById('apifyResult');
+
+      if (apifyFormEl) {
+          apifyFormEl.addEventListener('submit', async function(event) {
+              event.preventDefault();
+              const actorId = apifyActorIdEl.value.trim();
+              let actorInput = {};
+              try {
+                  if (apifyInputEl.value.trim()) {
+                    actorInput = JSON.parse(apifyInputEl.value.trim());
+                  }
+              } catch (e) {
+                  showFeedback('apifyFeedback', 'JSON de input inválido.', 'error');
+                  return;
+              }
+              apifyResultEl.textContent = 'Executando ator Apify...';
+              try {
+                  const response = await fetch('/apify/run', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ actor_id: actorId, input: actorInput })
+                  });
+                  const result = await response.json();
+                  if (response.ok) {
+                      showFeedback('apifyFeedback', 'Ator executado, veja resultado abaixo.', 'success');
+                      apifyResultEl.textContent = JSON.stringify(result, null, 2);
+                  } else {
+                      showFeedback('apifyFeedback', `Erro ao executar ator: ${result.detail || response.statusText}`, 'error');
+                      apifyResultEl.textContent = JSON.stringify(result, null, 2);
+                  }
+              } catch (error) {
+                  showFeedback('apifyFeedback', 'Erro de rede ao executar ator Apify.', 'error');
+                  apifyResultEl.textContent = `Erro: ${error.message}`;
+                  console.error(error);
+              }
+          });
+      }
+      
+      // --- Seção Configurações ---
+      // (Seu código de configurações permanece o mesmo)
+      const proxySelectEl = document.getElementById('proxySelect');
+      const proxyFormEl = document.getElementById('proxyForm');
+      const apifyTokenFormEl = document.getElementById('apifyTokenForm');
+      const apifyTokenInputEl = document.getElementById('apifyTokenInput');
+
+      async function loadProxies() {
+          try {
+              const response = await fetch('/config/proxies');
+              if (!response.ok) throw new Error('Erro ao buscar proxies');
+              const proxies = await response.json();
+              proxySelectEl.innerHTML = '';
+              proxies.forEach(proxy => {
+                  const option = document.createElement('option');
+                  option.value = proxy.id; option.textContent = proxy.name;
+                  if (proxy.active) option.selected = true;
+                  proxySelectEl.appendChild(option);
+              });
+          } catch (error) {
+              showFeedback('settingsFeedback', 'Erro ao carregar proxies.', 'error');
+              console.error(error);
+          }
+      }
+      if (proxyFormEl) {
+          proxyFormEl.addEventListener('submit', async function(event) {
+              event.preventDefault();
+              const proxyId = proxySelectEl.value;
+              try {
+                  const response = await fetch('/config/proxy', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ id: proxyId })
+                  });
+                  if (response.ok) {
+                      showFeedback('settingsFeedback', 'Configuração de proxy salva!', 'success');
+                  } else {
+                      const result = await response.json();
+                      showFeedback('settingsFeedback', `Erro ao salvar proxy: ${result.detail || response.statusText}`, 'error');
+                  }
+              } catch (error) {
+                  showFeedback('settingsFeedback', 'Erro de rede ao salvar proxy.', 'error');
+              }
+          });
+      }
+      if (apifyTokenFormEl) {
+          apifyTokenFormEl.addEventListener('submit', async function(event) {
+              event.preventDefault();
+              const apiKey = apifyTokenInputEl.value.trim();
+              if (!apiKey) {
+                  showFeedback('settingsFeedback', 'Por favor, insira um token Apify.', 'error');
+                  return;
+              }
+              try {
+                  const response = await fetch('/config/apikey', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ apikey: apiKey })
+                  });
+                  if (response.ok) {
+                      showFeedback('settingsFeedback', 'Token da API Apify salvo com sucesso!', 'success');
+                      apifyTokenInputEl.value = ''; 
+                  } else {
+                      const result = await response.json();
+                      showFeedback('settingsFeedback', `Erro ao salvar token: ${result.detail || response.statusText}`, 'error');
+                  }
+              } catch (error) {
+                  showFeedback('settingsFeedback', 'Erro de rede ao salvar token Apify.', 'error');
+              }
+          });
+      }
+
+      // --- Seção Chat ---
+      // (Seu código de chat permanece o mesmo)
+      const chatFormEl = document.getElementById('chatForm');
+      const chatMessageInputEl = document.getElementById('chatMessageInput');
+      const chatLogEl = document.getElementById('chatLog');
+
+      function appendToChatLog(message, sender = 'user') {
+          const messageDiv = document.createElement('div');
+          messageDiv.style.marginBottom = 'var(--spacing-xs)';
+          messageDiv.style.padding = 'var(--spacing-xs) var(--spacing-sm)';
+          messageDiv.style.borderRadius = 'var(--radius-small)';
+          if (sender === 'user') {
+              messageDiv.style.textAlign = 'right';
+              messageDiv.style.backgroundColor = 'rgba(var(--brand-primary-rgb), 0.2)';
+              messageDiv.innerHTML = `<strong>Você:</strong> ${message}`;
+          } else { 
+              messageDiv.style.backgroundColor = 'rgba(var(--accent-cyan-rgb), 0.15)';
+              messageDiv.innerHTML = `<strong>Agente:</strong> ${message}`;
+          }
+          chatLogEl.appendChild(messageDiv);
+          chatLogEl.scrollTop = chatLogEl.scrollHeight; 
+      }
+
+      if (chatFormEl) {
+          chatFormEl.addEventListener('submit', async function(event) {
+              event.preventDefault();
+              const message = chatMessageInputEl.value.trim();
+              if (!message) return;
+              appendToChatLog(message, 'user');
+              chatMessageInputEl.value = '';
+              chatMessageInputEl.disabled = true; 
+              try {
+                  const response = await fetch('/chat', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ message: message })
+                  });
+                  const result = await response.json();
+                  if (response.ok) {
+                      appendToChatLog(result.reply, 'agent');
+                  } else {
+                      appendToChatLog(`Erro: ${result.detail || response.statusText}`, 'agent');
+                      showFeedback('chatFeedback', `Erro na comunicação com o agente: ${result.detail || response.statusText}`, 'error');
+                  }
+              } catch (error) {
+                  appendToChatLog(`Erro de rede ao contatar o agente.`, 'agent');
+                  showFeedback('chatFeedback', 'Erro de rede ao contatar o agente.', 'error');
+                  console.error(error);
+              } finally {
+                  chatMessageInputEl.disabled = false;
+                  chatMessageInputEl.focus();
+              }
+          });
+      }
+      
+
+      // --- Inicialização dos Gráficos ---
+      window.fileTypeChartInstance = null;
+      window.fileUploadChartInstance = null;
+      function initChartsIfVisible() { /* ... seu código de gráficos ... */ }
+      function destroyCharts() { /* ... seu código de gráficos ... */ }
+      // Copie o conteúdo das funções initChartsIfVisible e destroyCharts da sua versão anterior aqui
+      // Elas não foram alteradas por esta correção do FitAddon.
+
+    }); // Fim do DOMContentLoaded
+  </script>
+</body>
+</html>
