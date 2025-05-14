@@ -1,0 +1,278 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Base Colors */
+  --brand-primary: #1677ff;
+  --brand-primary-rgb: 22, 119, 255;
+  --brand-hover: #0c5fe0;
+  --brand-secondary: #e600ff;
+  --brand-secondary-rgb: 230, 0, 255;
+  --brand-accent: #00ffe7;
+  --brand-accent-rgb: 0, 255, 231;
+  --cyber-green: #00e68a;
+  --cyber-green-rgb: 0, 230, 138;
+  
+  /* Dark Theme Variables */
+  --background: 222 36% 7%;
+  --foreground: 210 40% 98%;
+  --card: 222 35% 7%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 35% 7%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 210 100% 54%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 300 100% 50%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 223 16% 20%;
+  --muted-foreground: 215 16% 75%;
+  --accent: 180 100% 50%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 223 16% 28%;
+  --input: 223 16% 28%;
+  --ring: 210 100% 54%;
+  
+  /* Shadows and Effects */
+  --shadow-neon: 0 0 30px rgba(22, 119, 255, 0.4);
+  --shadow-neon-purple: 0 0 30px rgba(230, 0, 255, 0.4);
+  --card-glow: 0 0 24px rgba(22, 119, 255, 0.3);
+  
+  /* Radius */
+  --radius: 0.5rem;
+  --radius-small: 8px;
+  --radius-medium: 16px;
+  --radius-large: 24px;
+  
+  /* Chart Colors */
+  --chart-1: 210 100% 54%;
+  --chart-2: 300 100% 50%;
+  --chart-3: 180 100% 50%;
+  --chart-4: 130 70% 45%;
+  --chart-5: 40 100% 60%;
+  
+  /* Sidebar Colors */
+  --sidebar-background: 222 40% 10%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 210 100% 54%;
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 223 16% 24%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 223 16% 20%;
+  --sidebar-ring: 210 100% 54%;
+}
+
+.light {
+  --background: 210 30% 98%;
+  --foreground: 222 36% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 36% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 36% 10%;
+  --primary: 210 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 300 80% 45%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 210 20% 90%;
+  --muted-foreground: 215 16% 45%;
+  --accent: 180 70% 45%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 20% 80%;
+  --input: 210 20% 80%;
+  --ring: 210 100% 50%;
+  
+  --shadow-neon: 0 0 20px rgba(22, 119, 255, 0.3);
+  --shadow-neon-purple: 0 0 20px rgba(230, 0, 255, 0.3);
+  --card-glow: 0 0 15px rgba(22, 119, 255, 0.2);
+  
+  --chart-1: 210 100% 50%;
+  --chart-2: 300 80% 45%;
+  --chart-3: 180 70% 45%;
+  --chart-4: 130 70% 45%;
+  --chart-5: 40 100% 60%;
+  
+  --sidebar-background: 210 20% 97%;
+  --sidebar-foreground: 222 36% 10%;
+  --sidebar-primary: 210 100% 50%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 210 20% 90%;
+  --sidebar-accent-foreground: 222 36% 10%;
+  --sidebar-border: 210 20% 85%;
+  --sidebar-ring: 210 100% 50%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-sans antialiased bg-background text-foreground overflow-x-hidden;
+    min-height: 100vh;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-orbitron font-bold;
+  }
+  
+  code, pre, .font-mono {
+    @apply font-jetbrains;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-black/20 backdrop-blur-lg border border-white/10 rounded-xl shadow-lg;
+  }
+  
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-secondary text-white font-medium px-6 py-2.5 rounded-md shadow-md 
+           hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 
+           transition-all duration-300 ease-out;
+  }
+  
+  .btn-secondary {
+    @apply bg-black/30 text-white border border-white/10 px-6 py-2.5 rounded-md shadow-sm 
+           hover:bg-black/40 hover:border-primary/50 transition-all duration-300;
+  }
+  
+  .nav-item {
+    @apply flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-muted-foreground 
+           hover:text-primary hover:bg-primary/10 transition-colors;
+  }
+  
+  .nav-item.active {
+    @apply bg-primary/20 text-primary border-l-2 border-primary;
+  }
+  
+  .terminal {
+    @apply bg-black/50 border border-accent/30 rounded-lg p-4 font-jetbrains text-sm;
+    color: var(--cyber-green);
+  }
+  
+  .terminal-line {
+    @apply mb-1 leading-tight;
+  }
+  
+  .form-input {
+    @apply w-full px-4 py-2.5 bg-black/30 border border-white/10 rounded-lg text-foreground 
+           focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all;
+  }
+  
+  .progress-bar {
+    @apply bg-black/30 h-2.5 rounded-full overflow-hidden;
+  }
+  
+  .progress-bar-fill {
+    @apply h-full bg-gradient-to-r from-primary to-secondary rounded-full;
+  }
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  25% { transform: translateY(-10px) translateX(5px); }
+  50% { transform: translateY(-15px) translateX(0); }
+  75% { transform: translateY(-10px) translateX(-5px); }
+}
+
+@keyframes glow {
+  0%, 100% { filter: drop-shadow(0 0 10px rgba(22, 119, 255, 0.5)); }
+  50% { filter: drop-shadow(0 0 20px rgba(22, 119, 255, 0.8)); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { text-shadow: 0 0 12px rgba(22, 119, 255, 0.6), 0 0 0 rgba(230, 0, 255, 0.2); }
+  50% { text-shadow: 0 0 0 rgba(22, 119, 255, 0.2), 0 0 18px rgba(230, 0, 255, 0.6); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 3s infinite ease-in-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1.2s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite alternate;
+}
+
+.logo-glow {
+  filter: drop-shadow(0 0 12px rgba(22, 119, 255, 0.6));
+  animation: glow 3s infinite ease-in-out;
+}
+
+.logo-text-gradient {
+  @apply bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent;
+}
+
+/* Responsive Styles */
+@screen md {
+  .dashboard-wrapper {
+    grid-template-columns: 240px 1fr;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(22, 119, 255, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(22, 119, 255, 0.5);
+}
+
+/* Font Config */
+@layer base {
+  :root {
+    --font-sans: 'Poppins', system-ui, sans-serif;
+    --font-orbitron: 'Orbitron', sans-serif;
+    --font-jetbrains: 'JetBrains Mono', monospace;
+  }
+}
+
+.font-orbitron {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.font-jetbrains {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
