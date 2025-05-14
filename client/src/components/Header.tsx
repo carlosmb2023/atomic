@@ -74,6 +74,15 @@ export default function Header() {
               Monitor
             </div>
           </Link>
+          <Link href="/agents">
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/agents' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
+              Agentes
+            </div>
+          </Link>
           <Link href="/landing#features">
             <div 
               className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#features') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}

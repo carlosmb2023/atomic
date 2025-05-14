@@ -13,6 +13,7 @@ import Landing from "@/pages/Landing";
 import Settings from "@/pages/Settings";
 import Chat from "@/pages/Chat";
 import ServerMonitor from "@/pages/ServerMonitor";
+import Agents from "@/pages/Agents";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiBackgroundImage from "@/components/AiBackgroundImage";
@@ -35,6 +36,7 @@ function Router() {
           <Route path="/settings" component={Settings} />
           <Route path="/chat" component={Chat} />
           <Route path="/monitor" component={ServerMonitor} />
+          <Route path="/agents" component={Agents} />
           <Route component={NotFound} />
         </Switch>
       </main>
