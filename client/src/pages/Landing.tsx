@@ -157,7 +157,9 @@ export default function Landing() {
           )}
           
           {!isUploading && uploadStatus && (
-            <p className={`text-xs mt-2 ${uploadStatus.includes('complete') ? 'text-cyber-green' : 'text-destructive'}`}>
+            <p className="text-xs mt-2" style={{ 
+              color: uploadStatus.includes('complete') ? 'var(--cyber-green)' : 'hsl(var(--destructive))' 
+            }}>
               {uploadStatus}
             </p>
           )}
@@ -201,8 +203,8 @@ export default function Landing() {
             
             {/* Feature 4 */}
             <div className="glass-panel p-6 transform transition-all duration-300 hover:-translate-y-2 hover:shadow-lg hover:shadow-primary/20 border border-white/5">
-              <div className="text-4xl mb-4 text-cyber-green">🕷️</div>
-              <h3 className="text-xl font-orbitron mb-3 text-cyber-green">Automação via Apify</h3>
+              <div className="text-4xl mb-4" style={{ color: 'var(--cyber-green)' }}>🕷️</div>
+              <h3 className="text-xl font-orbitron mb-3" style={{ color: 'var(--cyber-green)' }}>Automação via Apify</h3>
               <p className="text-muted-foreground">
                 Use scrapers e atores do Apify para extrair dados e interagir com sites automaticamente via interface visual.
               </p>

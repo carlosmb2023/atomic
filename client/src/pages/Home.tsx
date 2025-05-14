@@ -86,7 +86,7 @@ export default function Home() {
           </p>
         </div>
         
-        <div className="font-jetbrains text-cyber-green mb-8 h-8">
+        <div className="font-jetbrains mb-8 h-8" style={{ color: 'var(--cyber-green)' }}>
           {statusMessage}
         </div>
         

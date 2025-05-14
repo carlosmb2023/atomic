@@ -179,7 +179,9 @@ export default function Dashboard() {
                       )}
                       
                       {!isUploading && uploadStatus && (
-                        <p className={`text-sm mt-2 ${uploadStatus.includes('complete') ? 'text-cyber-green' : 'text-destructive'}`}>
+                        <p className="text-sm mt-2" style={{ 
+                          color: uploadStatus.includes('complete') ? 'var(--cyber-green)' : 'hsl(var(--destructive))' 
+                        }}>
                           {uploadStatus}
                         </p>
                       )}

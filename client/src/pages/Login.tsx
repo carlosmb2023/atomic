@@ -81,7 +81,11 @@ export default function Login() {
         <h2 className="text-xl font-orbitron mb-8 text-center text-primary">Bem-vindo ao Atomic AI</h2>
         
         {loginStatus && (
-          <div className={`text-center mb-4 font-jetbrains text-sm ${loginStatus.includes('Redirecionando') || loginStatus.includes('realizado') ? 'text-cyber-green' : 'text-destructive'}`}>
+          <div className={`text-center mb-4 font-jetbrains text-sm`} style={{ 
+              color: loginStatus.includes('Redirecionando') || loginStatus.includes('realizado') 
+                ? 'var(--cyber-green)' 
+                : 'hsl(var(--destructive))'
+            }}>
             {loginStatus}
           </div>
         )}
