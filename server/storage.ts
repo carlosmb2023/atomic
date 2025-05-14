@@ -342,6 +342,288 @@ export class DbStorage implements IStorage {
       .orderBy(desc(deployLogs.created_at))
       .limit(limit);
   }
+  
+  // ========== Implementação dos métodos para Agentes ==========
+  
+  // Agentes
+  async getAgent(id: number): Promise<Agent | undefined> {
+    try {
+      const [agent] = await db.select().from(agents).where(eq(agents.id, id));
+      return agent;
+    } catch (error) {
+      console.error('Erro ao buscar agente:', error);
+      return undefined;
+    }
+  }
+  
+  async getAgentByName(name: string): Promise<Agent | undefined> {
+    try {
+      const [agent] = await db.select().from(agents).where(eq(agents.name, name));
+      return agent;
+    } catch (error) {
+      console.error('Erro ao buscar agente por nome:', error);
+      return undefined;
+    }
+  }
+  
+  async getAgentsByType(type: string): Promise<Agent[]> {
+    try {
+      return await db.select().from(agents).where(eq(agents.type, type));
+    } catch (error) {
+      console.error('Erro ao buscar agentes por tipo:', error);
+      return [];
+    }
+  }
+  
+  async getAllAgents(): Promise<Agent[]> {
+    try {
+      return await db.select().from(agents);
+    } catch (error) {
+      console.error('Erro ao buscar todos os agentes:', error);
+      return [];
+    }
+  }
+  
+  async createAgent(agent: InsertAgent): Promise<Agent> {
+    try {
+      const [createdAgent] = await db.insert(agents).values(agent).returning();
+      return createdAgent;
+    } catch (error) {
+      console.error('Erro ao criar agente:', error);
+      throw error;
+    }
+  }
+  
+  async updateAgent(id: number, agentData: Partial<Agent>): Promise<Agent | undefined> {
+    try {
+      const [updatedAgent] = await db
+        .update(agents)
+        .set({ ...agentData, updated_at: new Date() })
+        .where(eq(agents.id, id))
+        .returning();
+      return updatedAgent;
+    } catch (error) {
+      console.error('Erro ao atualizar agente:', error);
+      return undefined;
+    }
+  }
+  
+  async deleteAgent(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(agents).where(eq(agents.id, id));
+      return !!result.rowCount && result.rowCount > 0;
+    } catch (error) {
+      console.error('Erro ao excluir agente:', error);
+      return false;
+    }
+  }
+  
+  // Execuções de Agentes
+  async getAgentExecution(id: number): Promise<AgentExecution | undefined> {
+    try {
+      const [execution] = await db.select().from(agentExecutions).where(eq(agentExecutions.id, id));
+      return execution;
+    } catch (error) {
+      console.error('Erro ao buscar execução de agente:', error);
+      return undefined;
+    }
+  }
+  
+  async getAgentExecutionsByAgent(agentId: number, limit: number = 10): Promise<AgentExecution[]> {
+    try {
+      return await db
+        .select()
+        .from(agentExecutions)
+        .where(eq(agentExecutions.agent_id, agentId))
+        .orderBy(desc(agentExecutions.created_at))
+        .limit(limit);
+    } catch (error) {
+      console.error('Erro ao buscar execuções por agente:', error);
+      return [];
+    }
+  }
+  
+  async getAgentExecutionsByUser(userId: number, limit: number = 10): Promise<AgentExecution[]> {
+    try {
+      return await db
+        .select()
+        .from(agentExecutions)
+        .where(eq(agentExecutions.user_id, userId))
+        .orderBy(desc(agentExecutions.created_at))
+        .limit(limit);
+    } catch (error) {
+      console.error('Erro ao buscar execuções por usuário:', error);
+      return [];
+    }
+  }
+  
+  async createAgentExecution(execution: InsertAgentExecution): Promise<AgentExecution> {
+    try {
+      const [createdExecution] = await db.insert(agentExecutions).values(execution).returning();
+      
+      // Atualiza o agente com a data da última execução
+      if (execution.agent_id) {
+        await this.updateAgent(execution.agent_id, { 
+          last_execution: new Date(), 
+          status: 'active' 
+        });
+      }
+      
+      return createdExecution;
+    } catch (error) {
+      console.error('Erro ao criar execução de agente:', error);
+      throw error;
+    }
+  }
+  
+  async updateAgentExecution(id: number, executionData: Partial<AgentExecution>): Promise<AgentExecution | undefined> {
+    try {
+      const [updatedExecution] = await db
+        .update(agentExecutions)
+        .set(executionData)
+        .where(eq(agentExecutions.id, id))
+        .returning();
+      
+      // Se a execução for concluída, atualiza o status do agente
+      if (executionData.status === 'completed' && updatedExecution.agent_id) {
+        await this.updateAgent(updatedExecution.agent_id, { status: 'inactive' });
+      }
+      
+      return updatedExecution;
+    } catch (error) {
+      console.error('Erro ao atualizar execução de agente:', error);
+      return undefined;
+    }
+  }
+  
+  // Passos de Execução de Agentes
+  async getAgentStepsByExecution(executionId: number): Promise<AgentStep[]> {
+    try {
+      return await db
+        .select()
+        .from(agentSteps)
+        .where(eq(agentSteps.execution_id, executionId))
+        .orderBy(agentSteps.order);
+    } catch (error) {
+      console.error('Erro ao buscar passos de execução:', error);
+      return [];
+    }
+  }
+  
+  async createAgentStep(step: InsertAgentStep): Promise<AgentStep> {
+    try {
+      const [createdStep] = await db.insert(agentSteps).values(step).returning();
+      return createdStep;
+    } catch (error) {
+      console.error('Erro ao criar passo de execução:', error);
+      throw error;
+    }
+  }
+  
+  // Ferramentas de Agentes
+  async getAgentTool(id: number): Promise<AgentTool | undefined> {
+    try {
+      const [tool] = await db.select().from(agentTools).where(eq(agentTools.id, id));
+      return tool;
+    } catch (error) {
+      console.error('Erro ao buscar ferramenta:', error);
+      return undefined;
+    }
+  }
+  
+  async getAllAgentTools(): Promise<AgentTool[]> {
+    try {
+      return await db.select().from(agentTools);
+    } catch (error) {
+      console.error('Erro ao buscar todas as ferramentas:', error);
+      return [];
+    }
+  }
+  
+  async getActiveAgentTools(): Promise<AgentTool[]> {
+    try {
+      return await db.select().from(agentTools).where(eq(agentTools.is_active, true));
+    } catch (error) {
+      console.error('Erro ao buscar ferramentas ativas:', error);
+      return [];
+    }
+  }
+  
+  async createAgentTool(tool: InsertAgentTool): Promise<AgentTool> {
+    try {
+      const [createdTool] = await db.insert(agentTools).values(tool).returning();
+      return createdTool;
+    } catch (error) {
+      console.error('Erro ao criar ferramenta:', error);
+      throw error;
+    }
+  }
+  
+  async updateAgentTool(id: number, toolData: Partial<AgentTool>): Promise<AgentTool | undefined> {
+    try {
+      const [updatedTool] = await db
+        .update(agentTools)
+        .set({ ...toolData, updated_at: new Date() })
+        .where(eq(agentTools.id, id))
+        .returning();
+      return updatedTool;
+    } catch (error) {
+      console.error('Erro ao atualizar ferramenta:', error);
+      return undefined;
+    }
+  }
+  
+  // Mapeamento de Ferramentas de Agentes
+  async getAgentToolsByAgent(agentId: number): Promise<AgentTool[]> {
+    try {
+      // Busca todos os mapeamentos ativos para o agente
+      const toolMappings = await db
+        .select()
+        .from(agentToolMappings)
+        .where(eq(agentToolMappings.agent_id, agentId))
+        .where(eq(agentToolMappings.is_active, true));
+      
+      if (toolMappings.length === 0) return [];
+      
+      // Busca todas as ferramentas associadas
+      const toolIds = toolMappings.map(mapping => mapping.tool_id);
+      
+      // Busca as ferramentas e verifica se estão ativas
+      return await db
+        .select()
+        .from(agentTools)
+        .where(sql`${agentTools.id} IN (${toolIds})`)
+        .where(eq(agentTools.is_active, true));
+    } catch (error) {
+      console.error('Erro ao buscar ferramentas por agente:', error);
+      return [];
+    }
+  }
+  
+  async createAgentToolMapping(mapping: InsertAgentToolMapping): Promise<AgentToolMapping> {
+    try {
+      const [createdMapping] = await db.insert(agentToolMappings).values(mapping).returning();
+      return createdMapping;
+    } catch (error) {
+      console.error('Erro ao criar mapeamento de ferramenta:', error);
+      throw error;
+    }
+  }
+  
+  async updateAgentToolMapping(agentId: number, toolId: number, isActive: boolean): Promise<boolean> {
+    try {
+      const result = await db
+        .update(agentToolMappings)
+        .set({ is_active: isActive })
+        .where(eq(agentToolMappings.agent_id, agentId))
+        .where(eq(agentToolMappings.tool_id, toolId));
+      
+      return !!result.rowCount && result.rowCount > 0;
+    } catch (error) {
+      console.error('Erro ao atualizar mapeamento de ferramenta:', error);
+      return false;
+    }
+  }
 }
 
 // Implementação com memória como fallback
@@ -750,6 +1032,239 @@ export class MemStorage implements IStorage {
     return logs
       .sort((a, b) => (b.created_at?.getTime() || 0) - (a.created_at?.getTime() || 0))
       .slice(0, limit);
+  }
+  
+  // ========== Implementação dos métodos para Agentes ==========
+  
+  // Agentes
+  async getAgent(id: number): Promise<Agent | undefined> {
+    return this.agentMap.get(id);
+  }
+  
+  async getAgentByName(name: string): Promise<Agent | undefined> {
+    return Array.from(this.agentMap.values()).find(agent => agent.name === name);
+  }
+  
+  async getAgentsByType(type: string): Promise<Agent[]> {
+    return Array.from(this.agentMap.values()).filter(agent => agent.type === type);
+  }
+  
+  async getAllAgents(): Promise<Agent[]> {
+    return Array.from(this.agentMap.values());
+  }
+  
+  async createAgent(agent: InsertAgent): Promise<Agent> {
+    const id = this.currentIds.agents++;
+    const now = new Date();
+    
+    const newAgent: Agent = {
+      id,
+      ...agent,
+      created_at: now,
+      updated_at: now,
+      last_execution: null
+    };
+    
+    this.agentMap.set(id, newAgent);
+    return newAgent;
+  }
+  
+  async updateAgent(id: number, agentData: Partial<Agent>): Promise<Agent | undefined> {
+    const agent = this.agentMap.get(id);
+    if (!agent) return undefined;
+    
+    const updatedAgent: Agent = {
+      ...agent,
+      ...agentData,
+      updated_at: new Date()
+    };
+    
+    this.agentMap.set(id, updatedAgent);
+    return updatedAgent;
+  }
+  
+  async deleteAgent(id: number): Promise<boolean> {
+    return this.agentMap.delete(id);
+  }
+  
+  // Execuções de Agentes
+  async getAgentExecution(id: number): Promise<AgentExecution | undefined> {
+    return this.agentExecutionMap.get(id);
+  }
+  
+  async getAgentExecutionsByAgent(agentId: number, limit: number = 10): Promise<AgentExecution[]> {
+    return Array.from(this.agentExecutionMap.values())
+      .filter(execution => execution.agent_id === agentId)
+      .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+      .slice(0, limit);
+  }
+  
+  async getAgentExecutionsByUser(userId: number, limit: number = 10): Promise<AgentExecution[]> {
+    return Array.from(this.agentExecutionMap.values())
+      .filter(execution => execution.user_id === userId)
+      .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+      .slice(0, limit);
+  }
+  
+  async createAgentExecution(execution: InsertAgentExecution): Promise<AgentExecution> {
+    const id = this.currentIds.agentExecutions++;
+    const now = new Date();
+    
+    const newExecution: AgentExecution = {
+      id,
+      ...execution,
+      created_at: now
+    };
+    
+    this.agentExecutionMap.set(id, newExecution);
+    
+    // Atualiza o agente com a data da última execução
+    if (execution.agent_id) {
+      this.updateAgent(execution.agent_id, { 
+        last_execution: now,
+        status: 'active'
+      });
+    }
+    
+    return newExecution;
+  }
+  
+  async updateAgentExecution(id: number, executionData: Partial<AgentExecution>): Promise<AgentExecution | undefined> {
+    const execution = this.agentExecutionMap.get(id);
+    if (!execution) return undefined;
+    
+    const updatedExecution: AgentExecution = {
+      ...execution,
+      ...executionData
+    };
+    
+    this.agentExecutionMap.set(id, updatedExecution);
+    
+    // Se a execução for concluída, atualiza o status do agente
+    if (executionData.status === 'completed' && execution.agent_id) {
+      this.updateAgent(execution.agent_id, { status: 'inactive' });
+    }
+    
+    return updatedExecution;
+  }
+  
+  // Passos de Execução de Agentes
+  async getAgentStepsByExecution(executionId: number): Promise<AgentStep[]> {
+    const steps = this.agentStepMap.get(executionId) || [];
+    return [...steps].sort((a, b) => a.order - b.order);
+  }
+  
+  async createAgentStep(step: InsertAgentStep): Promise<AgentStep> {
+    const id = this.currentIds.agentSteps++;
+    const now = new Date();
+    
+    const newStep: AgentStep = {
+      id,
+      ...step,
+      created_at: now
+    };
+    
+    // Inicializa o array de passos se necessário
+    if (!this.agentStepMap.has(step.execution_id)) {
+      this.agentStepMap.set(step.execution_id, []);
+    }
+    
+    const steps = this.agentStepMap.get(step.execution_id) || [];
+    steps.push(newStep);
+    this.agentStepMap.set(step.execution_id, steps);
+    
+    return newStep;
+  }
+  
+  // Ferramentas de Agentes
+  async getAgentTool(id: number): Promise<AgentTool | undefined> {
+    return this.agentToolMap.get(id);
+  }
+  
+  async getAllAgentTools(): Promise<AgentTool[]> {
+    return Array.from(this.agentToolMap.values());
+  }
+  
+  async getActiveAgentTools(): Promise<AgentTool[]> {
+    return Array.from(this.agentToolMap.values())
+      .filter(tool => tool.is_active);
+  }
+  
+  async createAgentTool(tool: InsertAgentTool): Promise<AgentTool> {
+    const id = this.currentIds.agentTools++;
+    const now = new Date();
+    
+    const newTool: AgentTool = {
+      id,
+      ...tool,
+      created_at: now,
+      updated_at: now
+    };
+    
+    this.agentToolMap.set(id, newTool);
+    return newTool;
+  }
+  
+  async updateAgentTool(id: number, toolData: Partial<AgentTool>): Promise<AgentTool | undefined> {
+    const tool = this.agentToolMap.get(id);
+    if (!tool) return undefined;
+    
+    const updatedTool: AgentTool = {
+      ...tool,
+      ...toolData,
+      updated_at: new Date()
+    };
+    
+    this.agentToolMap.set(id, updatedTool);
+    return updatedTool;
+  }
+  
+  // Mapeamento de Ferramentas de Agentes
+  async getAgentToolsByAgent(agentId: number): Promise<AgentTool[]> {
+    // Encontra todos os mapeamentos para o agente
+    const mappings = Array.from(this.agentToolMappingMap.values())
+      .filter(mapping => mapping.agent_id === agentId && mapping.is_active);
+    
+    // Obtém as ferramentas correspondentes
+    const tools: AgentTool[] = [];
+    for (const mapping of mappings) {
+      const tool = await this.getAgentTool(mapping.tool_id);
+      if (tool && tool.is_active) {
+        tools.push(tool);
+      }
+    }
+    
+    return tools;
+  }
+  
+  async createAgentToolMapping(mapping: InsertAgentToolMapping): Promise<AgentToolMapping> {
+    const id = this.currentIds.agentToolMappings++;
+    const now = new Date();
+    const key = `${mapping.agent_id}-${mapping.tool_id}`;
+    
+    const newMapping: AgentToolMapping = {
+      id,
+      ...mapping,
+      created_at: now
+    };
+    
+    this.agentToolMappingMap.set(key, newMapping);
+    return newMapping;
+  }
+  
+  async updateAgentToolMapping(agentId: number, toolId: number, isActive: boolean): Promise<boolean> {
+    const key = `${agentId}-${toolId}`;
+    const mapping = this.agentToolMappingMap.get(key);
+    
+    if (!mapping) return false;
+    
+    const updatedMapping: AgentToolMapping = {
+      ...mapping,
+      is_active: isActive
+    };
+    
+    this.agentToolMappingMap.set(key, updatedMapping);
+    return true;
   }
 }
 
