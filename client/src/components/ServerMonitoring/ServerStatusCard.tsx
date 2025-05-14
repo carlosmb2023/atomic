@@ -80,8 +80,13 @@ export const ServerStatusCard: React.FC<ServerStatusCardProps> = ({
             value={value} 
             max={100} 
             className={`h-2 ${value > 90 ? 'animate-pulse' : ''}`}
-            indicatorClassName={getProgressColor()}
           />
+          {/* Aplicando cor personalizada usando CSS inline */}
+          <style jsx>{`
+            :global(.h-2 > div) {
+              background-color: ${getProgressColor()};
+            }
+          `}</style>
         </div>
       </CardContent>
       {timestamp && (
