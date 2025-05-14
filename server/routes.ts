@@ -600,6 +600,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // ===================================================
+  // Rotas para Monitoramento do Sistema
+  // ===================================================
+  
+  // Obter métricas do sistema em tempo real
+  app.get("/api/monitor/metrics", async (req, res) => {
+    try {
+      const forceRefresh = req.query.refresh === "true";
+      const metrics = await monitorService.getSystemMetrics(forceRefresh);
+      
+      return res.json(metrics);
+    } catch (error) {
+      log(`Erro ao obter métricas do sistema: ${error}`);
+      return res.status(500).json({ error: "Erro ao obter métricas do sistema" });
+    }
+  });
+  
+  // Obter histórico de métricas
+  app.get("/api/monitor/history", async (req, res) => {
+    try {
+      const hoursParam = req.query.hours;
+      const hours = hoursParam ? parseInt(hoursParam as string) : 24;
+      
+      if (isNaN(hours) || hours <= 0 || hours > 168) { // máximo de 7 dias (168 horas)
+        return res.status(400).json({ error: "Parâmetro 'hours' deve ser um número entre 1 e 168" });
+      }
+      
+      const metricsHistory = await monitorService.getMetricsHistory(hours);
+      
+      return res.json(metricsHistory);
+    } catch (error) {
+      log(`Erro ao obter histórico de métricas: ${error}`);
+      return res.status(500).json({ error: "Erro ao obter histórico de métricas" });
+    }
+  });
+  
+  // Verificação rápida de saúde do sistema
+  app.get("/api/monitor/health", async (req, res) => {
+    try {
+      // Realiza verificações básicas de saúde
+      const dbConnected = await db ? true : false;
+      const diskInfo = await monitorService.getSystemMetrics();
+      const diskSpace = diskInfo.disk.usedPercent < 90; // Alerta se mais de 90% do disco estiver em uso
+      const memoryHealth = diskInfo.memory.usedPercent < 90; // Alerta se mais de 90% da memória estiver em uso
+      
+      // Status geral com base em todas as verificações
+      const isHealthy = dbConnected && diskSpace && memoryHealth;
+      
+      const healthStatus = {
+        status: isHealthy ? "healthy" : "unhealthy",
+        database: dbConnected ? "connected" : "disconnected",
+        disk: diskSpace ? "ok" : "critical",
+        memory: memoryHealth ? "ok" : "critical",
+        timestamp: new Date().toISOString()
+      };
+      
+      const statusCode = isHealthy ? 200 : 503; // Service Unavailable se não estiver saudável
+      return res.status(statusCode).json(healthStatus);
+    } catch (error) {
+      log(`Erro ao verificar saúde do sistema: ${error}`);
+      return res.status(500).json({ 
+        status: "error", 
+        error: "Erro ao verificar saúde do sistema",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+  
+  // ===================================================
   // Rotas para Deploy na Oracle Cloud
   // ===================================================
   

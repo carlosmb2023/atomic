@@ -104,6 +104,8 @@ export const dailyMetrics = pgTable("daily_metrics", {
   successful_requests: integer("successful_requests").default(0),
   failed_requests: integer("failed_requests").default(0),
   avg_response_time: numeric("avg_response_time", { precision: 10, scale: 2 }).default("0"),
+  metrics_history: json("metrics_history").default([]),  // Array JSON para armazenar métricas ao longo do tempo
+  last_update: timestamp("last_update").defaultNow(),
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });
