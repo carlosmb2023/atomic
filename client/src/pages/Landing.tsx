@@ -4,7 +4,7 @@ import Logo from "@/components/Logo";
 import { Terminal, FileText, Upload, BarChart } from "lucide-react";
 import GlassMorphism from "@/components/GlassMorphism";
 import AnimatedContent from "@/components/AnimatedContent";
-import ParticleBackground from "@/components/ParticleBackground";
+import AiBackgroundImage from "@/components/AiBackgroundImage";
 import { useSoundEffect } from "@/hooks/use-sound-effect";
 
 export default function Landing() {
@@ -98,7 +98,7 @@ export default function Landing() {
     <div className="pt-16">
       {/* Hero Section */}
       <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-20 relative overflow-hidden">
-        <ParticleBackground />
+        <AiBackgroundImage />
         
         <AnimatedContent animation="scale" duration={0.8}>
           <Logo size="large" className="mx-auto mb-6 animate-float" />
