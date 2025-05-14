@@ -2,6 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(var(--primary-rgb), 0.3)); }
+  50% { filter: drop-shadow(0 0 15px rgba(var(--primary-rgb), 0.7)); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink {
+  50% { border-color: transparent }
+}
+
+@keyframes cyber-glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(var(--primary-rgb), 0.8), 0 0 20px rgba(var(--primary-rgb), 0.5); }
+  50% { text-shadow: 0 0 15px rgba(var(--primary-rgb), 1), 0 0 30px rgba(var(--primary-rgb), 0.8); }
+}
+
 :root {
   /* Base Colors */
   --brand-primary: #1677ff;
@@ -127,6 +156,27 @@
 @layer components {
   .glass-panel {
     @apply bg-black/20 backdrop-blur-lg border border-white/10 rounded-xl shadow-lg;
+  }
+  
+  .animate-glow-pulse {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+  
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up 0.8s ease-out forwards;
+  }
+  
+  .typing-effect {
+    @apply overflow-hidden whitespace-nowrap border-r-4 border-primary;
+    animation: typing 3.5s steps(40, end), blink 0.75s step-end infinite;
+  }
+  
+  .cyber-text {
+    animation: cyber-glow 2s ease-in-out infinite;
   }
   
   .btn-primary {

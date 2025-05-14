@@ -4,6 +4,9 @@ import Logo from "@/components/Logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import GlassMorphism from "@/components/GlassMorphism";
+import AnimatedContent from "@/components/AnimatedContent";
+import { useSoundEffect } from "@/hooks/use-sound-effect";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -13,13 +16,16 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { playHover, playClick, playSuccess, playError } = useSoundEffect();
 
   const togglePassword = () => {
+    playClick();
     setShowPassword(!showPassword);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    playClick();
     setIsSubmitting(true);
     setLoginStatus("");
 
