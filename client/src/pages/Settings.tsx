@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useSoundEffect } from '@/hooks/use-sound-effect';
-import { Loader, Save, CloudOff, CloudCog, Server, Search, Terminal } from 'lucide-react';
+import { Loader, Save, CloudOff, CloudCog, Server, Search, Terminal, Globe, Network } from 'lucide-react';
 
 interface ConfigState {
   execution_mode: 'local' | 'cloud';
@@ -61,7 +61,10 @@ export default function Settings() {
     // Valores iniciais para o Mistral
     mistral_local_url: 'http://127.0.0.1:8000',
     mistral_cloud_url: 'https://api.mistral.ai/v1',
-    mistral_instance_type: 'oracle_arm'
+    mistral_instance_type: 'oracle_arm',
+    // Valores iniciais para Cloudflare Tunnel
+    cloudflare_tunnel_enabled: false,
+    cloudflare_tunnel_id: ''
   });
 
   // Sound effects
@@ -354,11 +357,12 @@ export default function Settings() {
         
         <GlassMorphism borderGradient glowAccent className="p-6 rounded-lg mt-4">
           <Tabs defaultValue="general">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
               <TabsTrigger value="general" onClick={playClick}>General Settings</TabsTrigger>
               <TabsTrigger value="llm" onClick={playClick}>LLM Configuration</TabsTrigger>
               <TabsTrigger value="mistral" onClick={playClick}>Mistral AI</TabsTrigger>
               <TabsTrigger value="oracle" onClick={playClick}>Oracle Cloud</TabsTrigger>
+              <TabsTrigger value="cloudflare" onClick={playClick}>Cloudflare Tunnel</TabsTrigger>
             </TabsList>
             
             <TabsContent value="general" className="space-y-6">
@@ -667,6 +671,92 @@ export default function Settings() {
                       )}
                     </Button>
                   </div>
+                </div>
+              </AnimatedContent>
+            </TabsContent>
+            
+            <TabsContent value="cloudflare" className="space-y-6">
+              <AnimatedContent animation="fadeIn" duration={800}>
+                <h2 className="text-2xl font-semibold mb-4">Cloudflare Tunnel Configuration</h2>
+                
+                <div className="bg-black/20 p-4 rounded-md mb-6">
+                  <p className="text-sm">
+                    O Cloudflare Tunnel cria uma conexão segura para expor sua aplicação na internet sem necessidade de IP público ou firewall.
+                    Configure um túnel para acessar sua aplicação de qualquer lugar via <span className="font-semibold">carlosdev.app.br</span>.
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-medium mb-2 flex items-center">
+                      <Globe className="mr-2 h-5 w-5" />
+                      Configuração do Tunnel
+                    </h3>
+                    
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Switch
+                        id="cloudflare_tunnel_enabled"
+                        checked={config.cloudflare_tunnel_enabled}
+                        onCheckedChange={(checked) => handleSwitchChange('cloudflare_tunnel_enabled', checked)}
+                      />
+                      <Label htmlFor="cloudflare_tunnel_enabled">Ativar Cloudflare Tunnel</Label>
+                    </div>
+                    
+                    <div className="flex flex-col space-y-2">
+                      <Label htmlFor="cloudflare_tunnel_id">ID do Tunnel</Label>
+                      <Input
+                        id="cloudflare_tunnel_id"
+                        name="cloudflare_tunnel_id"
+                        value={config.cloudflare_tunnel_id}
+                        onChange={handleInputChange}
+                        placeholder="xxxx-xxxx-xxxx-xxxx"
+                        disabled={!config.cloudflare_tunnel_enabled}
+                      />
+                      <p className="text-xs text-gray-400">O ID do seu túnel Cloudflare (execute "cloudflared tunnel list" para ver os IDs)</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-medium mb-2 flex items-center">
+                      <Network className="mr-2 h-5 w-5" />
+                      Status e Comandos
+                    </h3>
+                    
+                    <div className="bg-black/20 p-4 rounded-md">
+                      <p className="text-sm mb-2">Comandos úteis do Cloudflare Tunnel:</p>
+                      <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto">
+                        # Instalar e configurar o cloudflared
+                        bash scripts/setup-cloudflare-tunnel.sh
+                        
+                        # Iniciar o túnel
+                        bash scripts/start-cloudflare-tunnel.sh
+                      </pre>
+                    </div>
+                    
+                    <div className="bg-black/20 p-4 rounded-md mt-4">
+                      <p className="text-sm">Para mais informações, consulte o arquivo <a className="text-blue-400 hover:underline" href="/CLOUDFLARE_TUNNEL.md" target="_blank">CLOUDFLARE_TUNNEL.md</a> na raiz do projeto.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-4 mt-6">
+                  <Button 
+                    onClick={saveConfig} 
+                    disabled={updateConfigMutation.isPending}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                  >
+                    {updateConfigMutation.isPending ? (
+                      <>
+                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        <span>Save Configuration</span>
+                      </>
+                    )}
+                  </Button>
                 </div>
               </AnimatedContent>
             </TabsContent>
