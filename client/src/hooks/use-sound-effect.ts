@@ -1,95 +1,98 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback } from "react";
 
 interface SoundEffectOptions {
-  enabled?: boolean;
+  clickVolume?: number;
+  successVolume?: number;
+  errorVolume?: number;
+  hoverVolume?: number;
 }
 
-export function useSoundEffect(options: SoundEffectOptions = {}) {
-  const [enabled, setEnabled] = useState<boolean>(options.enabled ?? true);
-  const [clickSound, setClickSound] = useState<HTMLAudioElement | null>(null);
-  const [successSound, setSuccessSound] = useState<HTMLAudioElement | null>(null);
-  const [errorSound, setErrorSound] = useState<HTMLAudioElement | null>(null);
-  const [notificationSound, setNotificationSound] = useState<HTMLAudioElement | null>(null);
-  const [hoverSound, setHoverSound] = useState<HTMLAudioElement | null>(null);
+/**
+ * Hook para reproduzir efeitos sonoros na interface
+ */
+export const useSoundEffect = (options: SoundEffectOptions = {}) => {
+  const {
+    clickVolume = 0.2,
+    successVolume = 0.3,
+    errorVolume = 0.3,
+    hoverVolume = 0.1,
+  } = options;
 
-  // Inicializa os efeitos sonoros
-  useEffect(() => {
-    // Só inicializa no navegador (não durante SSR)
-    if (typeof window !== 'undefined') {
-      // Som de clique (suave)
-      const click = new Audio('/sounds/click.mp3');
-      click.volume = 0.3;
-      setClickSound(click);
+  /**
+   * Cria e reproduz um som com as configurações especificadas
+   */
+  const playSound = useCallback(
+    (
+      frequency: number,
+      type: OscillatorType = "sine",
+      duration: number = 50,
+      volume: number = 0.2
+    ) => {
+      try {
+        // Verificar se o contexto de áudio está disponível
+        if (typeof window === "undefined" || !window.AudioContext) {
+          return; // Sair silenciosamente em ambientes sem suporte
+        }
 
-      // Som de hover (mais suave)
-      const hover = new Audio('/sounds/hover.mp3');
-      hover.volume = 0.15;
-      setHoverSound(hover);
-      
-      // Som de sucesso 
-      const success = new Audio('/sounds/success.mp3');
-      success.volume = 0.4;
-      setSuccessSound(success);
+        const audioContext = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
 
-      // Som de erro
-      const error = new Audio('/sounds/error.mp3');
-      error.volume = 0.4;
-      setErrorSound(error);
+        oscillator.type = type;
+        oscillator.frequency.value = frequency;
+        gainNode.gain.value = volume;
 
-      // Som de notificação
-      const notification = new Audio('/sounds/notification.mp3');
-      notification.volume = 0.5;
-      setNotificationSound(notification);
-    }
-  }, []);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
 
-  // Reproduz o som de clique
+        oscillator.start();
+
+        // Diminuir gradualmente o volume
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + duration / 1000
+        );
+
+        // Parar o oscilador após a duração especificada
+        setTimeout(() => {
+          oscillator.stop();
+          audioContext.close();
+        }, duration);
+      } catch (error) {
+        console.error("Erro ao reproduzir som:", error);
+      }
+    },
+    []
+  );
+
+  // Som para cliques em botões
   const playClick = useCallback(() => {
-    if (enabled && clickSound) {
-      clickSound.currentTime = 0;
-      clickSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
-    }
-  }, [enabled, clickSound]);
+    playSound(800, "sine", 40, clickVolume);
+  }, [playSound, clickVolume]);
 
-  // Reproduz o som de sucesso
+  // Som para eventos de sucesso
   const playSuccess = useCallback(() => {
-    if (enabled && successSound) {
-      successSound.currentTime = 0;
-      successSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
-    }
-  }, [enabled, successSound]);
+    playSound(1200, "sine", 80, successVolume);
+    setTimeout(() => playSound(1800, "sine", 100, successVolume), 80);
+  }, [playSound, successVolume]);
 
-  // Reproduz o som de erro
+  // Som para eventos de erro
   const playError = useCallback(() => {
-    if (enabled && errorSound) {
-      errorSound.currentTime = 0;
-      errorSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
-    }
-  }, [enabled, errorSound]);
+    playSound(300, "square", 80, errorVolume);
+    setTimeout(() => playSound(250, "square", 200, errorVolume), 100);
+  }, [playSound, errorVolume]);
 
-  // Reproduz o som de notificação
-  const playNotification = useCallback(() => {
-    if (enabled && notificationSound) {
-      notificationSound.currentTime = 0;
-      notificationSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
-    }
-  }, [enabled, notificationSound]);
-
-  // Reproduz o som de hover
+  // Som para hover de elementos
   const playHover = useCallback(() => {
-    if (enabled && hoverSound) {
-      hoverSound.currentTime = 0;
-      hoverSound.play().catch(e => console.log('Não foi possível reproduzir som:', e));
-    }
-  }, [enabled, hoverSound]);
+    playSound(600, "sine", 30, hoverVolume);
+  }, [playSound, hoverVolume]);
 
   return {
-    enabled,
-    setEnabled,
     playClick,
     playSuccess,
     playError,
-    playNotification,
-    playHover
+    playHover,
+    playSound,
   };
-}
+};

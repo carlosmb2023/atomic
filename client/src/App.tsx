@@ -15,13 +15,18 @@ import Chat from "@/pages/Chat";
 import ServerMonitor from "@/pages/ServerMonitor";
 import Agents from "@/pages/Agents";
 import MistralTest from "@/pages/MistralTest";
+import AgentTools from "@/pages/AgentTools";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiBackgroundImage from "@/components/AiBackgroundImage";
+import VideoBackground from "@/components/VideoBackground";
 
 function Router() {
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Video de fundo */}
+      <VideoBackground videoSource="/videos/video_loop.mp4" />
+      
       {/* Global background elements */}
       <div className="fixed top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none z-[-1]"></div>
       <div className="fixed top-0 left-0 w-full h-full bg-[linear-gradient(rgba(22,119,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(22,119,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px] z-[-5]"></div>
@@ -39,6 +44,7 @@ function Router() {
           <Route path="/monitor" component={ServerMonitor} />
           <Route path="/agents" component={Agents} />
           <Route path="/mistral" component={MistralTest} />
+          <Route path="/agent-tools" component={AgentTools} />
           <Route component={NotFound} />
         </Switch>
       </main>

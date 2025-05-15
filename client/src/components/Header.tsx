@@ -92,6 +92,15 @@ export default function Header() {
               Mistral AI
             </div>
           </Link>
+          <Link href="/agent-tools">
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/agent-tools' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
+              Ferramentas
+            </div>
+          </Link>
           <Link href="/landing#features">
             <div 
               className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#features') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
@@ -200,6 +209,13 @@ export default function Header() {
                   onMouseEnter={playHover}
                   onClick={playClick}
                 >Mistral AI</div>
+              </Link>
+              <Link href="/agent-tools">
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >Ferramentas</div>
               </Link>
               <Link href="/landing#features">
                 <div 
