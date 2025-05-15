@@ -1,6 +1,6 @@
 import { db } from "../db";
 import { SystemConfig, systemConfig } from "../../shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { log } from "../vite";
 
 /**
@@ -41,8 +41,11 @@ export class ConfigService {
     }
 
     try {
-      // Busca a configuração no banco de dados
-      const configs = await db.select().from(systemConfig).limit(1);
+      // Busca a configuração mais recente no banco de dados pelo ID mais alto
+      const configs = await db.select()
+        .from(systemConfig)
+        .orderBy(sql`${systemConfig.id} DESC`)
+        .limit(1);
       
       if (configs.length === 0) {
         log("Nenhuma configuração encontrada no banco de dados");
@@ -52,6 +55,15 @@ export class ConfigService {
       // Atualiza o cache
       this.configCache = configs[0];
       this.lastFetchTime = now;
+      
+      // Log para debug
+      if (this.configCache) {
+        console.log("Configuração carregada do banco:", {
+          id: this.configCache.id,
+          mistral_api_key: this.configCache.mistral_api_key ? "***" : undefined,
+          mistral_instance_type: this.configCache.mistral_instance_type
+        });
+      }
       
       return this.configCache;
     } catch (error) {
@@ -71,8 +83,17 @@ export class ConfigService {
       const currentConfig = await this.getConfig(true);
       
       if (!currentConfig) {
-        // Cria uma configuração inicial
+        // Cria uma configuração inicial com valores padrão + os dados fornecidos
         const newConfig = await db.insert(systemConfig).values({
+          execution_mode: 'local',
+          local_llm_url: 'http://127.0.0.1:11434',
+          cloud_llm_url: 'https://oracle-api.carlosdev.app.br',
+          active_llm_url: 'http://127.0.0.1:11434',
+          mistral_local_url: 'http://127.0.0.1:8000',
+          mistral_cloud_url: 'https://api.mistral.ai/v1',
+          mistral_instance_type: 'oracle_arm',
+          base_prompt: 'Você é um assistente útil e profissional que responde de maneira concisa e clara.',
+          logs_enabled: true,
           ...configData,
           updated_by: userId,
           updated_at: new Date()
@@ -80,10 +101,20 @@ export class ConfigService {
         
         this.configCache = newConfig[0];
         this.lastFetchTime = Date.now();
+        
+        // Log para debug
+        if (this.configCache) {
+          console.log("Nova configuração criada:", {
+            id: this.configCache.id,
+            mistral_api_key: this.configCache.mistral_api_key ? "***" : undefined,
+            mistral_instance_type: this.configCache.mistral_instance_type
+          });
+        }
+        
         return this.configCache;
       }
       
-      // Atualiza a configuração existente
+      // Atualiza a configuração existente mais recente
       const updated = await db.update(systemConfig)
         .set({
           ...configData,
@@ -101,6 +132,16 @@ export class ConfigService {
       // Atualiza o cache
       this.configCache = updated[0];
       this.lastFetchTime = Date.now();
+      
+      // Log para debug
+      if (this.configCache) {
+        console.log("Configuração atualizada:", {
+          id: this.configCache.id,
+          mistral_api_key: this.configCache.mistral_api_key ? "***" : undefined,
+          mistral_instance_type: this.configCache.mistral_instance_type,
+          ...configData
+        });
+      }
       
       return this.configCache;
     } catch (error) {

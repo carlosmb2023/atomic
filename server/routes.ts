@@ -32,11 +32,26 @@ const upload = multer({
       cb(null, uploadsDir);
     },
     filename: (_req, file, cb) => {
-      cb(null, `${Date.now()}-${file.originalname}`);
+      // Remove caracteres inválidos do nome do arquivo
+      const safeFilename = file.originalname.replace(/[^a-zA-Z0-9.-_]/g, '_');
+      cb(null, `${Date.now()}-${safeFilename}`);
     }
   }),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 50 * 1024 * 1024, // 50MB limit
+  },
+  // Aceitar todos os tipos de arquivos
+  fileFilter: (_req, file, cb) => {
+    // Lista de extensões não permitidas por segurança
+    const blockedExtensions = ['.exe', '.bat', '.cmd', '.sh', '.php', '.phtml', '.asp', '.aspx', '.jsp'];
+    const fileExt = path.extname(file.originalname).toLowerCase();
+    
+    if (blockedExtensions.includes(fileExt)) {
+      return cb(new Error('Tipo de arquivo não permitido por razões de segurança.'));
+    }
+    
+    // Aceitar qualquer outro tipo de arquivo
+    cb(null, true);
   }
 });
 
@@ -944,6 +959,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: "Erro ao verificar status do Mistral",
         available: false,
         message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // ===================================================
+  // Rotas para Configuração do Agente Mistral
+  // ===================================================
+  
+  app.get("/api/mistral/agent-config", async (_req, res) => {
+    try {
+      // Obter configuração do banco de dados
+      const systemConfig = await configService.getConfig();
+      
+      // ID fixo do agente principal
+      const AGENT_ID = "ag:48009b45:20250515:programador-agente:d9bb1918";
+      
+      // Buscar configuração do agente no armazenamento
+      const agents = await storage.getAllAgents();
+      const mistralAgent = agents.find(agent => agent.name === "Mistral Agent" || agent.configuration?.agent_id === AGENT_ID);
+      
+      // Se não encontrar agente, retornar configuração padrão
+      if (!mistralAgent) {
+        return res.json({
+          agent_id: AGENT_ID,
+          base_prompt: systemConfig?.base_prompt || "Você é um assistente útil e profissional que responde de maneira concisa e clara.",
+          memory_enabled: true,
+          use_tools: true,
+          max_tokens: 2000,
+          temperature: 0.7,
+          save_responses: true
+        });
+      }
+      
+      // Retorna configuração do agente com base no que foi salvo
+      const agentConfig = mistralAgent.configuration || {};
+      
+      return res.json({
+        agent_id: AGENT_ID,
+        base_prompt: agentConfig.base_prompt || systemConfig?.base_prompt || "Você é um assistente útil e profissional que responde de maneira concisa e clara.",
+        memory_enabled: agentConfig.memory_enabled !== undefined ? agentConfig.memory_enabled : true,
+        use_tools: agentConfig.use_tools !== undefined ? agentConfig.use_tools : true,
+        max_tokens: agentConfig.max_tokens || 2000,
+        temperature: agentConfig.temperature || 0.7,
+        save_responses: agentConfig.save_responses !== undefined ? agentConfig.save_responses : true
+      });
+    } catch (error) {
+      log(`❌ Erro ao obter configuração do agente Mistral: ${error}`, "error");
+      return res.status(500).json({
+        error: "Não foi possível recuperar a configuração do agente"
+      });
+    }
+  });
+  
+  app.post("/api/mistral/agent-config", async (req, res) => {
+    try {
+      const {
+        agent_id,
+        base_prompt,
+        memory_enabled,
+        use_tools,
+        max_tokens,
+        temperature,
+        save_responses
+      } = req.body;
+      
+      // Validação básica
+      if (!agent_id) {
+        return res.status(400).json({ error: "ID do agente é obrigatório" });
+      }
+      
+      // Procurar se o agente já existe
+      const agents = await storage.getAllAgents();
+      const existingAgent = agents.find(agent => 
+        agent.name === "Mistral Agent" || 
+        (agent.configuration && agent.configuration.agent_id === agent_id)
+      );
+      
+      // Configuração a ser salva
+      const agentConfig = {
+        agent_id,
+        base_prompt: base_prompt || "Você é um assistente útil e profissional que responde de maneira concisa e clara.",
+        memory_enabled: memory_enabled !== undefined ? memory_enabled : true,
+        use_tools: use_tools !== undefined ? use_tools : true,
+        max_tokens: max_tokens || 2000,
+        temperature: temperature || 0.7,
+        save_responses: save_responses !== undefined ? save_responses : true
+      };
+      
+      // Atualizar configuração do sistema com o prompt base
+      if (base_prompt) {
+        await configService.updateConfig({
+          base_prompt: base_prompt
+        });
+      }
+      
+      // Se o agente existir, atualizar
+      if (existingAgent) {
+        const updatedAgent = await storage.updateAgent(existingAgent.id, {
+          configuration: agentConfig
+        });
+        
+        return res.json({
+          message: "Configuração do agente atualizada com sucesso",
+          agent: updatedAgent
+        });
+      } 
+      // Caso contrário, criar um novo
+      else {
+        const newAgent = await storage.createAgent({
+          name: "Mistral Agent",
+          type: "mistral",
+          description: "Agente principal Mistral para a plataforma",
+          status: "active",
+          configuration: agentConfig
+        });
+        
+        return res.json({
+          message: "Agente Mistral criado com sucesso",
+          agent: newAgent
+        });
+      }
+    } catch (error) {
+      log(`❌ Erro ao salvar configuração do agente Mistral: ${error}`, "error");
+      return res.status(500).json({
+        error: "Não foi possível salvar a configuração do agente",
+        details: error instanceof Error ? error.message : String(error)
       });
     }
   });

@@ -25,7 +25,7 @@ function Router() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Video de fundo */}
-      <VideoBackground videoSource="/videos/video_loop.mp4" />
+      <VideoBackground videoSource="/videos/video_loop.mp4?v=1" />
       
       {/* Global background elements */}
       <div className="fixed top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none z-[-1]"></div>

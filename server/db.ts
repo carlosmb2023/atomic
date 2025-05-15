@@ -147,33 +147,52 @@ export async function setupDatabase() {
       
       // Verificar se existe uma configuração do sistema
       try {
-        const configs = await db.execute(sql`SELECT COUNT(*) AS total FROM system_config`);
+        // Obtém a referência ao pool que foi inicializado anteriormente
+        const connectionString = process.env.DATABASE_URL;
+        const pgPool = new Pool({ connectionString });
         
-        // Verificar a forma correta de acessar o resultado
-        let count = 0;
-        if (configs && configs.length > 0) {
-          // Tenta vários formatos possíveis de retorno
-          if (configs[0].total) {
-            count = parseInt(configs[0].total, 10);
-          } else if (configs[0].count) {
-            count = parseInt(configs[0].count, 10);
-          } else if (configs[0][0]) {
-            count = parseInt(configs[0][0], 10);
+        // Utilizando SQL puro para verificar se existem configurações
+        const { rows } = await pgPool.query('SELECT id FROM system_config ORDER BY id DESC LIMIT 1');
+        
+        let configExists = rows && rows.length > 0;
+        let configId = configExists ? rows[0].id : null;
+        
+        if (configExists) {
+          log(`Encontrada configuração existente com ID ${configId}`);
+          
+          // Verifica se existem múltiplas configurações
+          const { rows: countRows } = await pgPool.query('SELECT COUNT(*) AS total FROM system_config');
+          const totalConfigs = parseInt(countRows[0].total, 10);
+          
+          if (totalConfigs > 1) {
+            log(`Existem ${totalConfigs} configurações. Realizando limpeza...`);
+            
+            // Remove todas as configurações exceto a mais recente
+            await pgPool.query('DELETE FROM system_config WHERE id != $1', [configId]);
+            log(`Tabela de configurações limpa. Mantida apenas a configuração mais recente (ID: ${configId})`);
           }
-        }
-        
-        log(`Encontradas ${count} configurações existentes`);
-        
-        if (count === 0) {
-          // Criar configuração inicial usando SQL direto para evitar problemas de esquema
-          await db.execute(sql`
+        } else {
+          log('Nenhuma configuração existente encontrada');
+          
+          // Criar configuração inicial usando SQL puro
+          const result = await pgPool.query(`
             INSERT INTO system_config 
-            (execution_mode, local_llm_url, cloud_llm_url, active_llm_url, base_prompt, logs_enabled) 
+            (execution_mode, local_llm_url, cloud_llm_url, active_llm_url, base_prompt, logs_enabled,
+             mistral_local_url, mistral_cloud_url, mistral_instance_type)
             VALUES 
-            ('local', 'http://127.0.0.1:11434', 'https://oracle-api.carlosdev.app.br', 'http://127.0.0.1:11434', 'Você é um assistente útil e profissional que responde de maneira concisa e clara.', true)
+            ('local', 'http://127.0.0.1:11434', 'https://oracle-api.carlosdev.app.br', 
+             'http://127.0.0.1:11434', 'Você é um assistente útil e profissional que responde de maneira concisa e clara.', true,
+             'http://127.0.0.1:8000', 'https://api.mistral.ai/v1', 'oracle_arm')
+            RETURNING id
           `);
           
-          log('✅ Configuração inicial criada com sucesso');
+          // Obtém o ID da configuração criada
+          if (result.rows.length > 0) {
+            configId = result.rows[0].id;
+            log(`✅ Configuração inicial criada com sucesso (ID: ${configId})`);
+          } else {
+            log('⚠️ Configuração criada mas não foi possível obter o ID');
+          }
         }
       } catch (countError) {
         log(`⚠️ Erro ao verificar configurações existentes: ${countError}`, 'warn');
@@ -195,13 +214,13 @@ export async function setupDatabase() {
       
       log('✅ Banco de dados configurado com sucesso');
       return true;
-    } catch (error) {
-      log(`❌ Erro ao configurar tabelas do banco de dados: ${error}`, 'error');
+    } catch (setupError) {
+      log(`❌ Erro ao configurar tabelas do banco de dados: ${setupError}`, 'error');
       log('❌ Falha ao configurar banco de dados, usando armazenamento em memória');
       return false;
     }
-  } catch (error) {
-    log(`❌ Erro ao configurar banco de dados: ${error}`, 'error');
+  } catch (outerError) {
+    log(`❌ Erro ao configurar banco de dados: ${outerError}`, 'error');
     return false;
   }
 }
