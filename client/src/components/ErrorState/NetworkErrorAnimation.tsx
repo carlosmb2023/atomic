@@ -1,87 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import ErrorStateAnimation from './ErrorStateAnimation';
+import React from 'react';
+import { Wifi, WifiOff, ServerOff, ShieldAlert, Ban } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ErrorStateAnimation, ErrorType } from './ErrorStateAnimation';
 
 interface NetworkErrorAnimationProps {
-  error: Error | string | null;
+  error: string | null;
   onRetry?: () => void;
   onDismiss?: () => void;
   statusCode?: number;
-  timeout?: number; // Tempo em ms após o qual o erro desaparece automaticamente
+  errorType?: ErrorType;
 }
 
-export default function NetworkErrorAnimation({
+export const NetworkErrorAnimation: React.FC<NetworkErrorAnimationProps> = ({
   error,
   onRetry,
   onDismiss,
   statusCode,
-  timeout
-}: NetworkErrorAnimationProps) {
-  const [visible, setVisible] = useState(!!error);
-  
-  // Atualizar visibilidade quando o erro mudar
-  useEffect(() => {
-    setVisible(!!error);
-    
-    // Se houver timeout definido, esconder automaticamente após o tempo
-    if (error && timeout) {
-      const timer = setTimeout(() => {
-        setVisible(false);
-        if (onDismiss) onDismiss();
-      }, timeout);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [error, timeout, onDismiss]);
-  
+  errorType = 'network'
+}) => {
   if (!error) return null;
-  
-  // Determinar tipo de erro baseado no código de status
-  let errorType = 'network';
-  let errorMessage = '';
+
+  // Determina o ícone, título e mensagem com base no tipo de erro
+  let icon = <WifiOff />;
+  let title = 'Erro de Conexão';
   
   if (statusCode) {
     if (statusCode === 401 || statusCode === 403) {
+      icon = <ShieldAlert />;
+      title = 'Erro de Autenticação';
       errorType = 'auth';
-      errorMessage = statusCode === 401 
-        ? 'Não autorizado. Faça login novamente.'
-        : 'Você não tem permissão para acessar este recurso.';
-    } else if (statusCode >= 500) {
-      errorType = 'server';
-      errorMessage = 'Erro no servidor. Tente novamente mais tarde.';
     } else if (statusCode === 404) {
-      errorType = 'validation';
-      errorMessage = 'Recurso não encontrado.';
-    } else {
-      errorMessage = `Erro de rede (${statusCode})`;
+      icon = <Ban />;
+      title = 'Recurso não encontrado';
+      errorType = 'server';
+    } else if (statusCode >= 500) {
+      icon = <ServerOff />;
+      title = 'Erro de Servidor';
+      errorType = 'server';
     }
-  } else {
-    // Se não tiver statusCode, mostrar a mensagem do erro
-    errorMessage = typeof error === 'string' ? error : error.message || 'Erro de conexão';
+  } else if (errorType === 'network') {
+    icon = <WifiOff />;
+    title = 'Erro de Conexão';
+  } else if (errorType === 'server') {
+    icon = <ServerOff />;
+    title = 'Erro de Servidor';
+  } else if (errorType === 'auth') {
+    icon = <ShieldAlert />;
+    title = 'Erro de Autenticação';
   }
   
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.3 }}
-          className="fixed top-4 right-4 z-50"
-        >
-          <ErrorStateAnimation
-            type={errorType as any}
-            message={errorMessage}
-            onRetry={onRetry}
-            onDismiss={() => {
-              setVisible(false);
-              if (onDismiss) onDismiss();
-            }}
-            dismissable={true}
+    <div className="relative z-50">
+      <ErrorStateAnimation
+        error={error}
+        onRetry={onRetry}
+        onDismiss={onDismiss}
+        errorType={errorType}
+        title={title}
+        hideIcon={true}
+      />
+      
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0, opacity: 0 }}
+        className="fixed top-16 left-1/2 -translate-x-1/2 z-50 w-16 h-16 flex items-center justify-center"
+      >
+        <div className="relative">
+          <motion.div
+            animate={{ scale: [1, 1.05, 1], opacity: [0.9, 1, 0.9] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="absolute inset-0 rounded-full bg-red-500/20 blur-lg"
           />
-        </motion.div>
-      )}
-    </AnimatePresence>
+          <motion.div
+            className="relative text-red-500 p-2 bg-black/50 backdrop-blur-sm rounded-full border border-red-500/30 shadow-lg"
+            animate={{ rotate: [0, -5, 0, 5, 0] }}
+            transition={{ repeat: Infinity, duration: 5 }}
+          >
+            {icon}
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
   );
-}
+};
