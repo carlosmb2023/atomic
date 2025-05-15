@@ -1,200 +1,298 @@
-# Instalação no Oracle Cloud - CarlosDev
+# Guia de Instalação no Oracle Cloud
 
-Este guia irá ajudá-lo a configurar o sistema CarlosDev em uma instância Oracle Cloud, permitindo o uso do modelo Mistral para Inteligência Artificial.
+Este guia fornece instruções detalhadas para configurar o WebAiDashboard com o agente Mistral ID: `ag:48009b45:20250515:programador-agente:d9bb1918` no Oracle Cloud Infrastructure (OCI).
 
-## Requisitos da VM Oracle Cloud
+## Requisitos de Infraestrutura
 
-### Requisitos mínimos
-- **CPU**: 4 OCPUs (equivalente a 4 vCPUs)
-- **RAM**: 16GB (mínimo) ou 24GB (recomendado)
-- **Armazenamento**: 100GB
-- **Sistema Operacional**: Oracle Linux 8 ou Ubuntu 22.04
+Para garantir compatibilidade adequada com o agente Mistral, recomendamos a seguinte configuração no Oracle Cloud:
 
-### Recomendações para melhor desempenho
-- **CPU**: 8 OCPUs 
-- **RAM**: 32GB
-- **GPU**: NVIDIA A10 (opcional, melhora muito o desempenho)
-- **Armazenamento**: 150GB+
+| Componente | Especificação Recomendada |
+|------------|---------------------------|
+| Shape      | VM.Standard.E4.Flex       |
+| OCPUs      | 4+                        |
+| Memória    | 16+ GB                    |
+| Boot Volume| 100+ GB                   |
+| OS         | Oracle Linux 8 ou Ubuntu 22.04 |
 
-## Passo 1: Criar a instância no Oracle Cloud
+## 1. Preparação da Instância
 
-1. Acesse o [console do Oracle Cloud](https://cloud.oracle.com/)
-2. Navegue até "Compute" > "Instances"
-3. Clique em "Create Instance"
-4. Configure as seguintes opções:
-   - **Nome**: CarlosDev-Mistral
-   - **Compartimento**: Escolha seu compartimento
-   - **Zona de disponibilidade**: Escolha a mais próxima
-   - **Tipo de Instância**: VM.Standard.E4.Flex (ou VM.GPU se disponível)
-   - **Configuração de CPU/RAM**: 4 OCPUs, 24GB RAM
-   - **Sistema Operacional**: Oracle Linux 8 ou Ubuntu 22.04
-   - **Rede**: 
-     - Crie uma VCN se ainda não tiver uma
-     - Abra as portas 22 (SSH), 80/443 (HTTP/HTTPS) e 8000 (API Mistral)
-   - **Chave SSH**: Faça upload da sua chave SSH ou gere um novo par de chaves
+Após criar uma instância com as especificações acima:
 
-5. Clique em "Create" e aguarde a instância ser provisionada
-
-## Passo 2: Conectar à instância
+### 1.1 Conecte-se via SSH
 
 ```bash
-ssh -i /caminho/para/sua/chave.key opc@IP_DA_INSTANCIA
+ssh -i /caminho/para/sua_chave.key opc@seu_ip_publico
 ```
 
-Para Ubuntu, use o usuário "ubuntu" em vez de "opc".
+### 1.2 Instale as dependências básicas
 
-## Passo 3: Configuração inicial
-
-1. Atualize os pacotes do sistema:
-
+Para **Oracle Linux**:
 ```bash
-# No Oracle Linux
 sudo dnf update -y
-
-# No Ubuntu
-sudo apt update && sudo apt upgrade -y
+sudo dnf install -y git nodejs npm postgresql-server postgresql-contrib
 ```
 
-2. Clone o repositório ou baixe o script de instalação:
-
+Para **Ubuntu**:
 ```bash
-mkdir -p ~/carlosdev
-cd ~/carlosdev
-# Você pode baixar o script diretamente do seu GitHub, se disponível
-curl -O https://raw.githubusercontent.com/seu-usuario/carlosdev/main/scripts/oracle_setup.sh
-chmod +x oracle_setup.sh
+sudo apt update
+sudo apt install -y git nodejs npm postgresql postgresql-contrib
 ```
 
-## Passo 4: Execute o script de instalação
+### 1.3 Configure o Node.js e NPM
 
 ```bash
-sudo ./oracle_setup.sh
+# Instalar nvm (Node Version Manager)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+source ~/.bashrc
+
+# Instalar Node.js LTS
+nvm install --lts
+nvm use --lts
+
+# Atualizar npm
+npm install -g npm@latest
 ```
 
-Este script irá:
-- Instalar dependências necessárias
-- Configurar o Docker e Docker Compose
-- Instalar o Cloudflare Tunnel
-- Preparar o ambiente para o Mistral
+## 2. Configuração do Banco de Dados PostgreSQL
 
-## Passo 5: Configurar o Cloudflare Tunnel
+### 2.1 Inicializar o banco de dados
 
-1. Faça login no Cloudflare:
-
+Para **Oracle Linux**:
 ```bash
-cloudflared tunnel login
+sudo postgresql-setup --initdb
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
 ```
 
-2. Crie um novo túnel:
-
+Para **Ubuntu**:
 ```bash
-cloudflared tunnel create mistral-carlosdev
+sudo systemctl enable postgresql
+sudo systemctl start postgresql
 ```
 
-3. Copie o ID do túnel gerado e atualize o arquivo de configuração:
+### 2.2 Configurar o banco de dados
 
 ```bash
-sudo nano /etc/cloudflared/config.yml
+# Acessar como usuário postgres
+sudo -u postgres psql
+
+# Criar banco e usuário
+CREATE DATABASE webaidashboard;
+CREATE USER webaiuser WITH ENCRYPTED PASSWORD 'senha_segura';
+GRANT ALL PRIVILEGES ON DATABASE webaidashboard TO webaiuser;
+\q
+
+# Ajustar configuração para aceitar conexões
+sudo nano /var/lib/pgsql/data/pg_hba.conf  # Oracle Linux
+# OU
+sudo nano /etc/postgresql/14/main/pg_hba.conf  # Ubuntu
 ```
 
-Substitua "YOUR_TUNNEL_ID" pelo ID gerado.
-
-4. Configure o DNS no dashboard do Cloudflare:
-   - Acesse o dashboard do Cloudflare
-   - Vá até "Zero Trust" > "Access" > "Tunnels"
-   - Selecione seu túnel
-   - Adicione os seguintes registros DNS:
-     - mistral.carlosdev.app.br -> localhost:8000
-     - api-mistral.carlosdev.app.br -> localhost:3000
-
-5. Inicie o serviço Cloudflare:
+Altere a linha `local all all peer` para `local all all md5` e salve.
 
 ```bash
-sudo systemctl start cloudflared
-sudo systemctl enable cloudflared
+sudo systemctl restart postgresql
 ```
 
-## Passo 6: Configurar o Mistral
+## 3. Instalação do Aplicativo
 
-1. Navegue até o diretório do projeto:
+### 3.1 Clonar o repositório
 
 ```bash
-cd /opt/carlosdev-mistral
+mkdir -p /opt/webaidashboard
+cd /opt/webaidashboard
+git clone https://github.com/seu-usuario/seu-repositorio.git .
 ```
 
-2. Edite o arquivo .env se necessário:
+### 3.2 Instalar dependências
 
 ```bash
+npm install
+```
+
+### 3.3 Configurar variáveis de ambiente
+
+```bash
+cp .env.deploy .env
 nano .env
 ```
 
-3. Inicie os serviços:
+Edite o arquivo para incluir:
 
-```bash
-docker-compose up -d
+```
+NODE_ENV=production
+PORT=5000
+
+# Configurações do Mistral
+MISTRAL_AGENT_ID=ag:48009b45:20250515:programador-agente:d9bb1918
+MISTRAL_API_KEY=sua_chave_api_mistral
+
+# Configurações de Banco de Dados
+DATABASE_URL=postgresql://webaiuser:senha_segura@localhost:5432/webaidashboard
+
+# Configurações de Segurança
+SESSION_SECRET=gere_uma_string_aleatoria_segura
 ```
 
-4. Verifique se está funcionando:
+## 4. Configuração do Firewall e Rede
 
+### 4.1 Configurar Regras de Firewall no Oracle Cloud
+
+1. Acesse o console OCI
+2. Navegue até Rede -> Virtual Cloud Networks
+3. Selecione sua VCN
+4. Clique em "Security Lists"
+5. Adicione uma regra de entrada para a porta 5000 (TCP)
+
+### 4.2 Configurar Firewall no Sistema Operacional
+
+Para **Oracle Linux**:
 ```bash
-curl http://localhost:8000/health
+sudo firewall-cmd --permanent --add-port=5000/tcp
+sudo firewall-cmd --reload
 ```
 
-## Passo 7: Testar a integração
-
-1. Na interface do CarlosDev, acesse Configurações > Mistral
-2. Configure:
-   - URL do Mistral Cloud: https://mistral.carlosdev.app.br
-   - Tipo de instância: Oracle Cloud
-   - Ative a opção "Usar endpoint Mistral Cloud"
-
-3. Salve as configurações e teste enviando uma mensagem no chat.
-
-## Solução de problemas
-
-### Logs do Docker
+Para **Ubuntu**:
 ```bash
-docker-compose logs -f
+sudo ufw allow 5000/tcp
+sudo ufw reload
 ```
 
-### Logs do Cloudflare Tunnel
+## 5. Instalação como Serviço Systemd
+
+### 5.1 Criar arquivo de serviço
+
 ```bash
-journalctl -u cloudflared
+sudo nano /etc/systemd/system/webaidashboard.service
 ```
 
-### Verificação do status do Cloudflare
-```bash
-cloudflared tunnel info
+Adicione o seguinte conteúdo:
+
+```
+[Unit]
+Description=WebAiDashboard Service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=opc
+WorkingDirectory=/opt/webaidashboard
+ExecStart=/bin/bash -c 'source ~/.nvm/nvm.sh && /opt/webaidashboard/deploy.sh'
+Restart=on-failure
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=webaidashboard
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-### Verificação do Docker
+### 5.2 Ativar e iniciar o serviço
+
 ```bash
-docker ps
+sudo chmod +x /opt/webaidashboard/deploy.sh
+sudo systemctl enable webaidashboard
+sudo systemctl start webaidashboard
 ```
 
-## Requisitos de hardware para modelos específicos
+### 5.3 Verificar status do serviço
 
-### Mistral-7B (básico)
-- **RAM**: 16GB
-- **VRAM**: 8GB (se GPU disponível)
-- **Espaço em disco**: 20GB
+```bash
+sudo systemctl status webaidashboard
+sudo journalctl -u webaidashboard -f
+```
 
-### Mistral-7B-Instruct-v0.2 (recomendado)
-- **RAM**: 24GB
-- **VRAM**: 12GB (se GPU disponível)
-- **Espaço em disco**: 30GB
+## 6. Configuração do Agente Mistral
 
-### Mistral-Mixture-of-Experts (avançado)
-- **RAM**: 32GB+
-- **VRAM**: 24GB+ (GPU fortemente recomendado)
-- **Espaço em disco**: 50GB+
+### 6.1 Verificar compatibilidade
 
-## Links úteis
+```bash
+cd /opt/webaidashboard
+chmod +x scripts/deploy/check_hardware.sh
+./scripts/deploy/check_hardware.sh
+```
 
-- [Documentação do Mistral AI](https://docs.mistral.ai/)
-- [Documentação do Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps)
-- [Documentação do Oracle Cloud](https://docs.oracle.com/en-us/iaas/Content/Compute/References/computeshapes.htm)
+### 6.2 Executar verificador de compatibilidade do agente
 
-## Suporte
+```bash
+cd /opt/webaidashboard
+node scripts/deploy/mistral_compatibility.js
+```
 
-Se encontrar problemas durante a instalação, entre em contato através do email suporte@carlosdev.app.br.
+## 7. Configuração de Backup e Manutenção
+
+### 7.1 Configurar backup do banco de dados
+
+Crie um script para backup:
+
+```bash
+sudo nano /opt/webaidashboard/scripts/backup.sh
+```
+
+Adicione:
+
+```bash
+#!/bin/bash
+BACKUP_DIR="/opt/webaidashboard/backups"
+DATE=$(date +%Y%m%d-%H%M%S)
+FILENAME="webaidashboard-$DATE.sql"
+
+mkdir -p $BACKUP_DIR
+pg_dump -U webaiuser webaidashboard > $BACKUP_DIR/$FILENAME
+```
+
+Configure como tarefa cron:
+
+```bash
+chmod +x /opt/webaidashboard/scripts/backup.sh
+(crontab -l 2>/dev/null; echo "0 2 * * * /opt/webaidashboard/scripts/backup.sh") | crontab -
+```
+
+## 8. Verificação
+
+Após a instalação, verifique:
+
+1. Acesse http://seu_ip_publico:5000 em seu navegador
+2. Verifique o status do agente Mistral em http://seu_ip_publico:5000/api/mistral/status
+3. Verifique os logs com `sudo journalctl -u webaidashboard -f`
+
+---
+
+## Resolução de Problemas
+
+### Verificação de Logs
+
+```bash
+sudo systemctl status webaidashboard
+sudo journalctl -u webaidashboard -f
+```
+
+### Reiniciar Serviços
+
+```bash
+sudo systemctl restart postgresql
+sudo systemctl restart webaidashboard
+```
+
+### Verificar Conectividade com API Mistral
+
+```bash
+curl -H "Authorization: Bearer $MISTRAL_API_KEY" https://api.mistral.ai/v1/models
+```
+
+### Verificar Agente Mistral
+
+```bash
+# Verificar ID configurado
+grep MISTRAL_AGENT_ID /opt/webaidashboard/.env
+```
+
+---
+
+## Notas Importantes
+
+- Mantenha o ID do agente Mistral (`ag:48009b45:20250515:programador-agente:d9bb1918`) consistente em todas as configurações
+- Ajuste os requisitos de hardware com base no volume de uso esperado
+- Configure backups regulares do banco de dados para evitar perda de dados

@@ -916,6 +916,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mode: config?.mistral_instance_type || "api",
         api_configured: Boolean(config?.mistral_api_key),
         local_configured: Boolean(config?.mistral_local_url),
+        agent_id: "ag:48009b45:20250515:programador-agente:d9bb1918",
         message: "Mistral não configurado"
       };
       

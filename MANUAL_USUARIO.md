@@ -1,270 +1,155 @@
-# Manual do Usuário - CarlosDev
+# Manual do Usuário - Projeto WebAiDashboard
 
-Bem-vindo ao Sistema CarlosDev, uma plataforma moderna para gerenciamento inteligente de servidores e infraestrutura, potencializada por IA.
+## 1. Introdução
 
-## Índice
+Bem-vindo ao WebAiDashboard, uma plataforma avançada para gerenciamento e integração de agentes de IA. Este manual fornece instruções sobre como configurar e utilizar todas as funcionalidades do sistema, com foco especial no Agente Mistral integrado (ID: `ag:48009b45:20250515:programador-agente:d9bb1918`).
 
-1. [Visão Geral](#visão-geral)
-2. [Requisitos do Sistema](#requisitos-do-sistema)
-3. [Primeiros Passos](#primeiros-passos)
-4. [Painel de Controle](#painel-de-controle)
-5. [Monitoramento de Servidores](#monitoramento-de-servidores)
-6. [Configurações do Sistema](#configurações-do-sistema)
-7. [Integração com Mistral AI](#integração-com-mistral-ai)
-8. [Configuração do Cloudflare Tunnel](#configuração-do-cloudflare-tunnel)
-9. [Deployment na Oracle Cloud](#deployment-na-oracle-cloud)
-10. [Agentes de IA](#agentes-de-ia)
-11. [Solução de Problemas](#solução-de-problemas)
-12. [Suporte Técnico](#suporte-técnico)
+## 2. Acesso ao Sistema
 
-## Visão Geral
+O acesso ao WebAiDashboard pode ser feito de duas formas:
 
-O CarlosDev é uma plataforma completa de gerenciamento de servidores e infraestrutura que combina:
+- **Deploy na nuvem**: Acesse o sistema através do URL fornecido após o deploy
+- **Execução local**: Acesse o sistema em `http://localhost:5000`
 
-- **Dashboard Intuitivo**: Monitoramento em tempo real de métricas de servidor
-- **Inteligência Artificial**: Integração com modelos de linguagem para automação
-- **Agentes Autônomos**: Agentes baseados em IA para tarefas específicas
-- **Deployment Flexível**: Opções para hospedagem local, na nuvem ou híbrida
-- **Segurança Avançada**: Proteção de acesso via Cloudflare Tunnel
+### 2.1 Primeiros passos
 
-## Requisitos do Sistema
+1. Faça login com suas credenciais
+2. Na primeira execução, você será direcionado para a página de configuração
+3. Configure sua chave de API Mistral e outras configurações necessárias
 
-### Para Acesso Web
-- Navegador moderno (Chrome, Firefox, Edge, Safari)
+## 3. Interface do Usuário
+
+A interface do WebAiDashboard é dividida nas seguintes seções:
+
+### 3.1 Dashboard Principal
+
+O dashboard apresenta uma visão geral do sistema, incluindo:
+
+- Status do agente Mistral
+- Estatísticas de uso
+- Gráficos de desempenho
+- Alertas e notificações
+
+### 3.2 Página de Teste do Mistral
+
+Nesta página, você pode:
+
+- Testar a conexão com a API Mistral
+- Enviar prompts de teste para o modelo
+- Verificar o ID do agente Mistral
+- Ajustar configurações específicas
+
+### 3.3 Configurações do Sistema
+
+Acesse as configurações para:
+
+- Configurar chaves de API
+- Definir modo de execução (API, Local, Replit)
+- Configurar conexão com banco de dados
+- Ajustar parâmetros de desempenho
+
+## 4. Configuração do Agente Mistral
+
+### 4.1 Opções de Conexão
+
+O sistema oferece três modos de conexão com o Mistral:
+
+1. **Modo API** - Utiliza a API oficial do Mistral
+   - Requer uma chave de API Mistral válida
+   - Oferece modelos de última geração
+   - Conexão estável e gerenciada
+
+2. **Modo Local** - Conecta-se a uma instância local do Mistral
+   - Requer instalação do modelo em servidor local
+   - Menor latência e maior privacidade
+   - Necessita de hardware específico
+
+3. **Modo Replit** - Versão otimizada para o ambiente Replit
+   - Funcionalidade básica sem necessidade de hardware dedicado
+   - Ideal para testes e desenvolvimento
+
+### 4.2 Configuração do ID do Agente
+
+O sistema está pré-configurado para usar o agente ID: `ag:48009b45:20250515:programador-agente:d9bb1918`.
+
+Para verificar a configuração:
+1. Acesse a página de Configurações
+2. Vá para a aba "Mistral"
+3. Verifique se o campo "Agent ID" contém o valor correto
+
+### 4.3 Requisitos de Hardware
+
+Para melhor desempenho com o agente Mistral, recomendamos:
+
+- 4+ cores de CPU
+- 8+ GB de RAM
+- 20+ GB de espaço em disco
 - Conexão estável com a internet
 
-### Para Hospedagem
-- **Opção 1 - Replit**: Sem requisitos adicionais
-- **Opção 2 - Oracle Cloud**: 
-  - Instância VM.Standard.E4.Flex (4 OCPUs, 24GB RAM mínimo)
-  - 100GB de armazenamento
-- **Opção 3 - Servidor Local**:
-  - CPU: 4 núcleos
-  - RAM: 16GB
-  - Armazenamento: 50GB
-  - Sistema Operacional: Ubuntu 20.04+ ou similar
+## 5. Funcionalidades Principais
 
-## Primeiros Passos
+### 5.1 Teste de Prompts
 
-### Login no Sistema
+Você pode testar o agente Mistral com prompts personalizados:
 
-1. Acesse o sistema pela URL fornecida (exemplo: https://carlosdev.app.br)
-2. Na tela de login, insira suas credenciais
-3. Para primeiro acesso, use as credenciais padrão:
-   - Usuário: `admin`
-   - Senha: `admin123`
-   - **IMPORTANTE**: Altere a senha padrão imediatamente após o primeiro login
+1. Acesse a página de Teste do Mistral
+2. Digite seu prompt na caixa de texto
+3. Ajuste os parâmetros de geração (temperatura, tokens)
+4. Clique em "Enviar" para receber a resposta
 
-### Navegação Básica
+### 5.2 Monitoramento de Uso
 
-Após o login, você verá o Dashboard principal com os seguintes elementos:
+Monitore o uso do sistema através do Dashboard:
 
-- **Barra Lateral**: Acesso às principais funcionalidades
-- **Painel Superior**: Notificações e menu do usuário
-- **Área Central**: Visualização da página atual
-- **Rodapé**: Versão do sistema e links úteis
+- Tokens consumidos
+- Tempo de resposta
+- Taxa de sucesso
+- Histórico de interações
 
-## Painel de Controle
+### 5.3 Diagnóstico e Troubleshooting
 
-O Dashboard principal fornece uma visão geral de todos os servidores monitorados e sistemas ativos:
+Para resolver problemas:
 
-- **Métricas em Tempo Real**: CPU, memória, armazenamento e tráfego de rede
-- **Status dos Serviços**: Verde (ativo), amarelo (atenção), vermelho (crítico)
-- **Gráficos de Desempenho**: Histórico de desempenho nas últimas 24 horas
-- **Alertas Recentes**: Últimos alertas e notificações do sistema
+1. Verifique a página de Status
+2. Consulte os logs do sistema
+3. Execute o verificador de compatibilidade em `/scripts/deploy/check_hardware.sh`
+4. Verifique a conexão com a API Mistral
 
-### Personalizando o Dashboard
+## 6. Deploy e Configuração Avançada
 
-1. Clique no botão "Personalizar" no canto superior direito
-2. Arraste e solte os widgets para reorganizar
-3. Use o menu de cada widget para configurar as métricas exibidas
-4. Clique em "Salvar Layout" para manter suas configurações
+### 6.1 Deploy no Replit
 
-## Monitoramento de Servidores
+Para fazer o deploy no Replit:
 
-### Adicionando um Novo Servidor
+1. Clique no botão de Deploy
+2. Configure as variáveis de ambiente necessárias
+3. Aguarde a conclusão do processo
 
-1. Navegue até "Monitoramento" > "Servidores"
-2. Clique em "Adicionar Servidor"
-3. Forneça as informações necessárias:
-   - Nome amigável
-   - Endereço IP ou hostname
-   - Credenciais de acesso (opcional)
-   - Tipo de servidor
-4. Selecione as métricas a serem monitoradas
-5. Clique em "Salvar"
+### 6.2 Deploy em Servidor Próprio
 
-### Configurando Alertas
+Para deploy em servidor próprio:
 
-1. Acesse o servidor desejado na lista
-2. Vá para a aba "Alertas"
-3. Clique em "Novo Alerta"
-4. Defina as condições:
-   - Métrica a ser monitorada
-   - Limite (threshold)
-   - Duração do evento
-   - Ações a serem tomadas
-5. Escolha os canais de notificação (email, SMS, webhook)
-6. Salve a configuração
+1. Siga as instruções no arquivo `DEPLOY.md`
+2. Execute o script `deploy.sh`
+3. Configure o arquivo `.env.deploy` com suas credenciais
 
-## Configurações do Sistema
+### 6.3 Integração com Cloudflare Tunnel
 
-Acesse as configurações através do menu "Configurações" na barra lateral:
+Para expor o serviço de forma segura:
 
-### Configurações Gerais
+1. Siga as instruções no arquivo `CLOUDFLARE_TUNNEL.md`
+2. Configure o túnel para apontar para o endereço do seu serviço
 
-- **Aparência**: Tema claro/escuro, densidade de informações
-- **Idioma**: Português, Inglês, Espanhol
-- **Fuso Horário**: Ajuste conforme sua localização
-- **Notificações**: Configure os canais de notificação
+## 7. Suporte e Contato
 
-### Configurações de Usuários
+Para suporte adicional:
 
-- **Gerenciamento de Usuários**: Adicionar, editar, remover usuários
-- **Perfis de Acesso**: Definir permissões por grupo
-- **Autenticação**: Configurar MFA, integração com LDAP/AD
-
-### Configurações de Rede
-
-- **Proxy**: Configurar proxy para acesso externo
-- **Firewall**: Regras básicas de acesso
-- **API Keys**: Gerar e gerenciar chaves de API
-
-## Integração com Mistral AI
-
-O sistema oferece integração com o Mistral AI, um modelo de linguagem avançado que pode ser executado localmente ou na nuvem.
-
-### Configurando o Mistral
-
-1. Acesse "Configurações" > "Mistral AI"
-2. Escolha o modo de execução:
-   - **Local**: Para instância local (requer recursos significativos)
-   - **Cloud**: Para utilizar serviço hospedado na Oracle Cloud
-   - **Híbrido**: Combina recursos locais e na nuvem
-
-### Opções do Mistral
-
-- **URL do Mistral Local**: Geralmente http://localhost:8000
-- **URL do Mistral Cloud**: O endereço da sua instância Oracle Cloud ou serviço Mistral
-- **Tipo de Instância**: Local, Oracle Cloud, ou outro provedor
-- **Modelo**: Mistral-7B-Instruct-v0.2 (padrão), ou outros disponíveis
-- **Parâmetros**: Configurações avançadas como temperatura, tokens máximos, etc.
-
-### Mistral Local
-
-Para configurar o Mistral localmente:
-
-1. Execute o script de instalação: `scripts/setup-local-mistral.sh`
-2. Siga as instruções na tela
-3. Configure a URL do Mistral Local como http://localhost:8000
-
-## Configuração do Cloudflare Tunnel
-
-O Cloudflare Tunnel permite acesso seguro ao seu sistema sem expor portas diretamente à internet.
-
-### Ativando o Cloudflare Tunnel
-
-1. Acesse "Configurações" > "Cloudflare Tunnel"
-2. Ative a opção "Usar Cloudflare Tunnel"
-3. Insira o ID do Túnel (obtido após a configuração no servidor)
-4. Configure o domínio base (exemplo: carlosdev.app.br)
-5. Salve as configurações
-
-### Verificando o Status
-
-- **Status do Túnel**: Exibe se o túnel está ativo ou inativo
-- **Estatísticas**: Mostra o tráfego e conexões ativas
-- **Logs**: Registro de eventos do túnel
-
-Para instruções detalhadas sobre a configuração do servidor Cloudflare Tunnel, consulte o arquivo [CLOUDFLARE_TUNNEL.md](CLOUDFLARE_TUNNEL.md).
-
-## Deployment na Oracle Cloud
-
-O sistema pode ser hospedado na Oracle Cloud para maior desempenho e disponibilidade.
-
-### Configurando a VM Oracle Cloud
-
-1. Acesse "Configurações" > "Deployment"
-2. Na seção "Oracle Cloud", clique em "Configurar"
-3. Insira os detalhes da instância:
-   - IP da instância
-   - Usuário SSH
-   - Caminho da chave SSH (ou senha)
-4. Teste a conexão
-5. Salve as configurações
-
-### Opções de Deployment
-
-- **Deploy Automatizado**: O sistema pode ser implantado automaticamente
-- **Implantação do Mistral**: Opção para implantar o modelo Mistral na VM
-- **Sincronização**: Manter os sistemas sincronizados
-
-Para instruções detalhadas sobre a configuração da VM Oracle Cloud, consulte o arquivo [INSTALACAO_ORACLE_CLOUD.md](INSTALACAO_ORACLE_CLOUD.md).
-
-## Agentes de IA
-
-O sistema possui agentes de IA que podem realizar tarefas automatizadas.
-
-### Tipos de Agentes
-
-- **Monitor**: Monitoramento automatizado com detecção de anomalias
-- **Assistente**: Respostas a perguntas sobre servidores e status
-- **Automação**: Execução de tarefas programadas ou por condição
-- **Diagnóstico**: Análise de problemas e sugestão de soluções
-
-### Gerenciando Agentes
-
-1. Acesse "Agentes" no menu lateral
-2. Veja a lista de agentes disponíveis
-3. Para criar um novo agente:
-   - Clique em "Novo Agente"
-   - Selecione o tipo
-   - Configure o nome e descrição
-   - Selecione o modelo (OpenAI ou Mistral)
-   - Configure as ferramentas disponíveis
-   - Defina o prompt do sistema
-   - Ative memória persistente se necessário
-   - Insira a chave de API (se usando OpenAI)
-   - Salve o agente
-
-### Interagindo com Agentes
-
-1. Clique no agente desejado na lista
-2. Use a janela de chat para interação direta
-3. Veja o histórico de interações
-4. Para execuções automáticas, configure gatilhos:
-   - Por tempo (cron)
-   - Por evento
-   - Por condição de alerta
-
-## Solução de Problemas
-
-### Problemas de Conexão
-
-- **Erro "Não foi possível conectar ao servidor"**: Verifique se o servidor está online e acessível na rede
-- **Erro de autenticação**: Confirme suas credenciais e verifique se sua conta não está bloqueada
-- **Timeout de conexão**: Verifique sua conexão com a internet ou a rede local
-
-### Problemas com o Mistral
-
-- **Erro "Modelo não disponível"**: Verifique se o serviço Mistral está rodando
-- **Lentidão nas respostas**: O modelo pode estar em execução com recursos limitados
-- **Erro de conexão**: Verifique as configurações de URL e conectividade
-
-### Problemas com Cloudflare Tunnel
-
-- **Túnel inativo**: Verifique se o serviço cloudflared está rodando
-- **Erro de DNS**: Confirme as configurações de DNS no Cloudflare
-- **Erro de conexão**: Veja os logs do cloudflared para mais detalhes
-
-## Suporte Técnico
-
-Em caso de problemas ou dúvidas, entre em contato com o suporte:
-
-- **Email**: suporte@carlosdev.app.br
-- **Chat**: Disponível em horário comercial através do sistema
-- **Documentação**: Acesse a documentação completa em docs.carlosdev.app.br
+- Consulte a documentação online
+- Entre em contato via sistema de tickets
+- Acesse o repositório do projeto para atualizações
 
 ---
 
-© 2025 CarlosDev. Todos os direitos reservados.
+Versão do Documento: 1.0  
+Data de Atualização: 15/05/2025  
+ID do Agente Compatível: `ag:48009b45:20250515:programador-agente:d9bb1918`

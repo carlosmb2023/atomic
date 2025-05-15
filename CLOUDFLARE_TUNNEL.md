@@ -1,226 +1,136 @@
-# Configuração do Cloudflare Tunnel - CarlosDev
+# Configuração do Cloudflare Tunnel para Deploy Mistral Agent
 
-Este guia detalha como configurar o Cloudflare Tunnel para permitir acesso seguro e persistente à sua instância Oracle Cloud ou servidor local.
+Este documento descreve como configurar um túnel Cloudflare para expor com segurança o serviço Mistral Agent (ID: `ag:48009b45:20250515:programador-agente:d9bb1918`) em produção.
 
-## O que é Cloudflare Tunnel?
+## Requisitos
 
-Cloudflare Tunnel é um serviço que cria uma conexão segura entre seus servidores e o Cloudflare, sem necessidade de IPs públicos estáticos ou portas abertas no firewall. Isso permite que você:
+- Conta Cloudflare (gratuita)
+- Cloudflare CLI (`cloudflared`) instalado
+- Domínio registrado na Cloudflare (opcional, mas recomendado)
 
-- Acesse seus serviços hospedados localmente ou na nuvem pela internet
-- Mantenha seus servidores protegidos contra ataques diretos
-- Utilize subdomínios personalizados para acessar suas aplicações
-- Tenha conexões criptografadas e seguras
+## Passos para Configuração
 
-## Pré-requisitos
+### 1. Instalar Cloudflare CLI
 
-1. Uma conta no [Cloudflare](https://dash.cloudflare.com/sign-up)
-2. Um domínio registrado e configurado no Cloudflare
-3. Acesso administrativo ao servidor onde o CarlosDev está rodando
-
-## Passo 1: Instalar o Cloudflare Tunnel
-
-### No Linux (Ubuntu/Debian)
-
+**Linux/Ubuntu:**
 ```bash
-# Baixar o pacote
-curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-
-# Instalar
-sudo dpkg -i cloudflared.deb
-
-# Verificar a instalação
-cloudflared version
+wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo dpkg -i cloudflared-linux-amd64.deb
 ```
 
-### No Oracle Linux/RHEL/Fedora
-
+**macOS:**
 ```bash
-# Baixar o pacote
-curl -L --output cloudflared.rpm https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-x86_64.rpm
-
-# Instalar
-sudo rpm -i cloudflared.rpm
-
-# Verificar a instalação
-cloudflared version
-```
-
-### No macOS
-
-```bash
-# Usando Homebrew
 brew install cloudflare/cloudflare/cloudflared
-
-# Verificar a instalação
-cloudflared version
 ```
 
-### No Windows
+**Windows:**
+Baixar o instalador de: https://github.com/cloudflare/cloudflared/releases
 
-1. Baixe o instalador do [GitHub Releases](https://github.com/cloudflare/cloudflared/releases/latest)
-2. Execute o instalador `.msi`
-3. Abra o Prompt de Comando como administrador e execute `cloudflared.exe version`
-
-## Passo 2: Autenticar com o Cloudflare
+### 2. Autenticar Cloudflared
 
 ```bash
 cloudflared tunnel login
 ```
 
-Este comando abrirá seu navegador para autenticação. Selecione o domínio que você deseja usar com o túnel.
+Siga as instruções no navegador para autenticar sua conta Cloudflare.
 
-## Passo 3: Criar um Túnel
-
-```bash
-cloudflared tunnel create carlosdev-tunnel
-```
-
-Anote o ID do túnel que será exibido. Você precisará dele para configurações futuras.
-
-## Passo 4: Configurar o Túnel
-
-Crie um arquivo de configuração:
+### 3. Criar um Túnel
 
 ```bash
-mkdir -p ~/.cloudflared
-touch ~/.cloudflared/config.yml
+cloudflared tunnel create mistral-agent
 ```
 
-Edite o arquivo `config.yml` com seu editor preferido:
+Anote o ID do túnel gerado, será necessário para as próximas etapas.
 
-```bash
-nano ~/.cloudflared/config.yml
-```
+### 4. Configurar o Túnel
 
-Adicione a seguinte configuração (substituindo YOUR_TUNNEL_ID pelo ID gerado):
+Crie um arquivo chamado `config.yml` com o seguinte conteúdo:
 
 ```yaml
-tunnel: YOUR_TUNNEL_ID
-credentials-file: /home/seu-usuario/.cloudflared/YOUR_TUNNEL_ID.json
+tunnel: <ID_DO_TUNEL>
+credentials-file: /path/to/credentials/file.json
 
-# Configuração de log
-logfile: /var/log/cloudflared.log
-
-# Configuração de roteamento
 ingress:
-  # Rota para o CarlosDev API/Backend
-  - hostname: api.carlosdev.app.br
+  - hostname: mistral-agent.seudominio.com
     service: http://localhost:5000
-  
-  # Rota para o frontend Vite (desenvolvimento)
-  - hostname: dev.carlosdev.app.br
-    service: http://localhost:3000
-  
-  # Rota para o Mistral (se estiver utilizando localmente)
-  - hostname: mistral.carlosdev.app.br
-    service: http://localhost:8000
-  
-  # Rota padrão - sempre deve ser a última
   - service: http_status:404
 ```
 
-## Passo 5: Configurar Registros DNS
+Substitua:
+- `<ID_DO_TUNEL>` pelo ID gerado no passo anterior
+- `mistral-agent.seudominio.com` pelo seu domínio
+- `/path/to/credentials/file.json` pelo caminho para o arquivo de credenciais gerado
 
-Acesse o [Dashboard do Cloudflare](https://dash.cloudflare.com/), selecione seu domínio e vá para a seção Tunnels:
-
-1. Vá para a aba "Zero Trust" > "Access" > "Tunnels"
-2. Selecione o túnel que você criou
-3. Clique em "Configure"
-4. Adicione os registros de Hostname para:
-   - api.carlosdev.app.br -> localhost:5000
-   - dev.carlosdev.app.br -> localhost:3000
-   - mistral.carlosdev.app.br -> localhost:8000 (se aplicável)
-
-## Passo 6: Iniciar o Túnel
-
-Para teste rápido em terminal:
+### 5. Configurar DNS
 
 ```bash
-cloudflared tunnel run carlosdev-tunnel
+cloudflared tunnel route dns mistral-agent mistral-agent.seudominio.com
 ```
 
-## Passo 7: Configurar como Serviço (recomendado)
+### 6. Iniciar o Túnel
 
+```bash
+cloudflared tunnel run mistral-agent
+```
+
+### 7. Configurar para Execução como Serviço
+
+**Linux/Ubuntu:**
 ```bash
 sudo cloudflared service install
 ```
 
-Este comando configura o cloudflared como um serviço que inicia automaticamente.
-
-## Passo 8: Verificar Status e Gerenciar
-
+**macOS:**
 ```bash
-# Verificar status
-sudo systemctl status cloudflared
-
-# Iniciar o serviço
-sudo systemctl start cloudflared
-
-# Parar o serviço
-sudo systemctl stop cloudflared
-
-# Reiniciar o serviço
-sudo systemctl restart cloudflared
-
-# Verificar logs
-sudo journalctl -u cloudflared
+sudo cloudflared service install
 ```
 
-## Passo 9: Configurar o CarlosDev para Usar o Túnel
-
-1. Acesse a página de Configurações do CarlosDev
-2. Navegue até a aba "Cloudflare Tunnel"
-3. Preencha:
-   - ID do Túnel: Seu ID de túnel
-   - Domínio Base: carlosdev.app.br (ou seu domínio personalizado)
-   - Ative a opção "Usar Cloudflare Tunnel"
-4. Salve as configurações
-
-## Solução de Problemas
-
-### O túnel não conecta
-
+**Windows:**
 ```bash
-# Verifique os logs
-sudo journalctl -u cloudflared -f
-
-# Teste a execução em modo de depuração
-cloudflared tunnel --loglevel debug run carlosdev-tunnel
+cloudflared.exe service install
 ```
 
-### Erro de autenticação
+## Integração com o Agente Mistral
 
-```bash
-# Refaça o login
-cloudflared tunnel login
+Para configurar o agente Mistral ID: `ag:48009b45:20250515:programador-agente:d9bb1918` para usar o domínio exposto:
+
+1. No arquivo de configuração do ambiente, adicione:
+```
+MISTRAL_AGENT_ID=ag:48009b45:20250515:programador-agente:d9bb1918
+MISTRAL_PUBLIC_URL=https://mistral-agent.seudominio.com
 ```
 
-### Verificar status do túnel
+2. Reinicie o servidor para aplicar as configurações.
 
-```bash
-# Liste os túneis ativos
-cloudflared tunnel list
-
-# Verifique detalhes do túnel
-cloudflared tunnel info carlosdev-tunnel
+3. Verifique a conectividade através da página de status em:
+```
+https://mistral-agent.seudominio.com/api/mistral/status
 ```
 
-## Removendo um Túnel
+## Segurança Adicional
+
+É recomendado adicionar uma camada extra de autenticação para o endpoint público:
+
+1. Configure o Cloudflare Access para controlar quem pode acessar o serviço
+2. Utilize a autenticação por token para todas as solicitações à API
+3. Configure regras de Firewall no painel da Cloudflare para limitar o acesso
+
+## Monitoramento
+
+Para monitorar o status do túnel:
 
 ```bash
-# Desinstalar o serviço (se instalado)
-sudo cloudflared service uninstall
-
-# Deletar o túnel
-cloudflared tunnel delete carlosdev-tunnel
+cloudflared tunnel info mistral-agent
 ```
 
-## Recursos Adicionais
+## Logs e Troubleshooting
 
-- [Documentação oficial do Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps)
-- [Repositório GitHub do cloudflared](https://github.com/cloudflare/cloudflared)
-- [Tutorial em vídeo sobre Cloudflare Tunnel](https://www.youtube.com/watch?v=d0ySB0ASRFw)
+Para ver os logs do túnel:
 
----
+```bash
+cloudflared tunnel run mistral-agent --loglevel debug
+```
 
-Em caso de dúvidas ou problemas com a configuração do Cloudflare Tunnel, entre em contato pelo email suporte@carlosdev.app.br.
+## Detalhes de Compatibilidade do Agente
+
+O agente Mistral ID: `ag:48009b45:20250515:programador-agente:d9bb1918` requer acesso de rede bidirecional. O túnel Cloudflare permite que o agente seja acessado através da internet de forma segura sem necessidade de configuração complexa de rede ou VPN.

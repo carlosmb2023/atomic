@@ -1,0 +1,37 @@
+# Configuração de deploy do Replit para o Agente Mistral
+# ID do Agente: ag:48009b45:20250515:programador-agente:d9bb1918
+
+run = "bash deploy.sh"
+onBoot = "npm install"
+
+[env]
+NODE_ENV = "production"
+MISTRAL_AGENT_ID = "ag:48009b45:20250515:programador-agente:d9bb1918"
+
+[languages]
+node = 20
+
+[nix]
+channel = "stable-23_11"
+
+# Configurações específicas para a compatibilidade com o agente Mistral
+[deployment]
+run = "bash deploy.sh"
+deploymentTarget = "cloudrun"
+
+# Configurações recomendadas para o agente Mistral
+[deployment.scaling]
+minInstances = 1
+maxInstances = 10
+targetCpuUtilization = 0.75
+targetMemoryUtilization = 0.75
+
+# Configurações de saúde do deploy
+[deployment.healthCheck]
+path = "/api/mistral/status"
+port = 5000
+initialDelaySec = 15
+timeoutSec = 5
+periodSec = 10
+failureThreshold = 3
+successThreshold = 1
