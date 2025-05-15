@@ -53,6 +53,25 @@ class MistralService {
   private agentId: string = 'ag:48009b45:20250515:programador-agente:d9bb1918';
   private initialized: boolean = false;
   private apiClient: any = null;
+  
+  /**
+   * Define a chave API para o serviço Mistral
+   */
+  public setApiKey(apiKey: string): void {
+    this.apiKey = apiKey;
+    console.log('API Key do Mistral configurada com sucesso');
+  }
+  
+  /**
+   * Define se deve usar o servidor local
+   */
+  public setUseLocalServer(useLocal: boolean, localUrl?: string): void {
+    this.mode = useLocal ? 'local' : 'api';
+    if (localUrl) {
+      this.localEndpoint = localUrl;
+    }
+    console.log(`Modo do Mistral alterado para: ${this.mode}`);
+  }
 
   constructor() {
     console.log('🔄 Serviço Mistral inicializado. Modo: API');
@@ -60,12 +79,12 @@ class MistralService {
     // Tentar ler a chave da API das variáveis de ambiente
     if (process.env.MISTRAL_API_KEY) {
       this.apiKey = process.env.MISTRAL_API_KEY;
+      console.log('✓ Chave API do Mistral carregada das variáveis de ambiente');
     }
     
-    // Configurar o ID do agente da variável de ambiente ou usar o padrão
-    if (process.env.MISTRAL_AGENT_ID) {
-      this.agentId = process.env.MISTRAL_AGENT_ID;
-    }
+    // Garantir que estamos usando o agente específico solicitado
+    this.agentId = 'ag:48009b45:20250515:programador-agente:d9bb1918';
+    console.log(`✓ Usando agente Mistral específico: ${this.agentId}`);
     
     this.initialize();
   }
@@ -110,17 +129,16 @@ class MistralService {
   private async loadConfigFromStorage(): Promise<MistralCredentials | null> {
     try {
       const config = await storage.getSystemConfig();
-      if (!config || !config.mistral_config) {
+      if (!config) {
         return null;
       }
       
-      // Configuração encontrada
-      const mistralConfig = JSON.parse(config.mistral_config);
+      // Configuração encontrada na tabela system_config
       return {
-        api_key: mistralConfig.api_key,
-        local_endpoint: mistralConfig.local_endpoint,
-        mode: mistralConfig.mode || 'api',
-        agent_id: mistralConfig.agent_id || this.agentId,
+        api_key: config.mistral_api_key || null,
+        local_endpoint: config.mistral_local_url || null,
+        mode: config.execution_mode === 'local' ? 'local' : 'api',
+        agent_id: "ag:48009b45:20250515:programador-agente:d9bb1918", // Sempre usar o agente específico
       };
     } catch (error) {
       console.error('Erro ao buscar configuração:', error);
@@ -137,37 +155,37 @@ class MistralService {
       if (config.api_key) this.apiKey = config.api_key;
       if (config.local_endpoint) this.localEndpoint = config.local_endpoint;
       if (config.mode) this.mode = config.mode;
-      if (config.agent_id) this.agentId = config.agent_id;
+      if (config.agent_id) this.agentId = config.agent_id || "ag:48009b45:20250515:programador-agente:d9bb1918";
       
       // Salvar no armazenamento persistente
       const systemConfig = await storage.getSystemConfig();
       
-      const mistralConfig = {
-        api_key: this.apiKey,
-        local_endpoint: this.localEndpoint,
-        mode: this.mode,
-        agent_id: this.agentId,
-      };
-      
       if (systemConfig) {
         // Atualizar configuração existente
         await storage.updateSystemConfig({
-          mistral_config: JSON.stringify(mistralConfig)
+          mistral_api_key: this.apiKey, 
+          mistral_local_url: this.localEndpoint,
+          execution_mode: this.mode === 'local' ? 'local' : 'api',
+          updated_at: new Date()
         });
       } else {
         // Criar nova configuração do sistema
         const configData = {
           id: 1,
-          app_name: 'WebAiDashboard',
-          theme: 'dark',
-          mistral_config: JSON.stringify(mistralConfig),
-          openai_config: '{}',
-          created_at: new Date(),
+          execution_mode: this.mode === 'local' ? 'local' : 'api',
+          mistral_api_key: this.apiKey,
+          mistral_local_url: this.localEndpoint || "http://127.0.0.1:8000",
+          mistral_cloud_url: "https://api.mistral.ai/v1",
+          local_llm_url: "http://127.0.0.1:11434",
+          cloud_llm_url: "https://oracle-api.carlosdev.app.br",
+          active_llm_url: "http://127.0.0.1:11434",
           updated_at: new Date()
         };
         
         await storage.updateSystemConfig(configData);
       }
+      
+      console.log(`Configurações Mistral atualizadas com sucesso - Modo: ${this.mode}, Agente específico configurado`);
       
       // Reinicializar o cliente
       await this.initialize();
@@ -179,6 +197,56 @@ class MistralService {
     }
   }
 
+  /**
+   * Verifica a saúde do servidor local Mistral
+   */
+  public async checkLocalServerHealth(): Promise<{ isHealthy: boolean, message: string }> {
+    try {
+      if (!this.localEndpoint) {
+        return { isHealthy: false, message: "Servidor local não configurado" };
+      }
+      
+      const response = await axios.get(`${this.localEndpoint}/health`);
+      return { 
+        isHealthy: response.status === 200, 
+        message: "Servidor Mistral local está operacional" 
+      };
+    } catch (error) {
+      return { 
+        isHealthy: false, 
+        message: `Erro ao verificar servidor local: ${error.message || "Erro desconhecido"}` 
+      };
+    }
+  }
+  
+  /**
+   * Verifica a saúde da API Mistral
+   */
+  public async checkApiHealth(): Promise<{ isHealthy: boolean, message: string }> {
+    try {
+      if (!this.apiKey) {
+        return { isHealthy: false, message: "API Key do Mistral não configurada" };
+      }
+      
+      // Testar API com uma chamada simples
+      await axios.get("https://api.mistral.ai/v1/models", {
+        headers: {
+          "Authorization": `Bearer ${this.apiKey}`
+        }
+      });
+      
+      return { 
+        isHealthy: true, 
+        message: "API Mistral está operacional" 
+      };
+    } catch (error) {
+      return { 
+        isHealthy: false, 
+        message: `Erro ao verificar API Mistral: ${error.message || "Erro de autenticação"}`
+      };
+    }
+  }
+  
   /**
    * Verifica o status da conexão com Mistral
    */
@@ -248,6 +316,23 @@ class MistralService {
   }
 
   /**
+   * Método compatível com a interface anterior para rotas
+   */
+  public async chatCompletion(prompt: string, options: {
+    systemPrompt?: string;
+    temperature?: number;
+    maxTokens?: number;
+  } = {}): Promise<any> {
+    const response = await this.sendMessage(prompt, options);
+    return {
+      text: response,
+      usage: {
+        total_tokens: (prompt.length + response.length) / 4 // Estimativa simples
+      }
+    };
+  }
+  
+  /**
    * Envia uma mensagem para o modelo Mistral
    */
   public async sendMessage(prompt: string, options: {
@@ -302,13 +387,17 @@ class MistralService {
   private async logInteraction(prompt: string, response: string): Promise<void> {
     try {
       const log = {
-        user_id: 1, // Default para sistema
-        model: this.mode === 'api' ? 'mistral-large-latest' : 'mistral-7b-instruct',
+        source: this.mode === 'api' ? 'cloud' : 'local',
         prompt,
         response,
+        user_id: 1, // Default para sistema
+        status: 'success',
         tokens_used: this.estimateTokens(prompt) + this.estimateTokens(response),
-        created_at: new Date(),
-        agent_id: this.agentId
+        metadata: JSON.stringify({
+          model: this.mode === 'api' ? 'mistral-large-latest' : 'mistral-7b-instruct',
+          agent_id: this.agentId,
+          temperature: 0.7
+        })
       };
       
       await storage.createLlmLog(log);

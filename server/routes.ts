@@ -38,19 +38,12 @@ const upload = multer({
     }
   }),
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
+    fileSize: 500 * 1024 * 1024, // 500MB limit - aumentado para aceitar arquivos grandes
   },
-  // Aceitar todos os tipos de arquivos
+  // Aceitar ABSOLUTAMENTE todos os tipos de arquivos sem restrições
   fileFilter: (_req, file, cb) => {
-    // Lista de extensões não permitidas por segurança
-    const blockedExtensions = ['.exe', '.bat', '.cmd', '.sh', '.php', '.phtml', '.asp', '.aspx', '.jsp'];
-    const fileExt = path.extname(file.originalname).toLowerCase();
-    
-    if (blockedExtensions.includes(fileExt)) {
-      return cb(new Error('Tipo de arquivo não permitido por razões de segurança.'));
-    }
-    
-    // Aceitar qualquer outro tipo de arquivo
+    // Aceitar QUALQUER tipo de arquivo sem restrições de segurança
+    // AVISO: Isso pode representar um risco de segurança, mas é um requisito específico
     cb(null, true);
   }
 });
@@ -157,32 +150,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Nome de usuário e senha são obrigatórios" });
       }
       
-      const user = await storage.getUserByUsername(username);
-      if (!user || user.password !== password) {
-        return res.status(401).json({ error: "Credenciais inválidas" });
-      }
+      // Verificar se é o usuário e senha específicos autorizados
+      const authorizedEmail = "carlosvieiramb2@gmail.com";
+      const authorizedPassword = "Roberta@2040";
       
-      // Atualizar último login
-      if (user.id) {
-        await storage.updateUser(user.id, {
-          last_login: new Date()
-        });
+      // Verificar se são as credenciais autorizadas
+      if (username === authorizedEmail && password === authorizedPassword) {
+        // Se o usuário não existir no banco, criá-lo
+        let user = await storage.getUserByUsername(username);
         
-        // Registrar log
-        await storage.createLog({
-          action: "login",
-          details: `Login bem-sucedido para ${username}`,
-          ip_address: req.ip,
-          user_id: user.id
+        if (!user) {
+          // Criar o usuário autorizado no banco
+          user = await storage.createUser({
+            username: authorizedEmail,
+            password: authorizedPassword,
+            email: authorizedEmail,
+            fullName: "Carlos Vieira",
+            role: "admin"
+          });
+          
+          log(`Usuário autorizado criado: ${authorizedEmail}`);
+        }
+        
+        // Atualizar último login
+        if (user.id) {
+          await storage.updateUser(user.id, {
+            last_login: new Date()
+          });
+          
+          // Registrar log
+          await storage.createLog({
+            action: "login",
+            details: `Login bem-sucedido para ${username}`,
+            ip_address: req.ip,
+            user_id: user.id
+          });
+        }
+        
+        return res.json({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role
         });
+      } else {
+        // Credenciais não autorizadas
+        log(`Tentativa de login não autorizada: ${username}`);
+        return res.status(401).json({ error: "Credenciais inválidas. Apenas o usuário autorizado pode fazer login." });
       }
-      
-      return res.json({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role
-      });
     } catch (error) {
       log(`Erro no login: ${error}`);
       return res.status(500).json({ error: "Erro ao processar login" });
@@ -938,18 +953,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verificar saúde do serviço apropriado
       if (config?.mistral_instance_type === "local") {
         // Verificar servidor local
-        const healthy = await mistralService.checkLocalServerHealth();
-        status.available = healthy;
-        status.message = healthy 
-          ? "Servidor Mistral local disponível" 
-          : "Servidor Mistral local não responde";
+        const healthCheck = await mistralService.checkLocalServerHealth();
+        status.available = healthCheck.isHealthy;
+        status.message = healthCheck.message;
       } else if (config?.mistral_api_key) {
         // Verificar API cloud
-        const healthy = await mistralService.checkApiHealth();
-        status.available = healthy;
-        status.message = healthy 
-          ? "API Mistral disponível" 
-          : "API Mistral não responde ou credenciais inválidas";
+        const healthCheck = await mistralService.checkApiHealth();
+        status.available = healthCheck.isHealthy;
+        status.message = healthCheck.message;
       }
       
       return res.json(status);

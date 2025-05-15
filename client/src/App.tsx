@@ -16,6 +16,7 @@ import ServerMonitor from "@/pages/ServerMonitor";
 import Agents from "@/pages/Agents";
 import MistralTest from "@/pages/MistralTest";
 import AgentTools from "@/pages/AgentTools";
+import ErrorStateDemo from "@/pages/ErrorStateDemo";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiBackgroundImage from "@/components/AiBackgroundImage";
@@ -24,7 +25,7 @@ import VideoBackground from "@/components/VideoBackground";
 function Router() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Video de fundo */}
+      {/* Video de fundo com fluxos digitais elegantes */}
       <VideoBackground videoSource="/videos/video_loop.mp4?v=1" />
       
       {/* Global background elements */}
@@ -45,6 +46,7 @@ function Router() {
           <Route path="/agents" component={Agents} />
           <Route path="/mistral" component={MistralTest} />
           <Route path="/agent-tools" component={AgentTools} />
+          <Route path="/error-demo" component={ErrorStateDemo} />
           <Route component={NotFound} />
         </Switch>
       </main>

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Terminal, Code, FileText, Upload, History, Home } from "lucide-react";
+import { Terminal, Code, FileText, Upload, History, Home, AlertTriangle } from "lucide-react";
 import Logo from "@/components/Logo";
 import { Progress } from "@/components/ui/progress";
 import GlassMorphism from "@/components/GlassMorphism";
 import AnimatedContent from "@/components/AnimatedContent";
 import AiBackgroundImage from "@/components/AiBackgroundImage";
 import { useSoundEffect } from "@/hooks/use-sound-effect";
+import { NetworkErrorAnimation, ErrorType } from "@/components/ErrorState";
 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState('uploadSection');
@@ -13,6 +14,8 @@ export default function Dashboard() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [networkError, setNetworkError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<ErrorType>('network');
   const { playHover, playClick, playSuccess, playError } = useSoundEffect();
   
   // Fetch files list
@@ -23,14 +26,23 @@ export default function Dashboard() {
         if (response.ok) {
           const files = await response.json();
           setFilesList(files);
+          // Limpar qualquer erro anterior
+          setNetworkError(null);
+        } else {
+          setErrorType('server');
+          setNetworkError(`Erro do servidor: ${response.status} ${response.statusText}`);
+          playError();
         }
       } catch (error) {
         console.error('Error fetching files:', error);
+        setErrorType('network');
+        setNetworkError('Erro de conexão ao carregar arquivos. Verifique sua conexão.');
+        playError();
       }
     }
     
     fetchFiles();
-  }, []);
+  }, [playError]);
   
   // Handle file upload
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -74,6 +86,8 @@ export default function Dashboard() {
         playError();
         setUploadStatus('Upload failed: Network error');
         setIsUploading(false);
+        setErrorType('network');
+        setNetworkError('Falha no upload: Erro de conexão. Verifique sua conexão de rede.');
       };
       
       xhr.send(formData);
@@ -82,12 +96,46 @@ export default function Dashboard() {
       playError();
       setUploadStatus('Upload failed: ' + String(error));
       setIsUploading(false);
+      setErrorType('unknown');
+      setNetworkError('Falha no upload: ' + String(error));
     }
+  };
+  
+  // Função para tentar novamente carregar os arquivos
+  const handleRetry = () => {
+    fetch('/files')
+      .then(res => {
+        if (res.ok) return res.json();
+        else throw new Error(`${res.status} ${res.statusText}`);
+      })
+      .then(files => {
+        setFilesList(files);
+        setNetworkError(null);
+        playSuccess();
+      })
+      .catch(err => {
+        console.error('Error retrying fetch:', err);
+        setErrorType('network');
+        setNetworkError('Falha ao carregar arquivos: ' + err.message);
+        playError();
+      });
   };
   
   return (
     <div className="pt-16 min-h-screen relative overflow-hidden">
       <AiBackgroundImage />
+      
+      {/* Componente de erro de rede */}
+      <NetworkErrorAnimation 
+        error={networkError}
+        onRetry={handleRetry}
+        onDismiss={() => setNetworkError(null)}
+        statusCode={networkError?.includes('404') ? 404 : 
+                   networkError?.includes('401') ? 401 : 
+                   networkError?.includes('403') ? 403 : 
+                   networkError?.includes('500') ? 500 : undefined}
+      />
+      
       <div className="container mx-auto px-4 py-8 relative z-10">
         <AnimatedContent animation="fadeIn" duration={0.8}>
           <h1 className="text-3xl font-orbitron mb-8 cyber-text">Dashboard</h1>
