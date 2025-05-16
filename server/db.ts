@@ -69,36 +69,70 @@ async function initDatabase() {
 
 /**
  * Testa a conexão com o banco de dados
+ * @returns Objeto com status da conexão e informações adicionais
  */
 export async function testConnection() {
   try {
+    const startTime = Date.now();
+    
     // Se o banco de dados ainda não foi inicializado, tentar inicializar
     if (!dbInitialized) {
       const initialized = await initDatabase();
       if (!initialized) {
-        return false;
+        return {
+          connected: false,
+          error: "Falha ao inicializar o banco de dados"
+        };
       }
     }
     
     if (!db) {
       log('❌ Cliente de banco de dados não inicializado', 'error');
-      return false;
+      return {
+        connected: false,
+        error: "Cliente de banco de dados não inicializado"
+      };
     }
     
     // Tenta executar uma query simples para verificar a conexão
     try {
-      // Tenta com drizzle
+      // Tenta com drizzle para verificar conexão
       const testResult = await db.execute(sql`SELECT 1 AS test_value`);
+      
+      // Tenta obter a versão do PostgreSQL
+      let version = "Não identificada";
+      try {
+        const versionResult = await db.execute(sql`SHOW server_version`);
+        if (versionResult && versionResult.rows && versionResult.rows.length > 0) {
+          version = versionResult.rows[0].server_version;
+        }
+      } catch (versionError) {
+        // Ignorar erro ao obter versão
+        log(`Aviso: Não foi possível obter a versão do PostgreSQL: ${versionError}`);
+      }
+      
+      const responseTime = Date.now() - startTime;
       log('🔌 Conexão com o banco de dados estabelecida com sucesso');
-      return true;
+      
+      return {
+        connected: true,
+        version,
+        responseTime
+      };
     } catch (queryError) {
       // Falha na query básica significa problema de conexão
       log(`❌ Erro ao testar conexão com o banco: ${queryError}`, 'error');
-      return false;
+      return {
+        connected: false,
+        error: queryError.message || "Erro ao executar query de teste"
+      };
     }
-  } catch (error) {
+  } catch (error: any) {
     log(`❌ Erro ao testar conexão com o banco de dados: ${error}`, 'error');
-    return false;
+    return {
+      connected: false,
+      error: error.message || "Erro desconhecido ao testar conexão"
+    };
   }
 }
 
