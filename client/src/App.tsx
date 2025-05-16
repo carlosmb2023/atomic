@@ -17,7 +17,7 @@ import Agents from "@/pages/Agents";
 import MistralTest from "@/pages/MistralTest";
 import AgentTools from "@/pages/AgentTools";
 import ErrorStateDemo from "@/pages/ErrorStateDemo";
-import SiteValidator from "@/pages/SiteValidator";
+// import SiteValidator from "@/pages/SiteValidator"; // Temporariamente desativado
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiBackgroundImage from "@/components/AiBackgroundImage";
@@ -48,7 +48,8 @@ function Router() {
           <Route path="/mistral" component={MistralTest} />
           <Route path="/agent-tools" component={AgentTools} />
           <Route path="/error-demo" component={ErrorStateDemo} />
-          <Route path="/validator" component={SiteValidator} />
+          {/* Rota temporariamente desativada para evitar problemas de inicialização */}
+          {/* <Route path="/validator" component={SiteValidator} /> */}
           <Route component={NotFound} />
         </Switch>
       </main>

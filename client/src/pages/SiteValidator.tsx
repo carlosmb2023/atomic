@@ -1,42 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { LoadingFallback } from '@/components/ErrorState/LoadingFallback';
-import { ErrorStateAnimation } from '@/components/ErrorState/ErrorStateAnimation';
-import { CheckIcon, AlertTriangleIcon, XCircleIcon, HelpCircleIcon, RefreshCwIcon, InfoIcon } from 'lucide-react';
-
-// Mock para efeitos sonoros
-const noop = () => {};
-const mockSoundEffect = {
-  playSuccess: noop,
-  playError: noop,
-  playClick: noop,
-  playHover: noop,
-  playNotification: noop,
-  playSound: noop,
-  toggleSound: () => false,
-  isSoundEnabled: () => false
-};
-
-interface TestResult {
-  name: string;
-  description: string;
-  status: 'success' | 'error' | 'warning' | 'loading' | 'pending';
-  message?: string;
-  detailsOpen?: boolean;
-  details?: Array<{
-    name: string;
-    status: 'success' | 'error' | 'warning';
-    message: string;
-  }>;
-}
+import { InfoIcon } from 'lucide-react';
 
 export default function SiteValidator() {
   const [testResults, setTestResults] = useState<TestResult[]>([
