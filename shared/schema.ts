@@ -69,6 +69,12 @@ export const systemConfig = pgTable("system_config", {
   mistral_cloud_url: text("mistral_cloud_url").default("https://api.mistral.ai/v1"),
   mistral_instance_type: varchar("mistral_instance_type", { length: 50 }).default("oracle_arm"),
   mistral_api_key: text("mistral_api_key"),
+  // Campos para VM Azure
+  azure_vm_enabled: boolean("azure_vm_enabled").default(false),
+  azure_vm_url: text("azure_vm_url").default("https://seu-servidor-azure.com"),
+  azure_vm_api_key: text("azure_vm_api_key"),
+  azure_vm_instance_id: text("azure_vm_instance_id"),
+  azure_vm_region: text("azure_vm_region").default("eastus"),
   // Campos para Cloudflare Tunnel
   cloudflare_tunnel_enabled: boolean("cloudflare_tunnel_enabled").default(false),
   cloudflare_tunnel_id: text("cloudflare_tunnel_id"),
@@ -178,6 +184,11 @@ export const insertSystemConfigSchema = createInsertSchema(systemConfig).pick({
   mistral_cloud_url: true,
   mistral_instance_type: true,
   mistral_api_key: true,
+  azure_vm_enabled: true,
+  azure_vm_url: true,
+  azure_vm_api_key: true,
+  azure_vm_instance_id: true,
+  azure_vm_region: true,
   cloudflare_tunnel_enabled: true,
   cloudflare_tunnel_id: true,
 });

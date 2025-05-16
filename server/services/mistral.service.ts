@@ -11,8 +11,11 @@ import { createHash } from 'crypto';
 interface MistralCredentials {
   api_key?: string;
   local_endpoint?: string;
-  mode: 'api' | 'local' | 'replit';
+  mode: 'api' | 'local' | 'replit' | 'azure';
   agent_id: string;
+  azure_vm_url?: string;
+  azure_vm_api_key?: string;
+  azure_vm_enabled?: boolean;
 }
 
 // Interface para resposta de status do Mistral
@@ -21,6 +24,7 @@ interface MistralStatus {
   mode: string;
   api_configured: boolean;
   local_configured: boolean;
+  azure_configured: boolean;
   agent_id: string;
   message: string;
 }
@@ -49,10 +53,13 @@ interface AgentConfig {
 class MistralService {
   private apiKey: string | null = null;
   private localEndpoint: string | null = null;
-  private mode: 'api' | 'local' | 'replit' = 'api';
+  private mode: 'api' | 'local' | 'replit' | 'azure' = 'api';
   private agentId: string = 'ag:48009b45:20250515:programador-agente:d9bb1918';
   private initialized: boolean = false;
   private apiClient: any = null;
+  private azureVmUrl: string | null = null;
+  private azureVmApiKey: string | null = null;
+  private azureVmEnabled: boolean = false;
   
   /**
    * Define a chave API para o serviço Mistral
@@ -71,6 +78,24 @@ class MistralService {
       this.localEndpoint = localUrl;
     }
     console.log(`Modo do Mistral alterado para: ${this.mode}`);
+  }
+  
+  /**
+   * Define se deve usar a VM Azure
+   */
+  public setUseAzureVM(useAzure: boolean, azureUrl?: string, azureApiKey?: string): void {
+    this.mode = useAzure ? 'azure' : 'api';
+    this.azureVmEnabled = useAzure;
+    
+    if (azureUrl) {
+      this.azureVmUrl = azureUrl;
+    }
+    
+    if (azureApiKey) {
+      this.azureVmApiKey = azureApiKey;
+    }
+    
+    console.log(`Modo do Mistral alterado para: ${this.mode} ${useAzure ? '(usando VM Azure)' : ''}`);
   }
 
   constructor() {
@@ -102,21 +127,42 @@ class MistralService {
         if (config.local_endpoint) this.localEndpoint = config.local_endpoint;
         this.mode = config.mode;
         if (config.agent_id) this.agentId = config.agent_id;
+        
+        // Configurações de VM Azure
+        if (config.azure_vm_url) this.azureVmUrl = config.azure_vm_url;
+        if (config.azure_vm_api_key) this.azureVmApiKey = config.azure_vm_api_key;
+        this.azureVmEnabled = config.azure_vm_enabled || false;
+      }
+      
+      // Determinar a URL base com base no modo
+      let baseURL = 'https://api.mistral.ai/v1';
+      
+      if (this.mode === 'local' && this.localEndpoint) {
+        baseURL = this.localEndpoint;
+        console.log(`Usando endpoint local: ${this.localEndpoint}`);
+      } else if (this.mode === 'azure' && this.azureVmUrl) {
+        baseURL = this.azureVmUrl;
+        console.log(`Usando VM Azure: ${this.azureVmUrl}`);
+      }
+      
+      // Determinar a chave API a ser usada
+      let apiKeyToUse = this.apiKey;
+      if (this.mode === 'azure' && this.azureVmApiKey) {
+        apiKeyToUse = this.azureVmApiKey;
       }
       
       // Configurar cliente HTTP para API
       this.apiClient = axios.create({
-        baseURL: this.mode === 'local' && this.localEndpoint
-          ? this.localEndpoint
-          : 'https://api.mistral.ai/v1',
+        baseURL,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': this.apiKey ? `Bearer ${this.apiKey}` : '',
+          'Authorization': apiKeyToUse ? `Bearer ${apiKeyToUse}` : '',
         },
         timeout: 30000 // 30 segundos
       });
       
       this.initialized = true;
+      console.log(`Serviço Mistral inicializado no modo: ${this.mode}`);
     } catch (error) {
       console.error('Erro ao inicializar serviço Mistral:', error);
       this.initialized = false;
@@ -133,12 +179,24 @@ class MistralService {
         return null;
       }
       
+      // Determinar o modo com base nas configurações
+      let mode: 'api' | 'local' | 'replit' | 'azure' = 'api';
+      
+      if (config.execution_mode === 'local') {
+        mode = 'local';
+      } else if (config.azure_vm_enabled) {
+        mode = 'azure';
+      }
+      
       // Configuração encontrada na tabela system_config
       return {
         api_key: config.mistral_api_key || null,
         local_endpoint: config.mistral_local_url || null,
-        mode: config.execution_mode === 'local' ? 'local' : 'api',
+        mode,
         agent_id: "ag:48009b45:20250515:programador-agente:d9bb1918", // Sempre usar o agente específico
+        azure_vm_url: config.azure_vm_url || null,
+        azure_vm_api_key: config.azure_vm_api_key || null,
+        azure_vm_enabled: config.azure_vm_enabled || false
       };
     } catch (error) {
       console.error('Erro ao buscar configuração:', error);
@@ -254,6 +312,7 @@ class MistralService {
     // Verificar se as configurações estão presentes
     const apiConfigured = !!this.apiKey;
     const localConfigured = !!this.localEndpoint;
+    const azureConfigured = !!this.azureVmUrl && !!this.azureVmApiKey;
     
     let available = false;
     let message = 'Mistral não configurado';
@@ -270,6 +329,17 @@ class MistralService {
         }
       } catch (error) {
         message = 'Falha na conexão com API Mistral';
+      }
+    } else if (this.mode === 'azure' && azureConfigured) {
+      try {
+        // Testar conexão com a VM Azure
+        const response = await this.apiClient.get('/models');
+        if (response.status === 200) {
+          available = true;
+          message = 'Conexão com Mistral na VM Azure estabelecida';
+        }
+      } catch (error) {
+        message = 'Falha na conexão com Mistral na VM Azure';
       }
     } else if (this.mode === 'local' && localConfigured) {
       try {
@@ -293,6 +363,7 @@ class MistralService {
       mode: this.mode,
       api_configured: apiConfigured,
       local_configured: localConfigured,
+      azure_configured: azureConfigured,
       agent_id: this.agentId,
       message
     };

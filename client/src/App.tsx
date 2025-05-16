@@ -18,6 +18,7 @@ import MistralTest from "@/pages/MistralTest";
 import AgentTools from "@/pages/AgentTools";
 import ErrorStateDemo from "@/pages/ErrorStateDemo";
 import SiteValidator from "@/pages/SiteValidator";
+import MistralConfig from "@/pages/MistralConfig";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiBackgroundImage from "@/components/AiBackgroundImage";
@@ -46,6 +47,7 @@ function Router() {
           <Route path="/monitor" component={ServerMonitor} />
           <Route path="/agents" component={Agents} />
           <Route path="/mistral" component={MistralTest} />
+          <Route path="/mistral-config" component={MistralConfig} />
           <Route path="/agent-tools" component={AgentTools} />
           <Route path="/error-demo" component={ErrorStateDemo} />
           <Route path="/validator" component={SiteValidator} />
