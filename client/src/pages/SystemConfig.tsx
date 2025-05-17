@@ -14,7 +14,6 @@ import {
   Cloud, 
   Key, 
   Globe, 
-  Tool,
   Database, 
   Shield, 
   Settings2,
@@ -235,7 +234,7 @@ export default function SystemConfig() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <RefreshCwIcon className="h-8 w-8 animate-spin text-primary" />
+        <RefreshCw className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2 text-xl">Carregando configurações...</span>
       </div>
     );
@@ -335,7 +334,7 @@ export default function SystemConfig() {
                 >
                   {testing && connectionStatus.mistralApi.status === 'testing' ? (
                     <>
-                      <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                       Testando...
                     </>
                   ) : (
@@ -407,7 +406,7 @@ export default function SystemConfig() {
                 >
                   {testing && connectionStatus.mistralLocal.status === 'testing' ? (
                     <>
-                      <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                       Testando...
                     </>
                   ) : (
@@ -507,7 +506,7 @@ export default function SystemConfig() {
                 >
                   {testing && connectionStatus.mistralAzure.status === 'testing' ? (
                     <>
-                      <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                       Testando...
                     </>
                   ) : (
@@ -670,7 +669,7 @@ export default function SystemConfig() {
               >
                 {testing && connectionStatus.cloudflare.status === 'testing' ? (
                   <>
-                    <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                     Testando...
                   </>
                 ) : (
@@ -758,7 +757,7 @@ export default function SystemConfig() {
               >
                 {testing && connectionStatus.apify.status === 'testing' ? (
                   <>
-                    <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                     Testando...
                   </>
                 ) : (
@@ -838,7 +837,7 @@ export default function SystemConfig() {
                 </div>
                 
                 <Alert className="mt-6 bg-amber-500/10 border-amber-500">
-                  <AlertTriangleIcon className="h-5 w-5 text-amber-500" />
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
                   <AlertTitle>Atenção</AlertTitle>
                   <AlertDescription>
                     Alterações nestas configurações avançadas podem afetar o funcionamento do sistema.
@@ -967,7 +966,7 @@ export default function SystemConfig() {
         >
           {loading ? (
             <>
-              <RefreshCwIcon className="mr-2 h-4 w-4 animate-spin" />
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
               Salvando...
             </>
           ) : (
