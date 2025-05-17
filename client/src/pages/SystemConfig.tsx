@@ -27,9 +27,36 @@ export default function SystemConfig() {
 
   // Efeito para atualizar o estado quando os dados são carregados
   useEffect(() => {
-    if (configData) {
-      setConfig({
-        ...config,
+    if (configData && configData.execution_mode) {
+      setMode(configData.execution_mode);
+    }
+  }, [configData]);
+  
+  // Mutation para salvar configuração
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const response = await axios.patch('/api/system/config', {
+        execution_mode: mode
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Configuração salva com sucesso!');
+      refetch();
+    },
+    onError: (error) => {
+      console.error('Erro ao salvar configuração:', error);
+      toast.error('Erro ao salvar configuração');
+    }
+  });
+
+  const handleSaveConfig = () => {
+    saveMutation.mutate();
+  };
+  
+  const handleChangeMode = (newMode: string) => {
+    setMode(newMode);
+  };
         ...configData
       });
     }
