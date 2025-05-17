@@ -19,7 +19,7 @@ import AgentTools from "@/pages/AgentTools";
 import ErrorStateDemo from "@/pages/ErrorStateDemo";
 import SiteValidator from "@/pages/SiteValidator";
 import MistralConfig from "@/pages/MistralConfig";
-import SystemConfig from "@/pages/MinimalSystemConfig";
+import SystemConfig from "@/pages/SuperSimpleConfig";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiBackgroundImage from "@/components/AiBackgroundImage";

@@ -1,18 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  RefreshCw, 
-  Server, 
-  Cloud
-} from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { RefreshCw, Server, Cloud } from 'lucide-react';
 import { toast } from 'sonner';
-import { useSoundEffect } from '@/hooks/use-sound-effect';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 
 // Tipo simplificado para a configuração do sistema
 interface SystemConfig {
@@ -22,17 +14,7 @@ interface SystemConfig {
 
 // Componente principal
 export default function SystemConfig() {
-  const [config, setConfig] = useState<SystemConfig>({
-    execution_mode: 'local'
-  });
-  
-  const [testing, setTesting] = useState(false);
-  const [status, setStatus] = useState({
-    message: '',
-    type: 'info' // 'info', 'success', 'error'
-  });
-
-  const { playClick, playSuccess, playError } = useSoundEffect();
+  const [mode, setMode] = useState('local');
 
   // Carregar configuração atual
   const { data: configData, isLoading, refetch } = useQuery({
