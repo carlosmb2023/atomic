@@ -11,7 +11,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from 'sonner';
 import { useSoundEffect } from '@/hooks/use-sound-effect';
-import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 // Tipo simplificado para a configuração do sistema
 interface SystemConfig {
@@ -25,7 +26,6 @@ export default function SystemConfig() {
     execution_mode: 'local'
   });
   
-  const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [status, setStatus] = useState({
     message: '',
@@ -56,25 +56,25 @@ export default function SystemConfig() {
   // Mutation para salvar configuração
   const saveMutation = useMutation({
     mutationFn: async (updatedConfig: SystemConfig) => {
-      // Não enviar senhas mascaradas
-      const configToSave = {
-        ...updatedConfig,
-        mistral_api_key: updatedConfig.mistral_api_key === '••••••••••••••••' ? undefined : updatedConfig.mistral_api_key,
-        apify_api_key: updatedConfig.apify_api_key === '••••••••••••••••' ? undefined : updatedConfig.apify_api_key,
-        azure_vm_api_key: updatedConfig.azure_vm_api_key === '••••••••••••••••' ? undefined : updatedConfig.azure_vm_api_key,
-      };
-      
-      const response = await axios.patch('/api/system/config', configToSave);
+      const response = await axios.patch('/api/system/config', updatedConfig);
       return response.data;
     },
     onSuccess: () => {
       toast.success('Configurações salvas com sucesso!');
       playSuccess();
+      setStatus({
+        message: 'Configurações salvas com sucesso!',
+        type: 'success'
+      });
       refetch();
     },
     onError: (error) => {
       toast.error(`Erro ao salvar configurações: ${error}`);
       playError();
+      setStatus({
+        message: `Erro ao salvar configurações: ${error}`,
+        type: 'error'
+      });
     }
   });
 
@@ -85,83 +85,42 @@ export default function SystemConfig() {
   };
 
   // Testar conexão com um serviço
-  const testConnection = async (service: 'mistralApi' | 'mistralLocal' | 'mistralAzure' | 'cloudflare' | 'apify') => {
+  const testConnection = async (mode: 'local' | 'azure') => {
     try {
       setTesting(true);
       playClick();
       
-      // Atualizar status para 'testando'
-      setConnectionStatus(prev => ({
-        ...prev,
-        [service]: { status: 'testing', message: 'Testando conexão...' }
-      }));
+      setStatus({
+        message: 'Testando conexão...',
+        type: 'info'
+      });
       
-      let endpoint = '';
-      let payload = {};
-      
-      // Configurar endpoint e payload baseados no serviço
-      switch (service) {
-        case 'mistralApi':
-          endpoint = '/api/mistral/test-connection';
-          payload = { mode: 'api' };
-          break;
-        case 'mistralLocal':
-          endpoint = '/api/mistral/test-connection';
-          payload = { mode: 'local' };
-          break;
-        case 'mistralAzure':
-          endpoint = '/api/mistral/test-connection';
-          payload = { mode: 'azure' };
-          break;
-        case 'cloudflare':
-          endpoint = '/api/system/test-cloudflare';
-          payload = { tunnelId: config.cloudflare_tunnel_id };
-          break;
-        case 'apify':
-          endpoint = '/api/system/test-apify';
-          payload = { actorUrl: config.apify_actor_url, apiKey: config.apify_api_key };
-          break;
-      }
+      const endpoint = '/api/mistral/test-connection';
+      const payload = { mode };
       
       const response = await axios.post(endpoint, payload);
       
       if (response.data.success) {
-        setConnectionStatus(prev => ({
-          ...prev,
-          [service]: { status: 'success', message: response.data.message || 'Conexão estabelecida com sucesso!' }
-        }));
+        setStatus({
+          message: response.data.message || 'Conexão estabelecida com sucesso!',
+          type: 'success'
+        });
         playSuccess();
       } else {
-        setConnectionStatus(prev => ({
-          ...prev,
-          [service]: { status: 'error', message: response.data.message || 'Falha ao estabelecer conexão' }
-        }));
+        setStatus({
+          message: response.data.message || 'Falha ao estabelecer conexão',
+          type: 'error'
+        });
         playError();
       }
     } catch (error: any) {
-      setConnectionStatus(prev => ({
-        ...prev,
-        [service]: { status: 'error', message: error.message || 'Erro ao testar conexão' }
-      }));
+      setStatus({
+        message: error.message || 'Erro ao testar conexão',
+        type: 'error'
+      });
       playError();
     } finally {
       setTesting(false);
-    }
-  };
-
-  // Renderizar badge de status
-  const renderStatusBadge = (status: string) => {
-    switch (status) {
-      case 'success':
-        return <Badge className="bg-green-500 hover:bg-green-600">Conectado</Badge>;
-      case 'error':
-        return <Badge className="bg-red-500 hover:bg-red-600">Erro</Badge>;
-      case 'testing':
-        return <Badge className="bg-blue-500 hover:bg-blue-600">Testando</Badge>;
-      case 'warning':
-        return <Badge className="bg-amber-500 hover:bg-amber-600">Alerta</Badge>;
-      default:
-        return <Badge className="bg-gray-500 hover:bg-gray-600">Não testado</Badge>;
     }
   };
 
@@ -181,732 +140,163 @@ export default function SystemConfig() {
           Configurações do Sistema
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Gerencie todas as configurações do sistema em um único lugar - servidores, APIs, conexões e muito mais.
+          Escolha o modo de operação do sistema entre Servidor Local e Servidor Nuvem.
         </p>
       </div>
 
-      <Tabs defaultValue="mistral" className="mb-8">
-        <TabsList className="grid grid-cols-5 mb-8">
-          <TabsTrigger value="mistral">
-            <Key className="mr-2 h-4 w-4" />
-            Mistral AI
-          </TabsTrigger>
-          <TabsTrigger value="servers">
-            <Server className="mr-2 h-4 w-4" />
-            Servidores
-          </TabsTrigger>
-          <TabsTrigger value="cloudflare">
-            <Globe className="mr-2 h-4 w-4" />
-            Cloudflare
-          </TabsTrigger>
-          <TabsTrigger value="integrations">
-            <Database className="mr-2 h-4 w-4" />
-            Integrações
-          </TabsTrigger>
-          <TabsTrigger value="advanced">
-            <Settings2 className="mr-2 h-4 w-4" />
-            Avançado
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Configuração da Mistral AI */}
-        <TabsContent value="mistral">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* API Mistral */}
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Agente IA Mistral</CardTitle>
-                  {renderStatusBadge(connectionStatus.mistralApi.status)}
-                </div>
-                <CardDescription>
-                  Configure a API Key do Mistral necessária para ativar o Agente IA
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="mistral-api-key">API Key do Mistral</Label>
-                  <Input 
-                    id="mistral-api-key" 
-                    type="password"
-                    value={config.mistral_api_key}
-                    onChange={(e) => setConfig({...config, mistral_api_key: e.target.value})}
-                    placeholder="Digite sua API key do Mistral" 
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Obtenha sua API key em <a href="https://console.mistral.ai/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">console.mistral.ai</a>
-                  </p>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="mistral-cloud-url">URL da API</Label>
-                  <Input 
-                    id="mistral-cloud-url" 
-                    value={config.mistral_cloud_url}
-                    onChange={(e) => setConfig({...config, mistral_cloud_url: e.target.value})}
-                    placeholder="https://api.mistral.ai/v1" 
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="agent-id">ID do Agente Mistral</Label>
-                  <Input 
-                    id="agent-id" 
-                    value="ag:48009b45:20250515:programador-agente:d9bb1918"
-                    disabled
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    ID do agente programador específico
-                  </p>
-                </div>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => testConnection('mistralApi')}
-                  disabled={testing}
-                  className="mt-4"
-                >
-                  {testing && connectionStatus.mistralApi.status === 'testing' ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Testando...
-                    </>
-                  ) : (
-                    'Testar Conexão'
-                  )}
-                </Button>
-                
-                {connectionStatus.mistralApi.status !== 'unknown' && (
-                  <Alert className={`mt-4 ${
-                    connectionStatus.mistralApi.status === 'success' 
-                      ? 'bg-green-500/20 border-green-500' 
-                      : connectionStatus.mistralApi.status === 'error'
-                      ? 'bg-red-500/20 border-red-500'
-                      : 'bg-blue-500/20 border-blue-500'
-                  }`}>
-                    <AlertTitle>
-                      {connectionStatus.mistralApi.status === 'success' 
-                        ? 'Conexão estabelecida!' 
-                        : connectionStatus.mistralApi.status === 'error'
-                        ? 'Erro na conexão'
-                        : 'Testando...'}
-                    </AlertTitle>
-                    <AlertDescription>
-                      {connectionStatus.mistralApi.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-            
-            {/* Servidor Local */}
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Servidor Local</CardTitle>
-                  {renderStatusBadge(connectionStatus.mistralLocal.status)}
-                </div>
-                <CardDescription>
-                  Configure o servidor Mistral rodando localmente na porta 8000
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="mistral-local-url">URL do Servidor Local (Porta 8000)</Label>
-                  <Input 
-                    id="mistral-local-url" 
-                    value={config.mistral_local_url}
-                    onChange={(e) => setConfig({...config, mistral_local_url: e.target.value})}
-                    placeholder="http://127.0.0.1:8000" 
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2 pt-4">
-                  <Switch
-                    id="use-local-server"
-                    checked={config.execution_mode === 'local'}
-                    onCheckedChange={(checked) => 
-                      setConfig({...config, execution_mode: checked ? 'local' : 'api'})
-                    }
-                  />
-                  <Label htmlFor="use-local-server">Usar servidor local</Label>
-                </div>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => testConnection('mistralLocal')}
-                  disabled={testing}
-                  className="mt-4"
-                >
-                  {testing && connectionStatus.mistralLocal.status === 'testing' ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Testando...
-                    </>
-                  ) : (
-                    'Testar Conexão'
-                  )}
-                </Button>
-                
-                {connectionStatus.mistralLocal.status !== 'unknown' && (
-                  <Alert className={`mt-4 ${
-                    connectionStatus.mistralLocal.status === 'success' 
-                      ? 'bg-green-500/20 border-green-500' 
-                      : connectionStatus.mistralLocal.status === 'error'
-                      ? 'bg-red-500/20 border-red-500'
-                      : 'bg-blue-500/20 border-blue-500'
-                  }`}>
-                    <AlertTitle>
-                      {connectionStatus.mistralLocal.status === 'success' 
-                        ? 'Conexão estabelecida!' 
-                        : connectionStatus.mistralLocal.status === 'error'
-                        ? 'Erro na conexão'
-                        : 'Testando...'}
-                    </AlertTitle>
-                    <AlertDescription>
-                      {connectionStatus.mistralLocal.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-            
-            {/* VM Azure */}
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>VM Azure</CardTitle>
-                  {renderStatusBadge(connectionStatus.mistralAzure.status)}
-                </div>
-                <CardDescription>
-                  Configure a conexão com a VM Azure na porta 3000
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between mb-4">
-                  <Label htmlFor="azure-vm-enabled" className="font-medium">Ativar VM Azure</Label>
-                  <Switch 
-                    id="azure-vm-enabled"
-                    checked={config.azure_vm_enabled}
-                    onCheckedChange={(checked) => setConfig({...config, azure_vm_enabled: checked})}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="azure-vm-url">URL da VM Azure (Porta 3000)</Label>
-                  <Input 
-                    id="azure-vm-url" 
-                    value={config.azure_vm_url}
-                    onChange={(e) => setConfig({...config, azure_vm_url: e.target.value})}
-                    placeholder="https://seu-servidor-azure.com:3000" 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="azure-vm-api-key">API Key da VM Azure (opcional)</Label>
-                  <Input 
-                    id="azure-vm-api-key" 
-                    type="password"
-                    value={config.azure_vm_api_key}
-                    onChange={(e) => setConfig({...config, azure_vm_api_key: e.target.value})}
-                    placeholder="Digite a API key da VM" 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="azure-vm-region">Região da VM</Label>
-                  <Select 
-                    value={config.azure_vm_region} 
-                    onValueChange={(value) => setConfig({...config, azure_vm_region: value})}
-                  >
-                    <SelectTrigger id="azure-vm-region">
-                      <SelectValue placeholder="Selecione a região" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="eastus">East US</SelectItem>
-                      <SelectItem value="eastus2">East US 2</SelectItem>
-                      <SelectItem value="westus">West US</SelectItem>
-                      <SelectItem value="brazilsouth">Brazil South</SelectItem>
-                      <SelectItem value="northeurope">North Europe</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => testConnection('mistralAzure')}
-                  disabled={testing || !config.azure_vm_enabled}
-                  className="mt-4"
-                >
-                  {testing && connectionStatus.mistralAzure.status === 'testing' ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Testando...
-                    </>
-                  ) : (
-                    'Testar Conexão'
-                  )}
-                </Button>
-                
-                {connectionStatus.mistralAzure.status !== 'unknown' && (
-                  <Alert className={`mt-4 ${
-                    connectionStatus.mistralAzure.status === 'success' 
-                      ? 'bg-green-500/20 border-green-500' 
-                      : connectionStatus.mistralAzure.status === 'error'
-                      ? 'bg-red-500/20 border-red-500'
-                      : 'bg-blue-500/20 border-blue-500'
-                  }`}>
-                    <AlertTitle>
-                      {connectionStatus.mistralAzure.status === 'success' 
-                        ? 'Conexão estabelecida!' 
-                        : connectionStatus.mistralAzure.status === 'error'
-                        ? 'Erro na conexão'
-                        : 'Testando...'}
-                    </AlertTitle>
-                    <AlertDescription>
-                      {connectionStatus.mistralAzure.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Configuração de Servidores */}
-        <TabsContent value="servers">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Servidores de IA</CardTitle>
-                <CardDescription>
-                  Configure opções avançadas dos servidores de IA
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="active-llm-url">URL do LLM Ativo</Label>
-                  <Input 
-                    id="active-llm-url" 
-                    value={config.active_llm_url}
-                    onChange={(e) => setConfig({...config, active_llm_url: e.target.value})}
-                    placeholder="URL do servidor LLM ativo" 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="local-llm-url">URL do LLM Local</Label>
-                  <Input 
-                    id="local-llm-url" 
-                    value={config.local_llm_url}
-                    onChange={(e) => setConfig({...config, local_llm_url: e.target.value})}
-                    placeholder="http://127.0.0.1:11434" 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="cloud-llm-url">URL do LLM na Nuvem</Label>
-                  <Input 
-                    id="cloud-llm-url" 
-                    value={config.cloud_llm_url}
-                    onChange={(e) => setConfig({...config, cloud_llm_url: e.target.value})}
-                    placeholder="URL do LLM na nuvem" 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="oracle-instance-ip">IP da Instância Oracle</Label>
-                  <Input 
-                    id="oracle-instance-ip" 
-                    value={config.oracle_instance_ip}
-                    onChange={(e) => setConfig({...config, oracle_instance_ip: e.target.value})}
-                    placeholder="IP da instância Oracle" 
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Monitoramento e Logs</CardTitle>
-                <CardDescription>
-                  Configure as opções de logging e monitoramento
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="logs-enabled"
-                    checked={config.logs_enabled}
-                    onCheckedChange={(checked) => 
-                      setConfig({...config, logs_enabled: checked})
-                    }
-                  />
-                  <Label htmlFor="logs-enabled">Ativar Logs</Label>
-                </div>
-                
-                <div className="space-y-2 pt-4">
-                  <Label htmlFor="base-prompt">Prompt Base para Interações</Label>
-                  <Textarea 
-                    id="base-prompt" 
-                    value={config.base_prompt}
-                    onChange={(e) => setConfig({...config, base_prompt: e.target.value})}
-                    placeholder="Prompt base para todas as interações com IA" 
-                    rows={5}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Configuração do Cloudflare */}
-        <TabsContent value="cloudflare">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Configuração do Cloudflare Tunnel</CardTitle>
-                {renderStatusBadge(connectionStatus.cloudflare.status)}
-              </div>
-              <CardDescription>
-                Configure as opções do Cloudflare Tunnel para acesso externo
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between mb-4">
-                <Label htmlFor="cloudflare-tunnel-enabled" className="font-medium">Ativar Cloudflare Tunnel</Label>
-                <Switch 
-                  id="cloudflare-tunnel-enabled"
-                  checked={config.cloudflare_tunnel_enabled}
-                  onCheckedChange={(checked) => setConfig({...config, cloudflare_tunnel_enabled: checked})}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="cloudflare-tunnel-id">ID do Tunnel Cloudflare</Label>
-                <Input 
-                  id="cloudflare-tunnel-id" 
-                  value={config.cloudflare_tunnel_id}
-                  onChange={(e) => setConfig({...config, cloudflare_tunnel_id: e.target.value})}
-                  placeholder="ID do seu tunnel Cloudflare" 
-                />
-                <p className="text-xs text-muted-foreground">
-                  Obtenha o ID do tunnel no painel do Cloudflare Zero Trust
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Modo de Execução</CardTitle>
+          <CardDescription>
+            Selecione onde o sistema irá executar o processamento de IA
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RadioGroup
+            value={config.execution_mode}
+            onValueChange={(value) => setConfig({...config, execution_mode: value})}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <div className={`flex items-start space-x-4 p-4 rounded-lg border-2 transition-all ${
+              config.execution_mode === 'local' ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-800'
+            }`}>
+              <RadioGroupItem value="local" id="local" className="mt-1" />
+              <div className="grid gap-1.5">
+                <Label htmlFor="local" className="text-lg font-medium flex items-center">
+                  <Server className="mr-2 h-5 w-5 text-blue-500" />
+                  Servidor Local
+                </Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Conectar ao servidor Mistral executando localmente na porta 8000
                 </p>
+                <div className="text-xs text-muted-foreground">
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Ideal para desenvolvimento e teste</li>
+                    <li>Endereço padrão: http://127.0.0.1:8000</li>
+                    <li>Implementação FastAPI</li>
+                    <li>Não requer conexão com internet</li>
+                  </ul>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => testConnection('local')}
+                  disabled={testing}
+                  className="mt-4 w-full sm:w-auto"
+                >
+                  {testing ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Testando...
+                    </>
+                  ) : (
+                    'Testar Conexão Local'
+                  )}
+                </Button>
               </div>
-              
-              <Button 
-                variant="outline" 
-                onClick={() => testConnection('cloudflare')}
-                disabled={testing || !config.cloudflare_tunnel_enabled}
-                className="mt-4"
-              >
-                {testing && connectionStatus.cloudflare.status === 'testing' ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Testando...
-                  </>
-                ) : (
-                  'Testar Conexão'
-                )}
-              </Button>
-              
-              {connectionStatus.cloudflare.status !== 'unknown' && (
-                <Alert className={`mt-4 ${
-                  connectionStatus.cloudflare.status === 'success' 
-                    ? 'bg-green-500/20 border-green-500' 
-                    : connectionStatus.cloudflare.status === 'error'
-                    ? 'bg-red-500/20 border-red-500'
-                    : 'bg-blue-500/20 border-blue-500'
-                }`}>
-                  <AlertTitle>
-                    {connectionStatus.cloudflare.status === 'success' 
-                      ? 'Conexão estabelecida!' 
-                      : connectionStatus.cloudflare.status === 'error'
-                      ? 'Erro na conexão'
-                      : 'Testando...'}
-                  </AlertTitle>
-                  <AlertDescription>
-                    {connectionStatus.cloudflare.message}
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              <div className="pt-4 space-y-2">
-                <h3 className="text-lg font-medium">Como configurar o Cloudflare Tunnel</h3>
-                <ol className="list-decimal ml-5 space-y-1 text-sm">
-                  <li>Acesse o painel do Cloudflare Zero Trust</li>
-                  <li>Crie um novo tunnel na seção "Access &gt; Tunnels"</li>
-                  <li>Copie o ID do tunnel e cole no campo acima</li>
-                  <li>Configure um domínio público para acessar seu aplicativo</li>
-                  <li>Instale e execute o cloudflared no seu servidor</li>
-                </ol>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
 
-        {/* Integrações */}
-        <TabsContent value="integrations">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Integração com Apify</CardTitle>
-                {renderStatusBadge(connectionStatus.apify.status)}
-              </div>
-              <CardDescription>
-                Configure a integração com Apify para automação e scraping avançados
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="apify-api-key">API Key do Apify</Label>
-                <Input 
-                  id="apify-api-key" 
-                  type="password"
-                  value={config.apify_api_key}
-                  onChange={(e) => setConfig({...config, apify_api_key: e.target.value})}
-                  placeholder="Digite sua API key do Apify" 
-                />
-                <p className="text-xs text-muted-foreground">
-                  Obtenha sua API key no painel do Apify
+            <div className={`flex items-start space-x-4 p-4 rounded-lg border-2 transition-all ${
+              config.execution_mode === 'azure' ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-800'
+            }`}>
+              <RadioGroupItem value="azure" id="azure" className="mt-1" />
+              <div className="grid gap-1.5">
+                <Label htmlFor="azure" className="text-lg font-medium flex items-center">
+                  <Cloud className="mr-2 h-5 w-5 text-indigo-500" />
+                  Servidor Nuvem (Azure VM)
+                </Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Conectar ao servidor Mistral executando na Azure VM na porta 3000
                 </p>
+                <div className="text-xs text-muted-foreground">
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Recomendado para produção</li>
+                    <li>Máquina virtual dedicada na Azure</li>
+                    <li>Melhor desempenho e disponibilidade</li>
+                    <li>Suporte a Cloudflare Tunnel para acesso seguro</li>
+                  </ul>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => testConnection('azure')}
+                  disabled={testing}
+                  className="mt-4 w-full sm:w-auto"
+                >
+                  {testing ? (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                      Testando...
+                    </>
+                  ) : (
+                    'Testar Servidor Azure'
+                  )}
+                </Button>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="apify-actor-url">URL do Actor</Label>
-                <Input 
-                  id="apify-actor-url" 
-                  value={config.apify_actor_url}
-                  onChange={(e) => setConfig({...config, apify_actor_url: e.target.value})}
-                  placeholder="URL do actor Apify" 
-                />
-              </div>
-              
-              <Button 
-                variant="outline" 
-                onClick={() => testConnection('apify')}
-                disabled={testing || !config.apify_api_key}
-                className="mt-4"
-              >
-                {testing && connectionStatus.apify.status === 'testing' ? (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Testando...
-                  </>
-                ) : (
-                  'Testar Conexão'
-                )}
-              </Button>
-              
-              {connectionStatus.apify.status !== 'unknown' && (
-                <Alert className={`mt-4 ${
-                  connectionStatus.apify.status === 'success' 
-                    ? 'bg-green-500/20 border-green-500' 
-                    : connectionStatus.apify.status === 'error'
-                    ? 'bg-red-500/20 border-red-500'
-                    : 'bg-blue-500/20 border-blue-500'
-                }`}>
-                  <AlertTitle>
-                    {connectionStatus.apify.status === 'success' 
-                      ? 'Conexão estabelecida!' 
-                      : connectionStatus.apify.status === 'error'
-                      ? 'Erro na conexão'
-                      : 'Testando...'}
-                  </AlertTitle>
-                  <AlertDescription>
-                    {connectionStatus.apify.message}
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </RadioGroup>
 
-        {/* Configurações Avançadas */}
-        <TabsContent value="advanced">
-          <div className="grid grid-cols-1 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações Avançadas</CardTitle>
-                <CardDescription>
-                  Opções avançadas para usuários experientes
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="execution-mode">Modo de Execução</Label>
-                  <Select 
-                    value={config.execution_mode} 
-                    onValueChange={(value) => setConfig({...config, execution_mode: value})}
-                  >
-                    <SelectTrigger id="execution-mode">
-                      <SelectValue placeholder="Selecione o modo de execução" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="api">API (Remoto)</SelectItem>
-                      <SelectItem value="local">Servidor Local</SelectItem>
-                      <SelectItem value="azure">VM Azure</SelectItem>
-                      <SelectItem value="replit">Replit</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="mistral-instance-type">Tipo de Instância Mistral</Label>
-                  <Select 
-                    value={config.mistral_instance_type} 
-                    onValueChange={(value) => setConfig({...config, mistral_instance_type: value})}
-                  >
-                    <SelectTrigger id="mistral-instance-type">
-                      <SelectValue placeholder="Selecione o tipo de instância" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="api">API (Padrão)</SelectItem>
-                      <SelectItem value="oracle_arm">Oracle ARM</SelectItem>
-                      <SelectItem value="azure_vm">Azure VM</SelectItem>
-                      <SelectItem value="local">Servidor Local</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Alert className="mt-6 bg-amber-500/10 border-amber-500">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
-                  <AlertTitle>Atenção</AlertTitle>
-                  <AlertDescription>
-                    Alterações nestas configurações avançadas podem afetar o funcionamento do sistema.
-                    Modifique apenas se souber o que está fazendo.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-            
-            <Card className="mt-4">
-              <CardHeader>
-                <CardTitle>Exportar / Importar Configurações</CardTitle>
-                <CardDescription>
-                  Faça backup ou restaure todas as configurações do sistema
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex space-x-4">
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      // Exportar configurações para JSON
-                      const configToExport = {...config};
-                      
-                      // Remover senhas/chaves
-                      if (configToExport.mistral_api_key === '••••••••••••••••') {
-                        configToExport.mistral_api_key = '';
-                      }
-                      if (configToExport.apify_api_key === '••••••••••••••••') {
-                        configToExport.apify_api_key = '';
-                      }
-                      if (configToExport.azure_vm_api_key === '••••••••••••••••') {
-                        configToExport.azure_vm_api_key = '';
-                      }
-                      
-                      // Criar blob e link de download
-                      const jsonStr = JSON.stringify(configToExport, null, 2);
-                      const blob = new Blob([jsonStr], { type: 'application/json' });
-                      const url = URL.createObjectURL(blob);
-                      
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'system_config.json';
-                      document.body.appendChild(a);
-                      a.click();
-                      
-                      // Limpar
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                      
-                      toast.success('Configurações exportadas com sucesso!');
-                      playSuccess();
-                    }}
-                  >
-                    Exportar Configurações
-                  </Button>
-                  
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      // Abrir input de arquivo
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = 'application/json';
-                      
-                      input.onchange = (e) => {
-                        const target = e.target as HTMLInputElement;
-                        const files = target.files;
-                        if (!files || files.length === 0) return;
-                        
-                        const file = files[0];
-                        
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                          try {
-                            const result = event.target?.result;
-                            if (typeof result !== 'string') {
-                              throw new Error('Formato inválido');
-                            }
-                            
-                            const importedConfig = JSON.parse(result);
-                            
-                            // Manter senhas/chaves existentes se estiverem vazias no arquivo importado
-                            if (!importedConfig.mistral_api_key && config.mistral_api_key) {
-                              importedConfig.mistral_api_key = config.mistral_api_key;
-                            }
-                            if (!importedConfig.apify_api_key && config.apify_api_key) {
-                              importedConfig.apify_api_key = config.apify_api_key;
-                            }
-                            if (!importedConfig.azure_vm_api_key && config.azure_vm_api_key) {
-                              importedConfig.azure_vm_api_key = config.azure_vm_api_key;
-                            }
-                            
-                            setConfig(importedConfig);
-                            toast.success('Configurações importadas com sucesso!');
-                            playSuccess();
-                          } catch (error) {
-                            toast.error('Erro ao importar configurações: Formato inválido');
-                            playError();
-                          }
-                        };
-                        reader.readAsText(file);
-                      };
-                      
-                      input.click();
-                    }}
-                  >
-                    Importar Configurações
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          {status.message && (
+            <Alert className={`mt-6 ${
+              status.type === 'success' 
+                ? 'bg-green-500/20 border-green-500' 
+                : status.type === 'error'
+                  ? 'bg-red-500/20 border-red-500'
+                  : 'bg-blue-500/20 border-blue-500'
+            }`}>
+              <AlertTitle>
+                {status.type === 'success' 
+                  ? 'Conexão estabelecida!' 
+                  : status.type === 'error'
+                    ? 'Erro na conexão'
+                    : 'Testando...'}
+              </AlertTitle>
+              <AlertDescription>
+                {status.message}
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Informações do Sistema</CardTitle>
+          <CardDescription>
+            Detalhes sobre a configuração atual do sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-medium">Servidor Local (Porta 8000)</h3>
+                <p className="text-sm text-muted-foreground">http://127.0.0.1:8000</p>
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-medium">Servidor Azure VM (Porta 3000)</h3>
+                <p className="text-sm text-muted-foreground">https://seu-servidor-azure.com:3000</p>
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-medium">ID do Agente Mistral</h3>
+                <p className="text-sm text-muted-foreground">ag:48009b45:20250515:programador-agente:d9bb1918</p>
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-medium">Chave API Mistral</h3>
+                <p className="text-sm text-muted-foreground">Configurada via .env (MISTRAL_API_KEY)</p>
+              </div>
+            </div>
           </div>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
 
-      <div className="flex justify-end space-x-4 mt-8">
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            // Reset para valores iniciais
-            refetch();
-            toast.info('Alterações descartadas');
-          }}
-          disabled={loading}
-        >
-          Cancelar
-        </Button>
-        
+      <div className="flex justify-end mt-8">
         <Button 
           onClick={handleSave}
-          disabled={loading}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+          disabled={saveMutation.isPending}
+          className="w-full sm:w-auto"
         >
-          {loading ? (
+          {saveMutation.isPending ? (
             <>
               <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
               Salvando...
