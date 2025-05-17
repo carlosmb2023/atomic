@@ -4,7 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSoundEffect } from '@/hooks/use-sound-effect';
 import { Button } from '@/components/ui/button';
 
-export type ErrorType = 'network' | 'server' | 'auth' | 'validation' | 'unknown';
+export enum ErrorType {
+  Network = 'network',
+  Server = 'server',
+  Auth = 'auth',
+  Validation = 'validation',
+  Unknown = 'unknown'
+}
 
 interface ErrorStateAnimationProps {
   error: string | null;
@@ -19,7 +25,7 @@ export const ErrorStateAnimation: React.FC<ErrorStateAnimationProps> = ({
   error,
   onRetry,
   onDismiss,
-  errorType = 'unknown',
+  errorType = ErrorType.Unknown,
   title = 'Ocorreu um erro',
   hideIcon = false
 }) => {
