@@ -1125,20 +1125,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get('/api/system/test-database', async (_req, res) => {
     try {
-      // Teste a conexão com o banco de dados
+      // Teste a conexão com o banco de dados usando Drizzle ORM diretamente
       const startTime = Date.now();
-      const client = await db.client.connect();
+      
       try {
-        const result = await client.query('SELECT version()');
+        // Usa SQL para testar a conexão
+        const result = await db.execute(sql`SELECT version()`);
         const responseTime = Date.now() - startTime;
         
-        return res.json({
-          success: true,
-          version: result.rows[0].version.split(' ')[1],
-          responseTime
-        });
-      } finally {
-        client.release();
+        if (result && result.length > 0) {
+          return res.json({
+            success: true,
+            version: String(result[0].version).split(' ')[1],
+            responseTime
+          });
+        } else {
+          return res.json({
+            success: true,
+            message: 'Conexão com o banco estabelecida',
+            responseTime
+          });
+        }
+      } catch (dbError) {
+        throw dbError; // Propagar para o catch externo
       }
     } catch (error: any) {
       console.error('Erro ao testar banco de dados:', error);

@@ -1,0 +1,280 @@
+Erro ao testar banco de dados: TypeError: Cannot read properties of undefined (reading 'connect')
+    at <anonymous> (/home/carlosalexandrevieira/atomic/server/routes.ts:1130:38)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:646:15
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:265:14)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:175:3)
+    at router (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:47:12)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/carlosalexandrevieira/atomic/server/index.ts:41:3)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at urlencodedParser (/home/carlosalexandrevieira/atomic/node_modules/body-parser/lib/types/urlencoded.js:94:7)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/home/carlosalexandrevieira/atomic/node_modules/body-parser/lib/types/json.js:113:7)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at expressInit (/home/carlosalexandrevieira/atomic/node_modules/express/lib/middleware/init.js:40:5)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at query (/home/carlosalexandrevieira/atomic/node_modules/express/lib/middleware/query.js:45:5)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:175:3)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/application.js:181:10)
+    at Server.app (/home/carlosalexandrevieira/atomic/node_modules/express/lib/express.js:39:9)
+4:25:17 AM [express] GET /api/system/test-database 304 in 50ms :: {"success":false,"message":"Falha …
+4:25:17 AM [express] GET /api/system/test-mistral 304 in 6ms :: {"success":true,"message":"Serviço M…
+4:25:18 AM [express] GET /api/system/test-upload 304 in 13ms :: {"success":true,"message":"Sistema d…
+4:25:18 AM [express] GET /api/system/test-auth 304 in 1ms :: {"success":true,"message":"Sistema de a…
+4:25:18 AM [express] GET /api/system/test-mistral-integration 304 in 5ms :: {"success":true,"message…
+4:25:19 AM [express] GET /api/system/test-config 304 in 4ms :: {"success":false,"message":"Configura…
+4:25:19 AM [express] GET /api/system/test-advanced-ai 304 in 6ms :: {"success":false,"partial":true,…
+4:25:22 AM [express] GET /api/system/test-config 304 in 16ms :: {"success":false,"message":"Configur…
+4:25:23 AM [express] GET /api/system/test-config 304 in 1ms :: {"success":false,"message":"Configura…
+Erro ao testar banco de dados: TypeError: Cannot read properties of undefined (reading 'connect')
+    at <anonymous> (/home/carlosalexandrevieira/atomic/server/routes.ts:1130:38)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:646:15
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:265:14)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:175:3)
+    at router (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:47:12)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/carlosalexandrevieira/atomic/server/index.ts:41:3)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at urlencodedParser (/home/carlosalexandrevieira/atomic/node_modules/body-parser/lib/types/urlencoded.js:94:7)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/home/carlosalexandrevieira/atomic/node_modules/body-parser/lib/types/json.js:113:7)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at expressInit (/home/carlosalexandrevieira/atomic/node_modules/express/lib/middleware/init.js:40:5)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at query (/home/carlosalexandrevieira/atomic/node_modules/express/lib/middleware/query.js:45:5)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:175:3)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/application.js:181:10)
+    at Server.app (/home/carlosalexandrevieira/atomic/node_modules/express/lib/express.js:39:9)
+4:25:37 AM [express] GET /api/system/test-database 304 in 3ms :: {"success":false,"message":"Falha a…
+Erro ao testar banco de dados: TypeError: Cannot read properties of undefined (reading 'connect')
+    at <anonymous> (/home/carlosalexandrevieira/atomic/server/routes.ts:1130:38)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:646:15
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:265:14)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:175:3)
+    at router (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:47:12)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/carlosalexandrevieira/atomic/server/index.ts:41:3)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at urlencodedParser (/home/carlosalexandrevieira/atomic/node_modules/body-parser/lib/types/urlencoded.js:94:7)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/home/carlosalexandrevieira/atomic/node_modules/body-parser/lib/types/json.js:113:7)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at expressInit (/home/carlosalexandrevieira/atomic/node_modules/express/lib/middleware/init.js:40:5)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at query (/home/carlosalexandrevieira/atomic/node_modules/express/lib/middleware/query.js:45:5)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:175:3)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/application.js:181:10)
+    at Server.app (/home/carlosalexandrevieira/atomic/node_modules/express/lib/express.js:39:9)
+4:25:37 AM [express] GET /api/system/test-database 304 in 30ms :: {"success":false,"message":"Falha …
+Erro ao testar banco de dados: TypeError: Cannot read properties of undefined (reading 'connect')
+    at <anonymous> (/home/carlosalexandrevieira/atomic/server/routes.ts:1130:38)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:646:15
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:265:14)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:175:3)
+    at router (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:47:12)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/carlosalexandrevieira/atomic/server/index.ts:41:3)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at urlencodedParser (/home/carlosalexandrevieira/atomic/node_modules/body-parser/lib/types/urlencoded.js:94:7)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at jsonParser (/home/carlosalexandrevieira/atomic/node_modules/body-parser/lib/types/json.js:113:7)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at expressInit (/home/carlosalexandrevieira/atomic/node_modules/express/lib/middleware/init.js:40:5)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at query (/home/carlosalexandrevieira/atomic/node_modules/express/lib/middleware/query.js:45:5)
+    at Layer.handle [as handle_request] (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:328:13)
+    at /home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/router/index.js:175:3)
+    at Function.handle (/home/carlosalexandrevieira/atomic/node_modules/express/lib/application.js:181:10)
+    at Server.app (/home/carlosalexandrevieira/atomic/node_modules/express/lib/express.js:39:9)
+4:25:38 AM [express] GET /api/system/test-database 304 in 5ms :: {"success":false,"message":"Falha a…
+4:26:14 AM [express] GET /api 200 in 1ms :: {"status":"Sistema online e operacional","time":"2025-05…
+4:26:19 AM [express] Erro ao listar sessões de chat: error: relation "chat_history" does not exist
+4:26:19 AM [express] GET /api/chat/sessions 200 in 206ms :: []
+4:26:21 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:26:22 AM [express] Erro ao criar sessão de chat: error: relation "chat_history" does not exist
+4:26:22 AM [express] POST /api/chat/sessions 500 in 1357ms :: {"error":"Erro ao criar sessão de chat…
+4:26:24 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:26:25 AM [express] Erro ao criar sessão de chat: error: relation "chat_history" does not exist
+4:26:25 AM [express] POST /api/chat/sessions 500 in 1266ms :: {"error":"Erro ao criar sessão de chat…
+4:26:28 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:26:28 AM [express] GET /api/system/config 404 in 771ms :: {"error":"Configuração não encontrada"}
+4:26:53 AM [express] POST /api/mistral/test-connection 200 in 5ms :: {"success":false,"message":"API…
+4:26:56 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:26:56 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:26:56 AM [express] PATCH /api/system/config 500 in 1205ms :: {"error":"Erro ao atualizar configura…
+4:26:58 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:26:58 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:26:58 AM [express] PATCH /api/system/config 500 in 1319ms :: {"error":"Erro ao atualizar configura…
+4:27:03 AM [express] POST /api/mistral/test-connection 200 in 3ms :: {"success":false,"message":"URL…
+4:27:06 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:27:07 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:27:07 AM [express] PATCH /api/system/config 500 in 1270ms :: {"error":"Erro ao atualizar configura…
+4:27:15 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:27:16 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:27:16 AM [express] PATCH /api/system/config 500 in 1331ms :: {"error":"Erro ao atualizar configura…
+4:28:59 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:28:59 AM [express] GET /api/system/config 404 in 667ms :: {"error":"Configuração não encontrada"}
+4:29:08 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:09 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:09 AM [express] PATCH /api/system/config 500 in 1219ms :: {"error":"Erro ao atualizar configura…
+4:29:11 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:11 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:11 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:11 AM [express] PATCH /api/system/config 500 in 1175ms :: {"error":"Erro ao atualizar configura…
+4:29:11 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:12 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:12 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:12 AM [express] PATCH /api/system/config 500 in 1176ms :: {"error":"Erro ao atualizar configura…
+4:29:12 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:12 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:12 AM [express] PATCH /api/system/config 500 in 1185ms :: {"error":"Erro ao atualizar configura…
+4:29:12 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:12 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:12 AM [express] PATCH /api/system/config 500 in 1210ms :: {"error":"Erro ao atualizar configura…
+4:29:12 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:12 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:12 AM [express] PATCH /api/system/config 500 in 1208ms :: {"error":"Erro ao atualizar configura…
+4:29:12 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:13 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:13 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:13 AM [express] PATCH /api/system/config 500 in 1217ms :: {"error":"Erro ao atualizar configura…
+4:29:13 AM [express] Erro ao buscar configuração: error: column "azure_vm_api_key" does not exist
+4:29:13 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:13 AM [express] PATCH /api/system/config 500 in 1184ms :: {"error":"Erro ao atualizar configura…
+4:29:13 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:13 AM [express] PATCH /api/system/config 500 in 1166ms :: {"error":"Erro ao atualizar configura…
+4:29:13 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:13 AM [express] PATCH /api/system/config 500 in 1163ms :: {"error":"Erro ao atualizar configura…
+4:29:13 AM [express] Erro ao atualizar configuração: error: column "azure_vm_api_key" of relation "system_config" does not exist
+4:29:13 AM [express] PATCH /api/system/config 500 in 1156ms :: {"error":"Erro ao atualizar configura…
+4:29:15 AM [express] POST /api/mistral/test-connection 200 in 4ms :: {"success":false,"message":"URL…
+4:29:16 AM [express] POST /api/mistral/test-connection 200 in 8ms :: {"success":false,"message":"URL…
+4:29:17 AM [express] POST /api/mistral/test-connection 200 in 4ms :: {"success":false,"message":"API…
+
