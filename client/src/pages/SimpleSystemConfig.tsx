@@ -48,6 +48,10 @@ export default function SimpleSystemConfig() {
       setConfig({
         execution_mode: configData.execution_mode || 'local'
       });
+      
+      // Para UI, precisamos mostrar o modo correto (local ou azure)
+      const uiMode = configData.execution_mode === 'cloud' ? 'azure' : 'local';
+      console.log(`Carregando configuração: modo=${configData.execution_mode}, UI mode=${uiMode}`);
     }
   }, [configData]);
 
@@ -122,7 +126,10 @@ export default function SimpleSystemConfig() {
 
   // Mudar o modo de execução
   const changeMode = (mode: string) => {
-    setConfig({ ...config, execution_mode: mode });
+    // Aqui mapeamos 'local' e 'azure' para 'local' e 'cloud' que são os valores aceitos pelo backend
+    const backendMode = mode === 'azure' ? 'cloud' : 'local';
+    setConfig({ ...config, execution_mode: backendMode });
+    console.log(`Modo alterado para: ${mode}, valor backend: ${backendMode}`);
   };
 
   // Salvar configurações
@@ -223,7 +230,7 @@ export default function SimpleSystemConfig() {
 
         {/* Servidor Nuvem (Azure VM) */}
         <Card className={`cursor-pointer transition-all ${
-          config.execution_mode === 'azure' 
+          config.execution_mode === 'cloud' 
             ? 'border-2 border-primary ring-2 ring-primary/20' 
             : 'hover:border-primary/50'
         }`} onClick={() => changeMode('azure')}>
@@ -233,7 +240,7 @@ export default function SimpleSystemConfig() {
                 <Cloud className="mr-2 h-5 w-5 text-indigo-500" />
                 Servidor Nuvem (Azure VM)
               </CardTitle>
-              {config.execution_mode === 'azure' && (
+              {config.execution_mode === 'cloud' && (
                 <Badge className="bg-green-500">Ativo</Badge>
               )}
             </div>
