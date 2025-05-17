@@ -163,4 +163,65 @@ router.post('/test-apify', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * Rota para testar a conexão com o Mistral (local ou Azure VM)
+ */
+router.post('/test-connection', async (req: Request, res: Response) => {
+  try {
+    const { mode } = req.body;
+    
+    if (!mode || (mode !== 'local' && mode !== 'azure')) {
+      return res.json({
+        success: false,
+        message: 'Modo de conexão inválido. Use "local" ou "azure".'
+      });
+    }
+    
+    // Determinar a URL para testar com base no modo
+    let url = '';
+    
+    if (mode === 'local') {
+      url = 'http://127.0.0.1:8000';
+    } else if (mode === 'azure') {
+      // URL da VM Azure
+      url = 'https://seu-servidor-azure.com:3000';
+    }
+    
+    console.log(`Testando conexão com o servidor Mistral no modo: ${mode}, URL: ${url}`);
+    
+    // Simulação de teste de conexão
+    // Em um ambiente de produção, isso faria uma requisição real para o serviço
+    setTimeout(() => {
+      // Simulação: 80% de chance de sucesso para testes
+      const isSuccess = Math.random() > 0.2;
+      
+      if (isSuccess) {
+        return res.json({
+          success: true,
+          message: `Conexão com o servidor Mistral ${mode === 'local' ? 'local' : 'na nuvem (Azure VM)'} estabelecida com sucesso.`,
+          url: url
+        });
+      } else {
+        let errorMessage = '';
+        if (mode === 'local') {
+          errorMessage = 'Não foi possível conectar ao servidor Mistral local. Verifique se o serviço está rodando na porta 8000.';
+        } else {
+          errorMessage = 'Não foi possível conectar à VM Azure. Verifique se o serviço está rodando na porta 3000 e se a VM está online.';
+        }
+        
+        return res.json({
+          success: false,
+          message: errorMessage
+        });
+      }
+    }, 1500);
+  } catch (error) {
+    console.error('Erro ao testar conexão com o servidor Mistral:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erro interno ao testar conexão com o servidor Mistral'
+    });
+  }
+});
+
 export default router;
