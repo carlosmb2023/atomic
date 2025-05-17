@@ -110,6 +110,15 @@ export default function Header() {
               Validador
             </div>
           </Link>
+          <Link href="/system-config">
+            <div 
+              className={`font-jetbrains text-sm transition-colors cursor-pointer ${location === '/system-config' ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+              onMouseEnter={playHover}
+              onClick={playClick}
+            >
+              Configurações
+            </div>
+          </Link>
           <Link href="/landing#features">
             <div 
               className={`font-jetbrains text-sm transition-colors cursor-pointer ${location.includes('#features') ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
@@ -232,6 +241,13 @@ export default function Header() {
                   onMouseEnter={playHover}
                   onClick={playClick}
                 >Validador</div>
+              </Link>
+              <Link href="/system-config">
+                <div 
+                  className="font-jetbrains py-2 border-b border-white/10 cursor-pointer"
+                  onMouseEnter={playHover}
+                  onClick={playClick}
+                >Configurações</div>
               </Link>
               <Link href="/landing#features">
                 <div 

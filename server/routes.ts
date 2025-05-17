@@ -1110,6 +1110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registra as rotas de agentes
   app.use('/api/agents', agentsRoutes);
   app.use('/api/mistral', mistralConfigRoutes);
+  app.use('/api/mistral', mistralRoutes);
   app.use('/api/system', systemRoutes);
   
   // ===================================================
