@@ -169,7 +169,7 @@ export default function MistralConfig() {
       </h1>
       
       <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Modo de Execução</h2>
+        <h2 className="text-xl font-semibold mb-4">Configuração do Servidor</h2>
         <Card>
           <CardContent className="pt-6">
             <RadioGroup 
@@ -178,26 +178,12 @@ export default function MistralConfig() {
               className="flex flex-col space-y-2"
             >
               <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-secondary/20 transition-colors">
-                <RadioGroupItem value="api" id="api" />
-                <Label htmlFor="api" className="flex items-center cursor-pointer">
-                  <CloudIcon className="mr-2 h-5 w-5 text-blue-400" />
-                  <div>
-                    <h3 className="font-medium">API Mistral</h3>
-                    <p className="text-sm text-muted-foreground">Usar API oficial do Mistral (requer API key)</p>
-                  </div>
-                </Label>
-                <div className="ml-auto">
-                  {renderStatusBadge(connectionStatus.api.status)}
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-secondary/20 transition-colors">
                 <RadioGroupItem value="local" id="local" />
                 <Label htmlFor="local" className="flex items-center cursor-pointer">
                   <ServerIcon className="mr-2 h-5 w-5 text-green-400" />
                   <div>
                     <h3 className="font-medium">Servidor Local</h3>
-                    <p className="text-sm text-muted-foreground">Usar servidor Mistral rodando localmente</p>
+                    <p className="text-sm text-muted-foreground">Usar servidor Mistral rodando localmente na porta 8000</p>
                   </div>
                 </Label>
                 <div className="ml-auto">
@@ -211,7 +197,7 @@ export default function MistralConfig() {
                   <CloudIcon className="mr-2 h-5 w-5 text-purple-400" />
                   <div>
                     <h3 className="font-medium">VM Azure</h3>
-                    <p className="text-sm text-muted-foreground">Conectar ao Mistral hospedado em VM na Azure</p>
+                    <p className="text-sm text-muted-foreground">Conectar ao Mistral hospedado em VM na Azure (porta 3000)</p>
                     <div className="flex items-center mt-1">
                       <Switch 
                         checked={config.azure_vm_enabled}
@@ -235,18 +221,18 @@ export default function MistralConfig() {
       
       <Tabs defaultValue="mistral-api" className="mb-8">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="mistral-api">API Mistral</TabsTrigger>
-          <TabsTrigger value="local-server">Servidor Local</TabsTrigger>
-          <TabsTrigger value="azure-vm">VM Azure</TabsTrigger>
+          <TabsTrigger value="mistral-api">Configuração do Agente IA</TabsTrigger>
+          <TabsTrigger value="local-server">Servidor Local (Porta 8000)</TabsTrigger>
+          <TabsTrigger value="azure-vm">VM Azure (Porta 3000)</TabsTrigger>
         </TabsList>
         
         {/* Configuração da API Mistral */}
         <TabsContent value="mistral-api">
           <Card>
             <CardHeader>
-              <CardTitle>Configuração da API Mistral</CardTitle>
+              <CardTitle>Configuração do Agente IA Mistral</CardTitle>
               <CardDescription>
-                Configure sua API key do Mistral e outras opções para usar a API
+                Configure a API key do Mistral necessária para ativar o agente IA - esta configuração é independente do servidor
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -325,15 +311,15 @@ export default function MistralConfig() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="mistral-local-url">URL do Servidor Local</Label>
+                <Label htmlFor="mistral-local-url">URL do Servidor Local (Porta 8000)</Label>
                 <Input 
                   id="mistral-local-url" 
-                  value={config.mistral_local_url}
+                  value={config.mistral_local_url || "http://127.0.0.1:8000"}
                   onChange={(e) => setConfig(prev => ({...prev, mistral_local_url: e.target.value}))}
                   placeholder="http://127.0.0.1:8000" 
                 />
                 <p className="text-xs text-muted-foreground">
-                  URL do servidor Mistral rodando localmente, incluindo porta
+                  URL do servidor Mistral rodando localmente na porta 8000
                 </p>
               </div>
               
@@ -397,15 +383,15 @@ export default function MistralConfig() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="azure-vm-url">URL da VM Azure</Label>
+                <Label htmlFor="azure-vm-url">URL da VM Azure (Porta 3000)</Label>
                 <Input 
                   id="azure-vm-url" 
-                  value={config.azure_vm_url}
+                  value={config.azure_vm_url || "https://seu-servidor-azure.com:3000"}
                   onChange={(e) => setConfig(prev => ({...prev, azure_vm_url: e.target.value}))}
-                  placeholder="https://seu-servidor-azure.com" 
+                  placeholder="https://seu-servidor-azure.com:3000" 
                 />
                 <p className="text-xs text-muted-foreground">
-                  URL completa da VM Azure onde está rodando o Mistral
+                  URL completa da VM Azure onde está rodando o Mistral na porta 3000
                 </p>
               </div>
               
