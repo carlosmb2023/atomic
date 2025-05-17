@@ -904,13 +904,21 @@ export default function SystemConfig() {
                       input.accept = 'application/json';
                       
                       input.onchange = (e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
+                        const target = e.target as HTMLInputElement;
+                        const files = target.files;
+                        if (!files || files.length === 0) return;
+                        
+                        const file = files[0];
                         
                         const reader = new FileReader();
                         reader.onload = (event) => {
                           try {
-                            const importedConfig = JSON.parse(event.target.result);
+                            const result = event.target?.result;
+                            if (typeof result !== 'string') {
+                              throw new Error('Formato inválido');
+                            }
+                            
+                            const importedConfig = JSON.parse(result);
                             
                             // Manter senhas/chaves existentes se estiverem vazias no arquivo importado
                             if (!importedConfig.mistral_api_key && config.mistral_api_key) {

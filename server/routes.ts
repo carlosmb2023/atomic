@@ -18,6 +18,8 @@ import { mistralService } from "./services/mistral.service";
 import { v4 as uuidv4 } from "uuid";
 import agentsRoutes from './routes/agents.routes';
 import mistralConfigRoutes from './routes/mistral-config.routes';
+import systemRoutes from './routes/system';
+import mistralRoutes from './routes/mistral';
 
 // Set up multer for file uploads
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -1108,6 +1110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registra as rotas de agentes
   app.use('/api/agents', agentsRoutes);
   app.use('/api/mistral', mistralConfigRoutes);
+  app.use('/api/system', systemRoutes);
   
   // ===================================================
   // Rotas para Validação do Sistema
