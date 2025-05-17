@@ -702,7 +702,7 @@ export default function SystemConfig() {
                 <h3 className="text-lg font-medium">Como configurar o Cloudflare Tunnel</h3>
                 <ol className="list-decimal ml-5 space-y-1 text-sm">
                   <li>Acesse o painel do Cloudflare Zero Trust</li>
-                  <li>Crie um novo tunnel na seção "Access > Tunnels"</li>
+                  <li>Crie um novo tunnel na seção "Access {'>'} Tunnels"</li>
                   <li>Copie o ID do tunnel e cole no campo acima</li>
                   <li>Configure um domínio público para acessar seu aplicativo</li>
                   <li>Instale e execute o cloudflared no seu servidor</li>
