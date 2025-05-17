@@ -578,7 +578,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         execution_mode, local_llm_url, cloud_llm_url, apify_actor_url,
         apify_api_key, base_prompt, logs_enabled, updated_by,
         mistral_local_url, mistral_cloud_url, mistral_instance_type,
-        mistral_api_key, cloudflare_tunnel_enabled, cloudflare_tunnel_id
+        mistral_api_key, cloudflare_tunnel_enabled, cloudflare_tunnel_id,
+        azure_vm_enabled, azure_vm_url, azure_vm_api_key, azure_vm_instance_id, azure_vm_region
       } = req.body;
       
       const updatedConfig = await configService.updateConfig({
@@ -595,7 +596,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(mistral_instance_type && { mistral_instance_type }),
         ...(mistral_api_key && { mistral_api_key }),
         ...(cloudflare_tunnel_enabled !== undefined && { cloudflare_tunnel_enabled }),
-        ...(cloudflare_tunnel_id && { cloudflare_tunnel_id })
+        ...(cloudflare_tunnel_id && { cloudflare_tunnel_id }),
+        ...(azure_vm_enabled !== undefined && { azure_vm_enabled }),
+        ...(azure_vm_url && { azure_vm_url }),
+        ...(azure_vm_api_key && { azure_vm_api_key }),
+        ...(azure_vm_instance_id && { azure_vm_instance_id }),
+        ...(azure_vm_region && { azure_vm_region })
       });
       
       if (!updatedConfig) {
