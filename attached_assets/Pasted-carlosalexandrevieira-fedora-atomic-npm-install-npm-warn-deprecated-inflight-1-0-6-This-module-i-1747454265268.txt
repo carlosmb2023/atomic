@@ -1,0 +1,52 @@
+carlosalexandrevieira@fedora:~/atomic$ npm install
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated npmlog@5.0.1: This package is no longer supported.
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated are-we-there-yet@2.0.0: This package is no longer supported.
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+npm warn deprecated gauge@3.0.2: This package is no longer supported.
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+npm warn deprecated react-tsparticles@2.12.2: @tsparticles/react is the new version, please use that
+npm warn deprecated tsparticles-engine@2.12.0: starting from tsparticles v3 the packages are now moved to @tsparticles/package-name instead of tsparticles-package-name
+
+added 721 packages, and audited 722 packages in 22s
+
+86 packages are looking for funding
+  run `npm fund` for details
+
+7 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+carlosalexandrevieira@fedora:~/atomic$ npm run dev
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+12:57:10 AM [warn] ⚠️ Variável DATABASE_URL não definida, usando armazenamento em memória
+🔄 Serviço Mistral inicializado. Modo: API
+✓ Usando agente Mistral específico: ag:48009b45:20250515:programador-agente:d9bb1918
+12:57:11 AM [warn] ⚠️ Variável DATABASE_URL não definida, usando armazenamento em memória
+Serviço Mistral inicializado no modo: local
+12:57:11 AM [express] Conexão com o banco de dados estabelecida com sucesso
+12:57:11 AM [warn] ⚠️ Variável DATABASE_URL não definida, usando armazenamento em memória
+12:57:11 AM [warn] ⚠️ Erro ao verificar/criar tabelas: TypeError: Cannot read properties of undefined (reading 'execute')
+12:57:11 AM [warn] ⚠️ Erro ao verificar configurações existentes: Error: No database host or connection string was set, and key parameters have default values (host: localhost, user: carlosalexandrevieira, db: carlosalexandrevieira, password: null). Is an environment variable missing? Alternatively, if you intended to connect with these parameters, please set the host to 'localhost' explicitly.
+12:57:11 AM [warn] ⚠️ Erro ao inserir configuração: TypeError: Cannot read properties of undefined (reading 'execute')
+12:57:11 AM [express] ✅ Banco de dados configurado com sucesso
+12:57:11 AM [express] Configurando rotas da aplicação...
+12:57:11 AM [express] Rotas configuradas com sucesso
+12:57:11 AM [express] Configurando ambiente de desenvolvimento...
+12:57:11 AM [express] Ambiente de desenvolvimento configurado com Vite
+12:57:11 AM [express] Iniciando servidor na porta 5000...
+12:57:11 AM [express] ✅ Servidor iniciado com sucesso na porta 5000
