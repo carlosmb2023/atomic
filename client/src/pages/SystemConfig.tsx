@@ -1,97 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { 
   RefreshCw, 
   Server, 
-  Cloud, 
-  Key, 
-  Globe, 
-  Database, 
-  Shield, 
-  Settings2,
-  AlertTriangle
+  Cloud
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
 import { useSoundEffect } from '@/hooks/use-sound-effect';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
-// Tipo para a configuração do sistema
+// Tipo simplificado para a configuração do sistema
 interface SystemConfig {
   id?: number;
   execution_mode: string;
-  local_llm_url: string;
-  cloud_llm_url: string;
-  apify_actor_url: string;
-  apify_api_key: string;
-  base_prompt: string;
-  logs_enabled: boolean;
-  oracle_instance_ip: string;
-  active_llm_url: string;
-  mistral_local_url: string;
-  mistral_cloud_url: string;
-  mistral_instance_type: string;
-  mistral_api_key: string;
-  azure_vm_enabled: boolean;
-  azure_vm_url: string;
-  azure_vm_api_key: string;
-  azure_vm_instance_id: string;
-  azure_vm_region: string;
-  cloudflare_tunnel_enabled: boolean;
-  cloudflare_tunnel_id: string;
-}
-
-// Tipo para os status de conexão
-interface ConnectionStatus {
-  mistralApi: { status: string; message: string };
-  mistralLocal: { status: string; message: string };
-  mistralAzure: { status: string; message: string };
-  cloudflare: { status: string; message: string };
-  apify: { status: string; message: string };
 }
 
 // Componente principal
 export default function SystemConfig() {
   const [config, setConfig] = useState<SystemConfig>({
-    execution_mode: 'api',
-    local_llm_url: 'http://127.0.0.1:8000',
-    cloud_llm_url: 'https://api.mistral.ai/v1',
-    apify_actor_url: '',
-    apify_api_key: '',
-    base_prompt: '',
-    logs_enabled: true,
-    oracle_instance_ip: '',
-    active_llm_url: '',
-    mistral_local_url: 'http://127.0.0.1:8000',
-    mistral_cloud_url: 'https://api.mistral.ai/v1',
-    mistral_instance_type: 'api',
-    mistral_api_key: '',
-    azure_vm_enabled: false,
-    azure_vm_url: 'https://seu-servidor-azure.com:3000',
-    azure_vm_api_key: '',
-    azure_vm_instance_id: '',
-    azure_vm_region: 'eastus',
-    cloudflare_tunnel_enabled: false,
-    cloudflare_tunnel_id: ''
+    execution_mode: 'local'
   });
-
+  
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
-    mistralApi: { status: 'unknown', message: 'Não testado' },
-    mistralLocal: { status: 'unknown', message: 'Não testado' },
-    mistralAzure: { status: 'unknown', message: 'Não testado' },
-    cloudflare: { status: 'unknown', message: 'Não testado' },
-    apify: { status: 'unknown', message: 'Não testado' }
+  const [status, setStatus] = useState({
+    message: '',
+    type: 'info' // 'info', 'success', 'error'
   });
 
   const { playClick, playSuccess, playError } = useSoundEffect();
@@ -110,11 +48,7 @@ export default function SystemConfig() {
     if (configData) {
       setConfig({
         ...config,
-        ...configData,
-        // Mascarar senhas/tokens
-        mistral_api_key: configData.mistral_api_key ? '••••••••••••••••' : '',
-        apify_api_key: configData.apify_api_key ? '••••••••••••••••' : '',
-        azure_vm_api_key: configData.azure_vm_api_key ? '••••••••••••••••' : ''
+        ...configData
       });
     }
   }, [configData]);
