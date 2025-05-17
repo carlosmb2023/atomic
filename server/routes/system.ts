@@ -1,18 +1,20 @@
 import express, { Request, Response } from 'express';
 import { db } from '../db';
+import { ConfigService } from '../services/config.service';
 
 const router = express.Router();
+const configService = ConfigService.getInstance();
 
 /**
  * Rota para obter a configuração do sistema
  */
 router.get('/config', async (req: Request, res: Response) => {
   try {
-    // Buscar a configuração do sistema do banco de dados
-    const result = await db.query('SELECT * FROM system_config ORDER BY id DESC LIMIT 1');
+    // Usar o configService em vez de SQL direto
+    const config = await configService.getConfig(true);
     
     // Se não houver configuração, retornar objeto vazio
-    if (result.rows.length === 0) {
+    if (!config) {
       return res.json({
         execution_mode: 'api',
         local_llm_url: 'http://127.0.0.1:8000',
@@ -37,8 +39,15 @@ router.get('/config', async (req: Request, res: Response) => {
       });
     }
     
-    const config = result.rows[0];
-    return res.json(config);
+    // Não enviar informações sensíveis como API keys
+    const safeConfig = {
+      ...config,
+      apify_api_key: config.apify_api_key ? "***************" : null,
+      mistral_api_key: config.mistral_api_key ? "***************" : null,
+      azure_vm_api_key: config.azure_vm_api_key ? "***************" : null
+    };
+    
+    return res.json(safeConfig);
   } catch (error) {
     console.error('Erro ao obter configuração do sistema:', error);
     return res.status(500).json({ error: 'Erro ao obter configuração do sistema' });
@@ -50,53 +59,22 @@ router.get('/config', async (req: Request, res: Response) => {
  */
 router.patch('/config', async (req: Request, res: Response) => {
   try {
-    const config = req.body;
+    // Usar o configService em vez de SQL direto
+    const updatedConfig = await configService.updateConfig(req.body);
     
-    // Verificar se já existe uma configuração
-    const existingConfig = await db.query('SELECT * FROM system_config ORDER BY id DESC LIMIT 1');
-    
-    let result;
-    
-    if (existingConfig.rows.length === 0) {
-      // Se não existir, inserir nova configuração
-      const fields = Object.keys(config).filter(key => config[key] !== undefined);
-      const placeholders = fields.map((_, i) => `$${i + 1}`).join(', ');
-      const values = fields.map(field => config[field]);
-      
-      const query = `
-        INSERT INTO system_config (${fields.join(', ')})
-        VALUES (${placeholders})
-        RETURNING *
-      `;
-      
-      result = await db.query(query, values);
-    } else {
-      // Se existir, atualizar configuração existente
-      const id = existingConfig.rows[0].id;
-      
-      // Filtrar apenas os campos que foram fornecidos no corpo da requisição
-      const updateFields = Object.keys(config)
-        .filter(key => config[key] !== undefined)
-        .map((key, i) => `${key} = $${i + 1}`);
-      
-      const values = Object.keys(config)
-        .filter(key => config[key] !== undefined)
-        .map(key => config[key]);
-      
-      // Adicionar o ID ao final dos valores
-      values.push(id);
-      
-      const query = `
-        UPDATE system_config
-        SET ${updateFields.join(', ')}
-        WHERE id = $${values.length}
-        RETURNING *
-      `;
-      
-      result = await db.query(query, values);
+    if (!updatedConfig) {
+      return res.status(500).json({ error: "Erro ao atualizar configuração" });
     }
     
-    return res.json(result.rows[0]);
+    // Não enviar informações sensíveis
+    const safeConfig = {
+      ...updatedConfig,
+      apify_api_key: updatedConfig.apify_api_key ? "***************" : null,
+      mistral_api_key: updatedConfig.mistral_api_key ? "***************" : null,
+      azure_vm_api_key: updatedConfig.azure_vm_api_key ? "***************" : null
+    };
+    
+    return res.json(safeConfig);
   } catch (error) {
     console.error('Erro ao atualizar configuração do sistema:', error);
     return res.status(500).json({ error: 'Erro ao atualizar configuração do sistema' });
