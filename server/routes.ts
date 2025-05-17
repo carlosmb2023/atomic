@@ -5,9 +5,10 @@ import path from "path";
 import fs from "fs";
 import { storage } from "./storage";
 import { log } from "./vite";
-import { db } from "./db";
+import { db, testConnection } from "./db";
 import { users, files, dailyMetrics } from "../shared/schema";
 import { eq, sql } from "drizzle-orm";
+import { Pool } from "@neondatabase/serverless";
 import { ChatService } from "./services/chat.service";
 import { LlmService } from "./services/llm.service";
 import { ConfigService } from "./services/config.service";
@@ -1371,14 +1372,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let configStatus = false;
       
       try {
-        // Verificar se há uma conexão com o banco de dados
-        const client = await db.client.connect();
-        try {
-          // Tenta executar uma consulta simples 
-          await client.query('SELECT 1');
+        // Verificar se há uma conexão com o banco de dados usando Drizzle ORM
+        const result = await db.execute(sql`SELECT 1`);
+        if (result && result.length > 0) {
           configStatus = true;
-        } finally {
-          client.release();
         }
       } catch (error: any) {
         return res.json({
@@ -1393,18 +1390,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verifica se o sistema de persistência está funcionando
       let persistenceStatus = true;
       try {
-        // Tenta executar uma inserção e remoção no banco
-        const client = await db.client.connect();
-        try {
-          // Tenta executar uma operação temporária para testar persistência
-          await client.query(`
-            WITH temp_test AS (
-              SELECT 'test_config' AS key, 'test_value' AS value
-            )
-            SELECT * FROM temp_test
-          `);
-        } finally {
-          client.release();
+        // Tenta executar uma consulta temporária para testar persistência
+        const result = await db.execute(sql`
+          WITH temp_test AS (
+            SELECT 'test_config' AS key, 'test_value' AS value
+          )
+          SELECT * FROM temp_test
+        `);
+        if (!result || result.length === 0) {
+          persistenceStatus = false;
         }
       } catch (error) {
         persistenceStatus = false;
