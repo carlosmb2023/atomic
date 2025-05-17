@@ -19,6 +19,7 @@ import AgentTools from "@/pages/AgentTools";
 import ErrorStateDemo from "@/pages/ErrorStateDemo";
 import SiteValidator from "@/pages/SiteValidator";
 import MistralConfig from "@/pages/MistralConfig";
+import SystemConfig from "@/pages/SystemConfig";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AiBackgroundImage from "@/components/AiBackgroundImage";
@@ -51,6 +52,7 @@ function Router() {
           <Route path="/agent-tools" component={AgentTools} />
           <Route path="/error-demo" component={ErrorStateDemo} />
           <Route path="/validator" component={SiteValidator} />
+          <Route path="/system-config" component={SystemConfig} />
           <Route component={NotFound} />
         </Switch>
       </main>
